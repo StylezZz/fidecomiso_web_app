@@ -16,7 +16,7 @@ export const MapLegend =({setShowLegend}:MapLegendProps) =>{
         <div className="absolute top-20 right-0 z-30 bg-white rounded-md shadow-md p-3 w-[200px]">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <span  className="text-x ml-1 font-medium font-bold">Leyenda</span>
+                <span  className="text-x ml-1 font-bold">Leyenda</span>
               </div>
               <button
                 onClick={() => setShowLegend(false)}
@@ -64,7 +64,3 @@ export const MapLegend =({setShowLegend}:MapLegendProps) =>{
           </div>
     )
 }
-
-/*
-Made by Dalpb
-*/

@@ -1,10 +1,7 @@
 "use client"
-import { MainLayout } from "@/components/layout/main-layout";
-import dynamic from "next/dynamic";
-import { MapProvider } from "@/contexts/MapContext";
 import { MapHeader } from "@/components/map/MapHeader";
-import { MapTable } from "@/components/map/MapTable";
-import { useState, useRef } from "react";
+import dynamic from "next/dynamic";
+import { useRef, useState } from "react";
 
 const MapCanvas = dynamic(() => import("@/components/map/MapCanvas"), {
     ssr: false,

@@ -651,7 +651,7 @@ const TruckRow = React.memo(({ truck }: TruckRow) => {
     }
     
     // Buscar el primer punto de pedido en la ruta (el próximo pedido)
-    const proximoPedido = truck.route.find(punto => punto.pedido === true);
+    const proximoPedido = truck.route.find(punto => punto.esPedido === true);
     
     if (!proximoPedido) {
       return "N/A";

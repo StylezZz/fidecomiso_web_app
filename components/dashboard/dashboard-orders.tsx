@@ -97,8 +97,8 @@ export function DashboardOrders() {
       const month = parseInt(selectedMonth);
       
       console.log('Cargando pedidos para fecha:', `${year}-${month}`);
-      
-      const response = await PedidosService.getOrders(undefined, year, month);
+      const dias = Array.from({ length: 31 }, (_, i) => i + 1); // Días del mes 1 al 31
+      const response = await PedidosService.getOrders(dias, year, month);
       
       console.log('Respuesta completa:', response);
       

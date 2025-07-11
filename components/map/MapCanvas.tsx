@@ -1,28 +1,25 @@
 "use client"
-import Konva from "konva";
-import { useRef,useEffect, useState, JSX, useMemo, useCallback, forwardRef, useImperativeHandle } from "react"
-import { Layer, Line, Stage ,Text} from "react-konva";
-import {Truck} from "@/components/map/trunck/Trunck"
-import { LineRoute } from "@/components/map/MapRoute/mapRoute";
-import { useMapContext } from "@/contexts/MapContext";
 import StoreHouse, { AlmacenInfo, ToolTipAlmacen } from "@/components/map/StoreHouse/StoreHouse";
+import { Truck } from "@/components/map/trunck/Trunck";
+import { useMapContext } from "@/contexts/MapContext";
+import Konva from "konva";
+import { forwardRef, JSX, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { Layer, Stage } from "react-konva";
 import PedidoCanvas, { ToolTipPedido } from "./StoreHouse/Pedido";
 
-import { MapTable } from "./MapTable";
-import { Trunk, TypeTruck } from "@/interfaces/map/Truck.interface";
-import { Block } from "@/interfaces/map/block.interface";
-import { BlockRoute, ToolTipBlockRoute } from "./MapRoute/blockRoute";
-import { MapLegend } from "./MapLegend";
-import { generateGridLines, generatePedidos } from "@/utils/simulationBuilders";
+import { MapTooltip } from "@/components/map/tooltip/MapTooltip";
+import useLengendSummary from "@/hooks/use-legend-summary";
+import { useMapTooltip } from "@/hooks/useMapTooltip";
+import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
 import { PedidoI } from "@/interfaces/newinterfaces/pedido.interface";
 import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
+import { generateGridLines } from "@/utils/simulationBuilders";
 import confetti from "canvas-confetti";
+import { MapLegend } from "./MapLegend";
+import { BlockRoute, ToolTipBlockRoute } from "./MapRoute/blockRoute";
+import { MapTable } from "./MapTable";
 import { FinishModal } from "./modals/finishModal";
-import useLengendSummary from "@/hooks/use-legend-summary";
-import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
 import { ToolTipCamion } from "./trunck/TruckBody";
-import { useMapTooltip } from "@/hooks/useMapTooltip";
-import { MapTooltip } from "@/components/map/tooltip/MapTooltip";
 
 interface MapProps{
   open: boolean
@@ -85,8 +82,8 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({open}, ref) => {
       if (vehiculo.route) {
         vehiculo.route.forEach(punto => {
           if (punto.pedido) {
-            if (punto.pedidoRuta && punto.pedidoRuta.entregadoCompleto && punto.startTime <= timer) {
-              pedidos.push(punto.pedidoRuta.id);
+            if (punto.pedido && punto.pedido.entregadoCompleto && punto.tiempoInicio <= timer) {
+              pedidos.push(punto.pedido.id);
             }
           }
         });

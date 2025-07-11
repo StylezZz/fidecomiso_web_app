@@ -522,8 +522,8 @@ function setUbicacionVehiculo(index: number, x: number, y: number) {
       dataVehiculos?.forEach((vehiculo) => {
           if (vehiculo.route) {
               vehiculo.route.forEach(punto => {
-                  if (punto.pedido && punto.pedidoRuta?.entregadoCompleto && punto.startTime <= timerSimulacion) {
-                      pedidos.push(punto.pedidoRuta.id);
+                  if (punto.pedido && punto.pedido?.entregadoCompleto && punto.tiempoInicio <= timerSimulacion) {
+                      pedidos.push(punto.pedido.id);
                   }
               });
           }

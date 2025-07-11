@@ -350,11 +350,11 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
               <div className="flex items-center space-x-2 bg-muted/50 rounded p-2">
                 <FileText className="w-4 h-4 text-muted-foreground" />
-                <span>Pedidos: {formatearNombreArchivoPedido("ventas"+simulacion.anioPedido.toString()+archivoPedidoMes()+".txt")}</span>
+                <span>Pedidos: {simulacion.anioPedido?  formatearNombreArchivoPedido("ventas"+simulacion.anioPedido.toString()+archivoPedidoMes()+".txt") : "No definido"}</span>
               </div>
               <div className="flex items-center space-x-2 bg-muted/50 rounded p-2">
                 <FileText className="w-4 h-4 text-muted-foreground" />
-                <span>Bloqueos: {formatearNombreBloqueos(simulacion.anioBloqueo.toString()+archivoBloqueoMes()+".bloqueos.txt")}</span>
+                <span>Bloqueos: {simulacion.anioBloqueo?  formatearNombreBloqueos(simulacion.anioBloqueo.toString()+archivoBloqueoMes()+".bloqueos.txt") : "No definido"}</span>
               </div>
             </div>
             <div className="flex gap-2">
