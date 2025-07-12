@@ -116,6 +116,3 @@ export const useManageTime = ({tipo,setSimulacionIniciada,simulacionIniciada}:ma
         errorInit
     }
 }
-/*
-made by Dalpb
-*/

@@ -731,8 +731,3 @@ const getVolumeIcon = (volumen: number) => {
     return <Container size={14} className="text-red-500" aria-label="Pesado (>10m³)" />;
   }
 };
-
-/*
-cricri estuvo aqui 
-
-*/

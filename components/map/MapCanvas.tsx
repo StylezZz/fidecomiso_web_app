@@ -315,7 +315,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({open}, ref) => {
             onWheel={zoomEvent}
             onDragMove={draggMoveControl}
             draggable={true}
-            style={{ cursor: 'default' }}
+            style={{ cursor: 'default', backgroundColor: '#EFF7FE' }}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setBloqueoSeleccionado(null);
@@ -431,8 +431,3 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({open}, ref) => {
 MapCanvas.displayName = 'MapCanvas';
 
 export default MapCanvas;
-
-/*
-Made by Dalpb
-
-*/

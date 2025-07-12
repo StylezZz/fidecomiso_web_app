@@ -72,4 +72,3 @@ const useTrucksOrders = ({ truckPlate }: UseTruckOrdersProps) => {
 }
 
 export default useTrucksOrders;
-/*Made by Dalpb */

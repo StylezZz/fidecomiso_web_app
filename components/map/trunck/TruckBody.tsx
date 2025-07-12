@@ -1,6 +1,6 @@
 import { TypeTruck } from "@/interfaces/map/Truck.interface";
 import { defineColorTruck } from "@/utils/trucksUtils"
-import { Group, Rect, RegularPolygon, Circle, Text, Line } from "react-konva";
+import { Group, Circle, Text, Line, Rect } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
@@ -58,7 +58,7 @@ const TruckBody = React.memo(({
       x={xPos} 
       y={yPos} 
       rotation={angularRotation} 
-      scale={{ x: .5 * 1, y: .5 * 1 }}
+      scale={{ x: scale, y: scale }}
       onClick={handleCamionClick}
       onTap={handleCamionClick}
       onMouseEnter={(e) => {
@@ -68,111 +68,87 @@ const TruckBody = React.memo(({
         e.target.getStage()!.container().style.cursor = 'default';
       }}
     >
-      <Rect 
-        x={-15} 
-        y={-25} 
-        width={30} 
-        height={50} 
-        cornerRadius={3} 
-        fill={truckColor} 
-        stroke="white" 
-        strokeWidth={2}
-        listening={true}
-        hitStrokeWidth={15}
+      {/* Sombra */}
+      <Circle
+        x={0}
+        y={4}
+        radius={12}
+        fill="#000000"
+        opacity={0.2}
+        listening={false}
       />
-      <Rect 
-        x={-15} 
-        y={-25} 
-        width={30} 
-        height={15} 
-        cornerRadius={3} 
-        fill="#333" 
-        stroke="white" 
-        strokeWidth={1} 
-      />
-      <RegularPolygon 
-        x={0} 
-        y={-14.5} 
-        sides={3} 
-        radius={8} 
-        fill="white" 
-        rotation={239} 
-      />
-      <Rect 
-        x={-10} 
-        y={-5} 
-        width={20} 
-        height={25} 
-        cornerRadius={1} 
-        fill="#333" 
-      />
-      {[[-17, -15], [13, -15], [-17, 10], [13, 10]].map(([x, y], idx) => (
-        <Rect 
-          key={idx} 
-          x={x} 
-          y={y} 
-          width={4} 
-          height={8} 
-          cornerRadius={1} 
-          fill="black" 
-          stroke="white" 
-          strokeWidth={0.5} 
-        />
-      ))}
-      {/* ✅ AVERÍA SIMPLE - SOLO X ENCIMA */}
-      {hasBreakdown && (
-        <Group>
-          {/* X SIMPLE - Línea diagonal 1 */}
-          <Line 
-            points={[-12, -20, 12, 20]} 
-            stroke="#dc2626" 
-            strokeWidth={4} 
-            lineCap="round"
-          />
-          
-          {/* X SIMPLE - Línea diagonal 2 */}
-          <Line 
-            points={[12, -20, -12, 20]} 
-            stroke="#dc2626" 
-            strokeWidth={4} 
-            lineCap="round"
-          />
-        </Group>
-      )}
       
-      {/* ❌ COMENTAR O ELIMINAR ESTA SECCIÓN */}
-      {/* Mostrar el ID del camión */}
-      {/* {camionId && (
-        <Text 
-          x={-20} 
-          y={-50} 
-          text={camionId} 
-          fill="black" 
-          fontSize={30} 
-          fontStyle="bold" 
-          stroke="white" 
-          strokeWidth={1} 
-          width={80} 
-          align="center" 
-        />
-      )} */}
+      {/* Círculo principal del camión */}
+      <Circle 
+        radius={12} 
+        fill={truckColor} 
+        stroke="#ffffff" 
+        strokeWidth={3}
+        shadowColor="#000000"
+        shadowBlur={12}
+        shadowOpacity={0.4}
+        shadowOffsetX={0}
+        shadowOffsetY={3}
+        listening={true}
+        hitStrokeWidth={20}
+      />
+      
+      {/* Indicador de dirección (flecha pequeña) */}
+      <Line
+        points={[0, -8, 0, 8]}
+        stroke="#ffffff"
+        strokeWidth={3}
+        lineCap="round"
+        listening={false}
+      />
+      <Line
+        points={[-4, 4, 0, 8, 4, 4]}
+        stroke="#ffffff"
+        strokeWidth={3}
+        lineCap="round"
+        listening={false}
+      />
+      
+      {/* Indicador de avería */}
+      {hasBreakdown && (
+        <Circle
+          x={0}
+          y={-20}
+          radius={6}
+          fill="#ef4444"
+          stroke="#ffffff"
+          strokeWidth={2}
+          listening={false}
+        >
+          <Text
+            text="!"
+            fill="white"
+            fontSize={8}
+            fontStyle="bold"
+            align="center"
+            x={-3}
+            y={-4}
+          />
+        </Circle>
+      )}
       
       {/* Círculo de selección */}
       {isSelected && (
         <Circle
           x={0}
           y={0}
-          radius={35}
+          radius={20}
           stroke="#3b82f6"
           strokeWidth={3}
           dash={[5, 5]}
+          listening={false}
         />
       )}
     </Group>
   );
 });
 
-// Componente del Tooltip
+// Componente del Tooltip (mantener el existente)
 interface ToolTipCamionProps {
   camion: VehiculoI;
   posX: number;
@@ -207,59 +183,56 @@ export const ToolTipCamion = ({camion, posX, posY}: ToolTipCamionProps) => {
         shadowOffsetY={4}
       />
       <Rect width={toolTipWidth} height={headerHeight} fill="#f8fafc" />
-      <Rect 
+      <Circle 
         fill={colorCamion}
-        width={10} 
-        height={10} 
-        offsetY={-19} 
-        offsetX={-11}
+        radius={5}
+        x={12}
+        y={headerHeight/2}
       />
       <Text
-        text={`CAMIÓN: ${camion.codigo}`}
+        text={`CÓDIGO: ${camion.codigo}`}
         fontStyle="bold"
-        align="center"
         fontSize={14}
-        padding={13}
-        offsetX={-10}
         fill="#1f2937"
+        x={25}
+        y={12}
+        width={toolTipWidth - 30}
       />
       <Text 
-        text={`Carga: ${camion.carga} / ${camion.glpDisponible} L`} 
+        text={`Posición: ${ubicacionActual.x}, ${ubicacionActual.y}`} 
         fontStyle="bold"
-        offsetX={-9}
-        offsetY={-40}
-        fontSize={12}
+        x={12}
+        y={45}
+        fontSize={13}
         fill="#6b7280"
       />
       <Text
         fontStyle="bold"
         fill="#6b7280"
-        offsetX={-9}
-        offsetY={-60}
-        fontSize={12}
-        text={`Ubicación: ${ubicacionActual.x}, ${ubicacionActual.y}`}
+        x={12}
+        y={65}
+        fontSize={13}
+        text={`Carga: ${camion.carga} m³`}
       />
       <Text
         fontStyle="bold"
         fill="#6b7280"
-        offsetX={-9}
-        offsetY={-80}
-        fontSize={12}
-        text={`Estado: ${camion.enAveria ? 'En Avería' : 'Operativo'}`}
+        x={12}
+        y={85}
+        fontSize={13}
+        text={`Estado: ${camion.enAveria ? 'Averiado' : 'Operativo'}`}
+      />
+      <Text
+        fontStyle="bold"
+        fill="#6b7280"
+        x={12}
+        y={105}
+        fontSize={13}
+        text={`Tipo: ${tipoCamion}`}
       />
     </Group>
-  )
-}
-
-// Comparación personalizada para evitar re-renders innecesarios
-export default React.memo(TruckBody, (prevProps, nextProps) => {
-  return (
-    prevProps.xPos === nextProps.xPos &&
-    prevProps.yPos === nextProps.yPos &&
-    prevProps.angularRotation === nextProps.angularRotation &&
-    prevProps.hasBreakdown === nextProps.hasBreakdown &&
-    prevProps.isSelected === nextProps.isSelected &&
-    prevProps.scale === nextProps.scale
   );
-});
-// Made by Dalpb
+};
+
+TruckBody.displayName = 'TruckBody';
+export default TruckBody;

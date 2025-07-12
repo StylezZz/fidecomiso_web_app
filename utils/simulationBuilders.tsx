@@ -13,7 +13,7 @@ export function generateGridLines(
   let i = 0;
 
   for (let x = 0; x <= mapWidth; x += cellSizeX) {
-    lines.push(<Line key={`x-${x}`} points={[x, 0, x, mapHeight]} strokeWidth={1} stroke="#CBD5E1" />);
+    lines.push(<Line key={`x-${x}`} points={[x, 0, x, mapHeight]} strokeWidth={1} stroke="#95BDCA" />);
 /*    i++;
     if (i % 5 === 0) {
       lines.push(<Text key={`Num-x-${i}`} text={i.toString()} y={mapHeight - 10} x={x - 5} />);
@@ -21,7 +21,7 @@ export function generateGridLines(
   }
 
   for (let y = 0; y <= mapHeight; y += cellSizeY) {
-    lines.push(<Line key={`y-${y}`} points={[0, y, mapWidth, y]} strokeWidth={1} stroke="#CBD5E1" />);
+    lines.push(<Line key={`y-${y}`} points={[0, y, mapWidth, y]} strokeWidth={1} stroke="#95BDCA" />);
   }
 
   return lines;

@@ -54,5 +54,4 @@ export const useTruckRouteManager = ({
 
 
 export default useTruckRouteManager;
-/*Made by Dalpb*/
 
