@@ -88,7 +88,7 @@ export const useMapTooltip = () => {
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
-          iconColor: almacen.typeHouse === "warehouse" ? "#D97706" : "#1D4ED8"
+          iconColor: almacen.typeHouse === "warehouse" ? "#3b82f6" : "#1e40af"
         };
 
       case TooltipType.BLOQUEO:

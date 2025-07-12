@@ -962,12 +962,12 @@ export function LogisticsDashboard() {
                 }}
               >
                 <div 
-                  className="absolute w-6 h-6 rounded-md bg-blue-700 border-2 border-white shadow-lg flex items-center justify-center"
+                  className="absolute w-10 h-10 rounded-lg bg-blue-800 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
                     transform: 'translate(-50%, 50%)',
                   }}
                 >
-                  <Warehouse className="text-white" size={14} />
+                  <Warehouse className="text-white" size={18} />
                 </div>
               </div>
               
@@ -982,12 +982,12 @@ export function LogisticsDashboard() {
                 }}
               >
                 <div 
-                  className="absolute w-6 h-6 rounded-md bg-green-600 border-2 border-white shadow-lg flex items-center justify-center"
+                  className="absolute w-8 h-8 rounded-md bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
                     transform: 'translate(-50%, 50%)',
                   }}
                 >
-                  <Warehouse className="text-white" size={14} />
+                  <Warehouse className="text-white" size={16} />
                 </div>
               </div>
               
@@ -1002,12 +1002,12 @@ export function LogisticsDashboard() {
                 }}
               >
                 <div 
-                  className="absolute w-6 h-6 rounded-md bg-amber-600 border-2 border-white shadow-lg flex items-center justify-center"
+                  className="absolute w-8 h-8 rounded-md bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
                     transform: 'translate(-50%, 50%)',
                   }}
                 >
-                  <Warehouse className="text-white" size={14} />
+                  <Warehouse className="text-white" size={16} />
                 </div>
               </div>
 

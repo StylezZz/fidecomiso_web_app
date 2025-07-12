@@ -5,7 +5,8 @@ import {
     Rect,
     Group,
     Line,
-    Path
+    Path,
+    Star
 } from "react-konva";
 import useCalRoute from "@/hooks/useCalRoute";
 import { useMapContext } from "@/contexts/MapContext";
@@ -119,7 +120,7 @@ const StoreHouse = ({
         <Group 
             x={x} 
             y={y} 
-            scale={{x:0.5*scale,y:0.5*scale}}
+            scale={{x:0.7*scale,y:0.7*scale}}
             onClick={handleAlmacenClick}
             onTap={handleAlmacenClick}
             onMouseEnter={(e) => {
@@ -129,79 +130,154 @@ const StoreHouse = ({
                 e.target.getStage()!.container().style.cursor = 'default';
             }}
         >
-            <Circle  
-                radius={20} 
-                fill={ typeHouse === "warehouse" ? "#D97706" : "#1D4ED8"}
-                listening={true}
-                hitStrokeWidth={25}
-            />
-            {typeHouse === "home" ? <HouseIcon/> : <WarehouseIcon/>} 
+            {typeHouse === "home" ? <CentralWarehouseIcon/> : <IntermediateWarehouseIcon/>} 
         </Group>
     )
 }
 
-//Construimos esto, porque este Konva no acepta Icons zzzzzzzzzzzzzzzzzzz!!!
-const HouseIcon = () => {
+// Almacén Central - Diseño más prominente con estrella y hexágono
+const CentralWarehouseIcon = () => {
     return (
-      <Group scale={{ x: 1, y: 1 }} x={-12} y={-12}>
-        <Path
-          data="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-          fill="transparent"
-          stroke="white"
-          strokeWidth={2}
-        />
-        
-        <Line
-          points={[15, 21, 15, 13, 9, 13, 9, 21]}
-          fill="none"
-          stroke="white"
-          strokeWidth={2}
-        />
-        
-        <Line
-          points={[3, 10, 10, 4, 14, 4, 21, 10]}
-          fill="none"
-          stroke="white"
-          strokeWidth={2}
-        />
-      </Group>
+        <Group scale={{ x: 1, y: 1 }} x={-15} y={-15}>
+            {/* Fondo hexagonal */}
+            <Path
+                data="M15 0 L25 8.66 L25 21.66 L15 30.32 L5 21.66 L5 8.66 Z"
+                fill="#1e40af"
+                stroke="#ffffff"
+                strokeWidth={2}
+                shadowColor="black"
+                shadowBlur={8}
+                shadowOpacity={0.3}
+                shadowOffsetX={2}
+                shadowOffsetY={2}
+            />
+            
+            {/* Estrella central */}
+            <Star
+                x={15}
+                y={15}
+                numPoints={5}
+                innerRadius={3}
+                outerRadius={8}
+                fill="#ffffff"
+                stroke="#1e40af"
+                strokeWidth={1}
+            />
+            
+            {/* Icono de almacén central */}
+            <Path
+                data="M10 8 L20 8 L20 22 L10 22 Z"
+                fill="transparent"
+                stroke="#ffffff"
+                strokeWidth={1.5}
+            />
+            
+            {/* Puerta */}
+            <Rect
+                x={13}
+                y={18}
+                width={4}
+                height={4}
+                fill="#ffffff"
+                stroke="#1e40af"
+                strokeWidth={0.5}
+            />
+            
+            {/* Ventanas */}
+            <Rect
+                x={11}
+                y={10}
+                width={2}
+                height={2}
+                fill="#ffffff"
+                stroke="#1e40af"
+                strokeWidth={0.5}
+            />
+            <Rect
+                x={17}
+                y={10}
+                width={2}
+                height={2}
+                fill="#ffffff"
+                stroke="#1e40af"
+                strokeWidth={0.5}
+            />
+        </Group>
     );
-  };
+};
 
-  const WarehouseIcon = () => {
-
+// Almacén Intermedio - Diseño más simple con cuadrado y techo
+const IntermediateWarehouseIcon = () => {
     return (
-      <Group scale={{ x: 1, y: 1 }} x={-12} y={-12}>
-        <Rect
-          x={6}
-          y={10}
-          width={12}
-          height={12}
-          fill="transparent"
-          stroke="white"
-          strokeWidth={2}
-        />
-        
-        <Path
-          data="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"
-          fill="transparent"
-          stroke="white"
-          strokeWidth={2}
-        />
-        
-        <Line
-          points={[6, 18, 18, 18]}  
-          stroke="white"
-          strokeWidth={2}
-        />
-        <Line
-          points={[6, 14, 18, 14]}  
-          stroke="white"
-          strokeWidth={2}
-        />
-      </Group>
+        <Group scale={{ x: 1, y: 1 }} x={-12} y={-12}>
+            {/* Fondo cuadrado con bordes redondeados */}
+            <Rect
+                x={4}
+                y={8}
+                width={16}
+                height={16}
+                fill="#3b82f6"
+                stroke="#ffffff"
+                strokeWidth={2}
+                cornerRadius={3}
+                shadowColor="black"
+                shadowBlur={6}
+                shadowOpacity={0.2}
+                shadowOffsetX={1}
+                shadowOffsetY={1}
+            />
+            
+            {/* Techo triangular */}
+            <Path
+                data="M4 8 L12 2 L20 8 Z"
+                fill="#1e40af"
+                stroke="#ffffff"
+                strokeWidth={1.5}
+            />
+            
+            {/* Puerta */}
+            <Rect
+                x={9}
+                y={16}
+                width={6}
+                height={8}
+                fill="#ffffff"
+                stroke="#3b82f6"
+                strokeWidth={0.5}
+            />
+            
+            {/* Ventanas laterales */}
+            <Rect
+                x={6}
+                y={10}
+                width={2}
+                height={2}
+                fill="#ffffff"
+                stroke="#3b82f6"
+                strokeWidth={0.5}
+            />
+            <Rect
+                x={16}
+                y={10}
+                width={2}
+                height={2}
+                fill="#ffffff"
+                stroke="#3b82f6"
+                strokeWidth={0.5}
+            />
+            
+            {/* Indicador de almacén intermedio (punto pequeño) */}
+            <Circle
+                x={12}
+                y={6}
+                radius={1.5}
+                fill="#ffffff"
+                stroke="#1e40af"
+                strokeWidth={0.5}
+            />
+        </Group>
     );
-  };
+};
 
 // Componente del Tooltip
 interface ToolTipAlmacenProps {
@@ -232,7 +308,7 @@ export const ToolTipAlmacen = ({almacen, posX, posY}: ToolTipAlmacenProps) => {
             />
             <Rect width={toolTipWidth} height={headerHeight} fill="#f8fafc" />
             <Circle 
-                fill={almacen.typeHouse === "warehouse" ? "#D97706" : "#1D4ED8"}
+                fill={almacen.typeHouse === "warehouse" ? "#3b82f6" : "#1e40af"}
                 width={10} 
                 height={10} 
                 offsetY={-19} 
