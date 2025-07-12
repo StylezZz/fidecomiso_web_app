@@ -8,7 +8,7 @@ class BlockService {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      const res = await http.post(`${this.baseBloqueo}/leer-bloqueos`, formData);
+      const res = await http.post(`${this.baseBloqueo}/cargar-archivo`, formData);
       if (!res.success) throw new Error(res.error);
       return res;
     } catch (error) {
