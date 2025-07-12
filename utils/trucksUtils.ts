@@ -2,15 +2,15 @@ import { TypeTruck } from "@/interfaces/map/Truck.interface";
 export const defineColorTruck = (typeParam: TypeTruck | undefined) : string =>{
     switch (typeParam){
       case TypeTruck.TA:
-        return "#FCFF33";
+        return "#1e3a8a"; // Azul oscuro
       case TypeTruck.TB:
-        return "#33F9FF";
+        return "#7c2d12"; // Marrón oscuro
       case TypeTruck.TC:
-        return "#FFAD3E";
+        return "#374151"; // Gris oscuro
       case TypeTruck.TD:
-        return "#C4C3C2";
+        return "#1f2937"; // Gris muy oscuro
       default:
-        return "#000";
+        return "#000000";
     }
 }
   

@@ -57,28 +57,30 @@ export const BlockRoute = ({ block,setBloqueoSeleccionado,setToolTipBlockPos,onT
         
         return (<Line 
           key={`point${block.id}-segment-${index}`}
-          points={[point.startPos.x, point.startPos.y, point.endPos.x, point.endPos.y]} // Dibujamos la línea entre startPos y endPos
-          stroke="red"
-          strokeWidth={6}
+          points={[point.startPos.x, point.startPos.y, point.endPos.x, point.endPos.y]}
+          stroke="#dc2626"
+          strokeWidth={8}
           listening={true}
           hitStrokeWidth={hitWidth}
           lineCap="round"
+          shadowColor="#000000"
+          shadowBlur={10}
+          shadowOpacity={0.3}
+          shadowOffsetX={0}
+          shadowOffsetY={2}
+          dash={[10, 5]}
           onClick={handleBlockRoute}
           onTap={handleBlockRoute}
-             onMouseDown={(e) => {
-              console.log(`MouseDown en bloqueo ${block.id}, segmento ${index}`);
-            }}
-            // Eventos de hover para debug
-            onMouseEnter={(e) => {
-              console.log(`Mouse enter en bloqueo ${block.id}, segmento ${index}`);
-              (e.target as any).stroke('#ff6b6b'); // ✅ Cast a any
-              e.target.getLayer()?.batchDraw();
-            }}
-            onMouseLeave={(e) => {
-              console.log(`Mouse leave en bloqueo ${block.id}, segmento ${index}`);
-              (e.target as any).stroke('red'); // ✅ Cast a any
-              e.target.getLayer()?.batchDraw();
-            }}         
+          onMouseEnter={(e) => {
+            (e.target as any).stroke('#ef4444');
+            (e.target as any).strokeWidth(10);
+            e.target.getLayer()?.batchDraw();
+          }}
+          onMouseLeave={(e) => {
+            (e.target as any).stroke('#dc2626');
+            (e.target as any).strokeWidth(8);
+            e.target.getLayer()?.batchDraw();
+          }}         
         />)
     })}
     </>

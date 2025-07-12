@@ -1,4 +1,4 @@
-import { Play, Pause, CircleAlert, RotateCcw, FileText, LogOut, Plus, AlertTriangle, Move3D, Focus } from "lucide-react";
+import { Play, Pause, CircleAlert, RotateCcw, FileText, LogOut, Plus, AlertTriangle, Move3D, Focus, ZoomIn, ZoomOut, RotateCcw as ResetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useMapContext } from "@/contexts/MapContext";
@@ -124,99 +124,150 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
 
     return (
         <>
-            <header className="flex h-14 justify-between items-center gap-4 border-b bg-background px-6 py-2 w-full">
+            {/* Header simplificado - solo información básica */}
+            <header className="flex h-12 justify-between items-center gap-4 border-b bg-background px-6 py-2 w-full">
                 <div className="flex items-center gap-4">
                     <Link href="/simulaciones">
-                        <Button variant="outline">
-                            <LogOut /> Salir de Simulación
+                        <Button variant="outline" size="sm">
+                            <LogOut className="h-4 w-4 mr-1" /> Salir
                         </Button>
                     </Link>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button 
-                        variant="outline"
-                        onClick={onFitToScreen}
-                        title="Ajustar mapa a pantalla"
-                        className="flex items-center gap-1"
-                    >
-                        <Focus className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline">
-                        <span className="font-bold">Simulación: </span>
-                        {day}d {hour}h {minute}m
-                    </Button>
-                    <Button variant="outline">
-                        <span className="font-bold">Real: </span>
-                        {realHour}h {realMinute}m {realSecond}s
-                    </Button>
-                    <Button variant={`${initTimer ? "default" : "outline"}`} onClick={starTimerHeader}>
-                        <Play />
-                    </Button>
-                    <Button variant={`${!initTimer ? "default" : "outline"}`} onClick={stopTimerHeader}>
-                        <Pause />
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        onClick={() => doPlusSpeed(0.5)}
-                        disabled={displaySpeed <= 0.5}
-                        className="flex items-center gap-1"
-                    >
-                        ⏪ x0.5
-                    </Button>
-                    <Button 
-                        variant="default" 
-                        onClick={() => doPlusSpeed(1)}
-                        className="flex items-center gap-1 min-w-[60px]"
-                    >
-                        x{displaySpeed}
-                    </Button>
-                    <Button 
-                        variant="outline" 
-                        onClick={() => doPlusSpeed(2)}
-                        disabled={displaySpeed >= 2}
-                        className="flex items-center gap-1"
-                    >
-                        ⏩ x2
-                    </Button>
+                
+                <div className="flex items-center gap-2 text-sm">
+                    <span className="font-medium text-gray-700">
+                        Simulación: {day}d {hour}h {minute}m
+                    </span>
+                    <span className="text-gray-500">|</span>
+                    <span className="text-gray-600">
+                        Real: {realHour}h {realMinute}m {realSecond}s
+                    </span>
                 </div>
                 
-                {/* ✅ BOTONES MOVIDOS DESDE MapCanvas (reemplazando HOJA DE RUTA) */}
                 <div className="flex items-center gap-2">
                     <Button 
                         onClick={() => setShowPedidoModal(true)}
-                        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white"
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
                     >
-                        <Plus className="h-4 w-4" />
-                        Nuevo Pedido
+                        <Plus className="h-4 w-4 mr-1" />
+                        Pedido
                     </Button>
                     <Button 
                         onClick={() => setShowAveriaModal(true)} 
-                        className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white"
+                        size="sm"
+                        className="bg-amber-500 hover:bg-amber-600 text-white"
                     >
-                        <AlertTriangle className="h-4 w-4" />
-                        Registrar Avería
+                        <AlertTriangle className="h-4 w-4 mr-1" />
+                        Avería
                     </Button>
                 </div>
             </header>
 
-            {/* ✅ MODALES MOVIDOS DESDE MapCanvas oli*/}
-            <PedidoModal 
-                isOpen={showPedidoModal}
-                onClose={() => setShowPedidoModal(false)}
-                onSubmit={handleRegistrarPedido}
-            />
-            <AveriaModal 
-                isOpen={showAveriaModal} 
-                onClose={() => setShowAveriaModal(false)} 
-                onSubmit={async (camionId, tipoAveria) => {
-                    try {
-                        await SimulationService.registrarAveria(camionId, tipoAveria);
-                        toast.success(`Avería registrada correctamente para el camión ${camionId}`);
-                    } catch (error) {
-                        toast.error(`Error al registrar avería: ${(error as Error).message}`);
-                    }
-                }} 
-            />
+            {/* Controles en la parte inferior */}
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+                <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl shadow-lg p-4">
+                    <div className="flex items-center gap-3">
+                        {/* Controles de simulación */}
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant={initTimer ? "default" : "outline"} 
+                                size="sm"
+                                onClick={starTimerHeader}
+                                className="h-9 w-9 p-0"
+                            >
+                                <Play className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant={!initTimer ? "default" : "outline"} 
+                                size="sm"
+                                onClick={stopTimerHeader}
+                                className="h-9 w-9 p-0"
+                            >
+                                <Pause className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={restartTimerHeader}
+                                className="h-9 w-9 p-0"
+                            >
+                                <ResetIcon className="h-4 w-4" />
+                            </Button>
+                        </div>
+
+                        <div className="w-px h-6 bg-gray-300"></div>
+
+                        {/* Controles de velocidad */}
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => doPlusSpeed(0.5)}
+                                disabled={displaySpeed <= 0.5}
+                                className="h-9 px-3 text-xs"
+                            >
+                                x0.5
+                            </Button>
+                            <Button 
+                                variant="default" 
+                                size="sm"
+                                className="h-9 px-3 text-xs min-w-[50px]"
+                            >
+                                x{displaySpeed}
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => doPlusSpeed(2)}
+                                disabled={displaySpeed >= 2}
+                                className="h-9 px-3 text-xs"
+                            >
+                                x2
+                            </Button>
+                        </div>
+
+                        <div className="w-px h-6 bg-gray-300"></div>
+
+                        {/* Controles de mapa */}
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline"
+                                size="sm"
+                                onClick={onFitToScreen}
+                                title="Ajustar mapa a pantalla"
+                                className="h-9 w-9 p-0"
+                            >
+                                <Focus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Modales */}
+            {showPedidoModal && (
+                <PedidoModal 
+                    isOpen={showPedidoModal} 
+                    onClose={() => setShowPedidoModal(false)}
+                    onSubmit={handleRegistrarPedido}
+                />
+            )}
+            
+            {showAveriaModal && (
+                <AveriaModal 
+                    isOpen={showAveriaModal} 
+                    onClose={() => setShowAveriaModal(false)}
+                    onSubmit={async (camionId, tipoAveria) => {
+                        try {
+                            await SimulationService.registrarAveria(camionId, tipoAveria);
+                            toast.success(`Avería registrada correctamente para el camión ${camionId}`);
+                        } catch (error) {
+                            toast.error(`Error al registrar avería: ${(error as Error).message}`);
+                        }
+                    }}
+                />
+            )}
         </>
-    )
-}
+    );
+};
