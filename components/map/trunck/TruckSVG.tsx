@@ -64,28 +64,21 @@ export const WarehouseSVG =() =>{
   return(
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -30 64 64" width="30" height="30">
           <g>
-              <circle cx="0" cy="0" r="20" fill="#D97706" />
-              <g transform="translate(-12, -12)">
-                  <rect
-                      x="6"
-                      y="10"
-                      width="12"
-                      height="12"
-                      fill="transparent"
-                      stroke="white"
-                      strokeWidth="2"
-                  />
-
-                  <path
-                      d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35A2 2 0 0 1 3.26 6.5l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"
-                      fill="transparent"
-                      stroke="white"
-                      strokeWidth="2"
-                  />
-
-                  <line x1="6" y1="18" x2="18" y2="18" stroke="white" strokeWidth="2"/>
-                  <line x1="6" y1="14" x2="18" y2="14" stroke="white" strokeWidth="2"/>
-              </g>
+              {/* Fondo cuadrado con bordes redondeados */}
+              <rect x="-8" y="-8" width="16" height="16" fill="#3b82f6" stroke="white" strokeWidth="2" rx="3" ry="3"/>
+              
+              {/* Techo triangular */}
+              <path d="M-8 -8 L0 -14 L8 -8 Z" fill="#1e40af" stroke="white" strokeWidth="1.5"/>
+              
+              {/* Puerta */}
+              <rect x="-3" y="0" width="6" height="8" fill="white" stroke="#3b82f6" strokeWidth="0.5"/>
+              
+              {/* Ventanas laterales */}
+              <rect x="-6" y="-6" width="2" height="2" fill="white" stroke="#3b82f6" strokeWidth="0.5"/>
+              <rect x="4" y="-6" width="2" height="2" fill="white" stroke="#3b82f6" strokeWidth="0.5"/>
+              
+              {/* Indicador de almacén intermedio */}
+              <circle cx="0" cy="-12" r="1.5" fill="white" stroke="#1e40af" strokeWidth="0.5"/>
           </g>
       </svg>
   )
@@ -95,30 +88,23 @@ export const HomeSVG = () =>{
   return(
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-18 -32 64 64" width="30" height="30">
           <g>
-              <circle cx="0" cy="0" r="20" fill="#1D4ED8" />
-
-              <g transform="translate(-12, -12)">
-                  <path
-                      d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                      fill="transparent"
-                      stroke="white"
-                      strokeWidth="2"
-                  />
-
-                  <polyline
-                      points="15,21 15,13 9,13 9,21"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                  />
-
-                  <polyline
-                      points="3,10 10,4 14,4 21,10"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                  />
+              {/* Fondo hexagonal */}
+              <path d="M0 -15 L10 -7.5 L10 7.5 L0 15 L-10 7.5 L-10 -7.5 Z" fill="#1e40af" stroke="white" strokeWidth="2"/>
+              
+              {/* Estrella central */}
+              <g transform="translate(0, 0)">
+                  <polygon points="0,-8 2.5,-2.5 8,-2.5 4,2 6.5,8 0,4 -6.5,8 -4,2 -8,-2.5 -2.5,-2.5" fill="white" stroke="#1e40af" strokeWidth="1"/>
               </g>
+              
+              {/* Icono de almacén central */}
+              <rect x="-5" y="-7" width="10" height="14" fill="transparent" stroke="white" strokeWidth="1.5"/>
+              
+              {/* Puerta */}
+              <rect x="-2" y="3" width="4" height="4" fill="white" stroke="#1e40af" strokeWidth="0.5"/>
+              
+              {/* Ventanas */}
+              <rect x="-4" y="-5" width="2" height="2" fill="white" stroke="#1e40af" strokeWidth="0.5"/>
+              <rect x="2" y="-5" width="2" height="2" fill="white" stroke="#1e40af" strokeWidth="0.5"/>
           </g>
       </svg>
   )

@@ -5,19 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { AlertTriangle, Wrench, Clock, Car } from "lucide-react"
+import { Wrench, Clock, Car, Settings, Calendar } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 
-interface AveriaModalProps {
+interface MantenimientoModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (camionId: string, tipoAveria: number) => void
+  onSubmit: (camionId: string, tipoMantenimiento: number) => void
 }
 
-export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
+export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoModalProps) {
   const [camionId, setCamionId] = useState("")
-  const [tipoAveria, setTipoAveria] = useState<string>("1")
+  const [tipoMantenimiento, setTipoMantenimiento] = useState<string>("1")
   const [error, setError] = useState<string | null>(null)
 
   // Lista de camiones disponibles (puedes obtener esto dinámicamente)
@@ -44,27 +44,38 @@ export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
     { id: "TD10", tipo: "Camión Tipo D", estado: "Disponible" },
   ]
 
-  const tiposAveria = [
+  const tiposMantenimiento = [
     { 
       id: "1", 
-      nombre: "Leve (TI1)", 
-      descripcion: "Llanta baja, inmoviliza 2h",
-      tiempo: "2 horas",
-      icon: "🔧"
+      nombre: "Mantenimiento Básico (TM1)", 
+      descripcion: "Cambio de aceite, filtros y revisión general",
+      tiempo: "4 horas",
+      icon: "🔧",
+      frecuencia: "Cada 5,000 km"
     },
     { 
       id: "2", 
-      nombre: "Moderado (TI2)", 
-      descripcion: "Motor ahogado, 2h + taller un turno",
-      tiempo: "2 horas + taller",
-      icon: "⚙️"
+      nombre: "Mantenimiento Intermedio (TM2)", 
+      descripcion: "Revisión de frenos, suspensión y sistema eléctrico",
+      tiempo: "8 horas",
+      icon: "⚙️",
+      frecuencia: "Cada 15,000 km"
     },
     { 
       id: "3", 
-      nombre: "Grave (TI3)", 
-      descripcion: "Choque, 4h + taller un día",
-      tiempo: "4 horas + taller",
-      icon: "🚨"
+      nombre: "Mantenimiento Mayor (TM3)", 
+      descripcion: "Revisión completa del motor, transmisión y sistemas",
+      tiempo: "24 horas",
+      icon: "🔨",
+      frecuencia: "Cada 50,000 km"
+    },
+    { 
+      id: "4", 
+      nombre: "Mantenimiento Preventivo (TM4)", 
+      descripcion: "Mantenimiento programado preventivo completo",
+      tiempo: "48 horas",
+      icon: "🛠️",
+      frecuencia: "Cada 100,000 km"
     }
   ]
 
@@ -75,43 +86,43 @@ export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
       return
     }
 
-    // Convertir el tipo de avería a número
-    const tipoAveriaNum = parseInt(tipoAveria)
+    // Convertir el tipo de mantenimiento a número
+    const tipoMantenimientoNum = parseInt(tipoMantenimiento)
     
     // Llamar a la función onSubmit con los datos
-    onSubmit(camionId, tipoAveriaNum)
+    onSubmit(camionId, tipoMantenimientoNum)
     
     // Mostrar notificación de éxito
-    const tipoSeleccionado = tiposAveria.find(t => t.id === tipoAveria)
-    toast.success(`Avería ${tipoSeleccionado?.nombre} registrada para el camión ${camionId}`, {
-      description: "El sistema replanificará las rutas automáticamente"
+    const tipoSeleccionado = tiposMantenimiento.find(t => t.id === tipoMantenimiento)
+    toast.success(`Mantenimiento ${tipoSeleccionado?.nombre} programado para el camión ${camionId}`, {
+      description: "El camión será retirado del servicio durante el mantenimiento"
     })
     
     // Limpiar el formulario y cerrar el modal
     setCamionId("")
-    setTipoAveria("1")
+    setTipoMantenimiento("1")
     setError(null)
     onClose()
   }
 
-  const tipoSeleccionado = tiposAveria.find(t => t.id === tipoAveria)
+  const tipoSeleccionado = tiposMantenimiento.find(t => t.id === tipoMantenimiento)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="p-2 bg-red-100 rounded-lg">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Settings className="h-5 w-5 text-blue-600" />
             </div>
-            Registrar Avería de Camión
+            Programar Mantenimiento
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-md border border-red-200">
-              <AlertTriangle className="h-4 w-4" />
+              <Wrench className="h-4 w-4" />
               <span className="text-sm font-medium">{error}</span>
             </div>
           )}
@@ -145,25 +156,25 @@ export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
             </CardContent>
           </Card>
 
-          {/* Tipo de Avería */}
+          {/* Tipo de Mantenimiento */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <div className="p-1.5 rounded-md">
                   <Wrench className="h-4 w-4" />
                 </div>
-                Tipo de Avería
+                Tipo de Mantenimiento
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Tipo</Label>
-                <Select value={tipoAveria} onValueChange={setTipoAveria}>
+                <Select value={tipoMantenimiento} onValueChange={setTipoMantenimiento}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccione tipo de avería" />
+                    <SelectValue placeholder="Seleccione tipo de mantenimiento" />
                   </SelectTrigger>
                   <SelectContent>
-                    {tiposAveria.map((tipo) => (
+                    {tiposMantenimiento.map((tipo) => (
                       <SelectItem key={tipo.id} value={tipo.id}>
                         <div className="flex items-center gap-2">
                           <span>{tipo.icon}</span>
@@ -175,15 +186,21 @@ export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
                 </Select>
                 
                 {tipoSeleccionado && (
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">{tipoSeleccionado.icon}</span>
                       <span className="font-medium">{tipoSeleccionado.nombre}</span>
                     </div>
                     <p className="text-sm text-gray-600 mb-2">{tipoSeleccionado.descripcion}</p>
-                    <div className="flex items-center gap-1 text-sm text-gray-500">
-                      <Clock className="h-3 w-3" />
-                      <span>Tiempo estimado: {tipoSeleccionado.tiempo}</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Clock className="h-3 w-3" />
+                        <span>Duración: {tipoSeleccionado.tiempo}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <Calendar className="h-3 w-3" />
+                        <span>Frecuencia: {tipoSeleccionado.frecuencia}</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -198,13 +215,13 @@ export function AveriaModal({ isOpen, onClose, onSubmit }: AveriaModalProps) {
           </Button>
           <Button 
             onClick={handleSubmit}
-            className="px-6 bg-red-600 hover:bg-red-700"
+            className="px-6 bg-blue-600 hover:bg-blue-700"
             disabled={!camionId}
           >
-            Registrar Avería
+            Programar Mantenimiento
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   )
-}
+} 

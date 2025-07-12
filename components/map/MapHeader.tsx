@@ -1,4 +1,4 @@
-import { Play, Pause, CircleAlert, RotateCcw, FileText, LogOut, Plus, AlertTriangle, Move3D, Focus, ZoomIn, ZoomOut, RotateCcw as ResetIcon } from "lucide-react";
+import { Play, Pause, CircleAlert, RotateCcw, FileText, LogOut, Plus, AlertTriangle, Move3D, Focus, ZoomIn, ZoomOut, RotateCcw as ResetIcon, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useMapContext } from "@/contexts/MapContext";
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { PedidoModal } from "@/components/map/PedidoModal";
 import { AveriaModal } from "@/components/map/AveriaModal";
+import { MantenimientoModal } from "@/components/map/MantenimientoModal";
 import SimulationService from "@/services/simulation.service";
 import PedidosService from "@/services/pedidos.service";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
     // ✅ ESTADOS PARA LOS MODALES (movidos desde MapCanvas)
     const [showAveriaModal, setShowAveriaModal] = useState(false);
     const [showPedidoModal, setShowPedidoModal] = useState(false);
+    const [showMantenimientoModal, setShowMantenimientoModal] = useState(false);
 
     const starTimerHeader = (): void => {
         startTimer();
@@ -156,10 +158,18 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
                     <Button 
                         onClick={() => setShowAveriaModal(true)} 
                         size="sm"
-                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                        className="bg-red-500 hover:bg-red-600 text-white"
                     >
                         <AlertTriangle className="h-4 w-4 mr-1" />
                         Avería
+                    </Button>
+                    <Button 
+                        onClick={() => setShowMantenimientoModal(true)} 
+                        size="sm"
+                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                    >
+                        <Settings className="h-4 w-4 mr-1" />
+                        Mantenimiento
                     </Button>
                 </div>
             </header>
@@ -264,6 +274,22 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
                             toast.success(`Avería registrada correctamente para el camión ${camionId}`);
                         } catch (error) {
                             toast.error(`Error al registrar avería: ${(error as Error).message}`);
+                        }
+                    }}
+                />
+            )}
+            
+            {showMantenimientoModal && (
+                <MantenimientoModal 
+                    isOpen={showMantenimientoModal} 
+                    onClose={() => setShowMantenimientoModal(false)}
+                    onSubmit={async (camionId, tipoMantenimiento) => {
+                        try {
+                            // Usar la misma lógica de averías pero con tipo 4 para mantenimiento
+                            await SimulationService.registrarAveria(camionId, 4);
+                            toast.success(`Mantenimiento programado correctamente para el camión ${camionId}`);
+                        } catch (error) {
+                            toast.error(`Error al programar mantenimiento: ${(error as Error).message}`);
                         }
                     }}
                 />

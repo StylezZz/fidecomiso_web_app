@@ -398,49 +398,49 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
                     </g>
                   ))}
                   
-                  {/* Almacén Central (X=12, Y=8) - Azul */}
+                  {/* Almacén Central (X=12, Y=8) - Azul oscuro */}
                   <circle 
                     cx="12" 
                     cy="42" 
-                    r="2" 
-                    fill="#3b82f6" 
+                    r="2.5" 
+                    fill="#1e40af" 
                     stroke="#ffffff" 
                     strokeWidth="0.5"
                   />
                   <g transform="translate(12, 42)">
-                    <rect x="2.5" y="-1" width="12" height="2" fill="rgba(59,130,246,0.9)" rx="0.3" />
+                    <rect x="2.5" y="-1" width="12" height="2" fill="rgba(30,64,175,0.9)" rx="0.3" />
                     <text x="8.5" y="0.3" textAnchor="middle" fontSize="0.7" fill="white">
                       Almacén Central
                     </text>
                   </g>
                   
-                  {/* Almacén Intermedio Norte (X=42, Y=42) - Naranja */}
+                  {/* Almacén Intermedio Norte (X=42, Y=42) - Azul medio */}
                   <circle 
                     cx="42" 
                     cy="8" 
-                    r="1.5" 
-                    fill="#f97316" 
+                    r="2" 
+                    fill="#3b82f6" 
                     stroke="#ffffff" 
                     strokeWidth="0.5"
                   />
                   <g transform="translate(42, 8)">
-                    <rect x="2" y="-1" width="10" height="2" fill="rgba(249,115,22,0.9)" rx="0.3" />
+                    <rect x="2" y="-1" width="10" height="2" fill="rgba(59,130,246,0.9)" rx="0.3" />
                     <text x="7" y="0.3" textAnchor="middle" fontSize="0.7" fill="white">
                       Almacén Norte
                     </text>
                   </g>
                   
-                  {/* Almacén Intermedio Este (X=63, Y=3) - Naranja */}
+                  {/* Almacén Intermedio Este (X=63, Y=3) - Azul medio */}
                   <circle 
                     cx="63" 
                     cy="47" 
-                    r="1.5" 
-                    fill="#f97316" 
+                    r="2" 
+                    fill="#3b82f6" 
                     stroke="#ffffff" 
                     strokeWidth="0.5"
                   />
                   <g transform="translate(63, 47)">
-                    <rect x="-12" y="-1" width="10" height="2" fill="rgba(249,115,22,0.9)" rx="0.3" />
+                    <rect x="-12" y="-1" width="10" height="2" fill="rgba(59,130,246,0.9)" rx="0.3" />
                     <text x="-7" y="0.3" textAnchor="middle" fontSize="0.7" fill="white">
                       Almacén Este
                     </text>
@@ -484,11 +484,11 @@ export function OrderDetails({ orderId }: OrderDetailsProps) {
                         <span className="text-gray-600">Ubicación del pedido</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-800 rounded-full"></div>
                         <span className="text-gray-600">Almacén Central</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <span className="text-gray-600">Almacenes Intermedios</span>
                       </div>
                     </div>
