@@ -1,11 +1,7 @@
-import { SimulationsView } from "@/components/simulations/simulations-view"
-import { SimulationProvider } from "@/contexts/simulationContext"
+import { SimulationsView } from "@/components/simulations/simulations-view";
 
 export default function SimulationsPage() {
-
-  return (
-        <SimulationsView />
-  )
+  return <SimulationsView />;
 }
 
 export const dynamic = "force-dynamic";

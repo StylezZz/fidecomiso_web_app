@@ -44,24 +44,6 @@ class SimulationService {
       throw new Error((error as Error).message);
     }
   }
-  public static async goSimulationAGA(): Promise<HttpResponse> {
-    try {
-      const res = await http.post(`/api/simulacion/ejecutar-aga`, null);
-      if (!res.success) throw new Error(res.error);
-      return res;
-    } catch (error) {
-      throw new Error((error as Error).message);
-    }
-  }
-  public static async goSimulationIACO(): Promise<HttpResponse> {
-    try {
-      const res = await http.post(`${this.base}/ejecutar-iaco`, null);
-      if (!res.success) throw new Error(res.error);
-      return res;
-    } catch (error) {
-      throw new Error((error as Error).message);
-    }
-  }
 
   public static async getTruckRoutes(useIaco: boolean = false): Promise<HttpResponse> {
     try {
@@ -150,7 +132,7 @@ class SimulationService {
     queryParams.append("tipoSimulacion", tipoSimulacion.toString());
     const queryString = queryParams.toString();
     try {
-      const res = await http.post(`/aco/inicializar?${queryString}`, null);
+      const res = await http.post(`/genetico/inicializar?${queryString}`, null);
       if (!res.success) throw new Error("Error al iniciar el tipo de simulacion");
       return res;
     } catch (error) {
@@ -176,7 +158,10 @@ class SimulationService {
       const averiasAEnviar =
         averias || (this.averiasPendientes.length > 0 ? this.averiasPendientes : null);
       console.log("averias a enviar: ", averiasAEnviar);
-      const res = await http.post(`/aco/simulacionRuta/semanal?${queryString}`, averiasAEnviar);
+      const res = await http.post(
+        `/genetico/simulacionRuta/semanal?${queryString}`,
+        averiasAEnviar
+      );
 
       // Si se usaron las averías pendientes y la llamada fue exitosa, limpiarlas
       if (!averias && this.averiasPendientes.length > 0 && res.success) {
@@ -217,7 +202,10 @@ class SimulationService {
         averias || (this.averiasPendientes.length > 0 ? this.averiasPendientes : null);
       console.log("averias a enviar (día a día): ", averiasAEnviar);
 
-      const res = await http.post(`/aco/simulacionRuta/dia-dia?${queryString}`, averiasAEnviar);
+      const res = await http.post(
+        `/genetico/simulacionRuta/dia-dia?${queryString}`,
+        averiasAEnviar
+      );
 
       // Si se usaron las averías pendientes y la llamada fue exitosa, limpiarlas
       if (!averias && this.averiasPendientes.length > 0 && res.success) {
@@ -233,7 +221,7 @@ class SimulationService {
 
   public static async resetSimulation(): Promise<HttpResponse> {
     try {
-      const res = await http.post(`/aco/simulacionRuta/reset`, null);
+      const res = await http.post(`/genetico/simulacionRuta/reset`, null);
       if (!res.success) throw new Error("Error al resetear la simulación");
       // Limpiar las averías pendientes al resetear la simulación
       this.limpiarAverias();

@@ -1,24 +1,23 @@
-"use client"
+"use client";
 
-import { MainLayout } from "@/components/layout/main-layout"
-import { SimulationWizard } from "@/components/simulations/simulation-wizard"
-import { useEffect, useState } from "react"
-import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { resetSimulationState } from "@/store/simulation/simulation-slice"
-import { Plus } from "lucide-react"
-import { ActiveSimulations } from "./active-simulations"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useAppDispatch } from "@/hooks/use-redux";
+import { Card, CardContent } from "@/components/ui/card";
+import { ActiveSimulations } from "./active-simulations";
+import { MainLayout } from "@/components/layout/main-layout";
+import { resetSimulationState } from "@/store/simulation/simulation-slice";
+import { SimulationSetup } from "@/components/simulations/simulation-setup";
 
 export function SimulationsView() {
   const [showWizard, setShowWizard] = useState(false);
   const dispatch = useAppDispatch();
-  const currentSimulation = useAppSelector((state) => state.simulation.currentSimulation);
 
   const handleNewSimulation = () => {
     dispatch(resetSimulationState());
     setShowWizard(true);
-  }
+  };
 
   return (
     <MainLayout>
@@ -28,12 +27,12 @@ export function SimulationsView() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Lista de Simulaciones</h1>
           </div>
-          <Button 
-            onClick={handleNewSimulation} 
+          <Button
+            onClick={handleNewSimulation}
             className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-200"
             size="lg"
           >
-            <Plus className="mr-2 h-5 w-5" /> 
+            <Plus className="mr-2 h-5 w-5" />
             Nueva Simulación
           </Button>
         </div>
@@ -48,10 +47,10 @@ export function SimulationsView() {
         {/* Wizard inline en lugar de modal */}
         {showWizard && (
           <div className="mt-8">
-            <SimulationWizard onClose={() => setShowWizard(false)} />
+            <SimulationSetup onClose={() => setShowWizard(false)} />
           </div>
         )}
       </div>
     </MainLayout>
-  )
+  );
 }

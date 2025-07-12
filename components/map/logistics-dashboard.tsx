@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -23,54 +23,55 @@ import {
   X,
   Plus,
   Menu,
-} from "lucide-react"
-import { SidebarTrigger } from "../ui/sidebar"
-import { cn } from "@/lib/utils"
+} from "lucide-react";
+import { SidebarTrigger } from "../ui/sidebar";
+import { cn } from "@/lib/utils";
 // Usamos CSS para la cuadrícula en lugar de Konva para evitar problemas con el módulo 'canvas'
 
 export function LogisticsDashboard() {
   // Estados para la interfaz de usuario
-  const [showAlerts, setShowAlerts] = useState(false)
-  const [alertCount, setAlertCount] = useState(1)
-  const [selectedTab, setSelectedTab] = useState("vehiculos")
-  const [showRouteSheet, setShowRouteSheet] = useState(false)
-  const [showBreakdownModal, setShowBreakdownModal] = useState(false)
-  const [selectedVehicle, setSelectedVehicle] = useState<any>(null)
-  const [breakdownType, setBreakdownType] = useState(1)
-  const [vehicleBreakdowns, setVehicleBreakdowns] = useState<Record<string, any>>({})
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [tableCollapsed, setTableCollapsed] = useState(false)
-  const [showLegend, setShowLegend] = useState(false)
-  const alertsRef = useRef<HTMLDivElement>(null)
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [alertCount, setAlertCount] = useState(1);
+  const [selectedTab, setSelectedTab] = useState("vehiculos");
+  const [showRouteSheet, setShowRouteSheet] = useState(false);
+  const [showBreakdownModal, setShowBreakdownModal] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
+  const [breakdownType, setBreakdownType] = useState(1);
+  const [vehicleBreakdowns, setVehicleBreakdowns] = useState<Record<string, any>>({});
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [tableCollapsed, setTableCollapsed] = useState(false);
+  const alertsRef = useRef<HTMLDivElement>(null);
 
   // Estado para el movimiento del mapa
-  const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const mapRef = useRef(null)
+  const [mapPosition, setMapPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const mapRef = useRef(null);
 
   // Estado para el zoom
-  const [zoomLevel, setZoomLevel] = useState(1)
-  const minZoom = 0.5
-  const maxZoom = 2
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const minZoom = 0.5;
+  const maxZoom = 2;
 
   // Estado para la posición de los camiones en las rutas
   const [truckPositions, setTruckPositions] = useState({
     truck1: { progress: 0, route: 1, currentRotation: 90 },
     truck2: { progress: 0, route: 2, currentRotation: 90 },
     truck3: { progress: 0, route: 3, currentRotation: 90 },
-  })
+  });
 
   // Estado para la ruta sobre la que está el cursor
-  const [hoveredRoute, setHoveredRoute] = useState<number | null>(null)
-  
+  const [hoveredRoute, setHoveredRoute] = useState<number | null>(null);
+
   // Estado para el bloqueo sobre el que está el cursor
-  const [hoveredBlockade, setHoveredBlockade] = useState<number | string | null>(null)
+  const [hoveredBlockade, setHoveredBlockade] = useState<number | string | null>(null);
 
   // Estado para la búsqueda
-  const [showSearch, setShowSearch] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<Array<{id: string; name: string; x: number; y: number; type: string}>>([])
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: string; name: string; x: number; y: number; type: string }>
+  >([]);
 
   // Definición de rutas modificadas para evitar los bloqueos
   const routes = {
@@ -125,7 +126,7 @@ export function LogisticsDashboard() {
         distance: "20.0 km",
       },
     },
-  }
+  };
 
   // Añadir un nuevo estado para los bloqueos después de la definición de rutas
   const [blockades, setBlockades] = useState([
@@ -163,7 +164,7 @@ export function LogisticsDashboard() {
         file: "202504.bloqueadas",
       },
     },
-  ])
+  ]);
 
   // El estado para el bloqueo sobre el que está el cursor ya está definido arriba
 
@@ -178,7 +179,7 @@ export function LogisticsDashboard() {
     { id: "truck1", name: "Camión 1", x: 300, y: 400, type: "truck" },
     { id: "truck2", name: "Camión 2", x: 550, y: 450, type: "truck" },
     { id: "truck3", name: "Camión 3", x: 200, y: 150, type: "truck" },
-  ]
+  ];
 
   // Cerrar alertas al hacer clic fuera
   useEffect(() => {
@@ -188,245 +189,268 @@ export function LogisticsDashboard() {
         !alertsRef.current.contains(event.target as Node) &&
         !(event.target as Element).closest('button[data-alerts-trigger="true"]')
       ) {
-        setShowAlerts(false)
+        setShowAlerts(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Funciones para mover el mapa
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button === 0) {
       // Solo botón izquierdo
-      setIsDragging(true)
+      setIsDragging(true);
       setDragStart({
         x: e.clientX - mapPosition.x,
         y: e.clientY - mapPosition.y,
-      })
+      });
     }
-  }
+  };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
-      const newX = e.clientX - dragStart.x
-      const newY = e.clientY - dragStart.y
-      setMapPosition({ x: newX, y: newY })
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      setMapPosition({ x: newX, y: newY });
     }
-  }
+  };
 
   const handleMouseUp = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   const handleMouseLeave = () => {
-    setIsDragging(false)
-  }
+    setIsDragging(false);
+  };
 
   // Funciones para el zoom
   const handleZoomIn = () => {
-    setZoomLevel((prev) => Math.min(prev + 0.1, maxZoom))
-  }
+    setZoomLevel((prev) => Math.min(prev + 0.1, maxZoom));
+  };
 
   const handleZoomOut = () => {
-    setZoomLevel((prev) => Math.max(prev - 0.1, minZoom))
-  }
+    setZoomLevel((prev) => Math.max(prev - 0.1, minZoom));
+  };
 
   // Función para buscar
   const handleSearch = () => {
     if (!searchQuery.trim()) {
-      setSearchResults([])
-      return
+      setSearchResults([]);
+      return;
     }
 
-    const query = searchQuery.toLowerCase()
-    const results = pointsOfInterest.filter((poi) => poi.name.toLowerCase().includes(query))
-    setSearchResults(results)
-  }
+    const query = searchQuery.toLowerCase();
+    const results = pointsOfInterest.filter((poi) => poi.name.toLowerCase().includes(query));
+    setSearchResults(results);
+  };
 
   // Función para ir a un punto de interés
-  const goToPoint = (point: {x: number; y: number}) => {
+  const goToPoint = (point: { x: number; y: number }) => {
     // Calcular la posición central de la pantalla
-    const mapContainer = mapRef.current
-    if (!mapContainer) return
+    const mapContainer = mapRef.current;
+    if (!mapContainer) return;
 
     // Calcular la nueva posición para centrar el punto
-    const containerWidth = mapContainer.clientWidth || 800
-    const containerHeight = mapContainer.clientHeight || 600
-    const newX = containerWidth / 2 - point.x * zoomLevel
-    const newY = containerHeight / 2 - point.y * zoomLevel
+    const containerWidth = mapContainer.clientWidth || 800;
+    const containerHeight = mapContainer.clientHeight || 600;
+    const newX = containerWidth / 2 - point.x * zoomLevel;
+    const newY = containerHeight / 2 - point.y * zoomLevel;
 
-    setMapPosition({ x: newX, y: newY })
-    setSearchResults([])
-    setShowSearch(false)
-    setSearchQuery("")
-  }
+    setMapPosition({ x: newX, y: newY });
+    setSearchResults([]);
+    setShowSearch(false);
+    setSearchQuery("");
+  };
 
   // Añadir y eliminar event listeners
   useEffect(() => {
-    const mapElement = mapRef.current
+    const mapElement = mapRef.current;
 
-    const handleMouseMoveEvent = (e: MouseEvent) => handleMouseMove(e)
-    const handleMouseUpEvent = () => handleMouseUp()
-    const handleMouseLeaveEvent = () => handleMouseLeave()
+    const handleMouseMoveEvent = (e: MouseEvent) => handleMouseMove(e);
+    const handleMouseUpEvent = () => handleMouseUp();
+    const handleMouseLeaveEvent = () => handleMouseLeave();
 
     if (mapElement) {
-      mapElement.addEventListener("mousemove", handleMouseMoveEvent)
-      mapElement.addEventListener("mouseup", handleMouseUpEvent)
-      mapElement.addEventListener("mouseleave", handleMouseLeaveEvent)
+      mapElement.addEventListener("mousemove", handleMouseMoveEvent);
+      mapElement.addEventListener("mouseup", handleMouseUpEvent);
+      mapElement.addEventListener("mouseleave", handleMouseLeaveEvent);
     }
 
     return () => {
       if (mapElement) {
-        mapElement.removeEventListener("mousemove", handleMouseMoveEvent)
-        mapElement.removeEventListener("mouseup", handleMouseUpEvent)
-        mapElement.removeEventListener("mouseleave", handleMouseLeaveEvent)
+        mapElement.removeEventListener("mousemove", handleMouseMoveEvent);
+        mapElement.removeEventListener("mouseup", handleMouseUpEvent);
+        mapElement.removeEventListener("mouseleave", handleMouseLeaveEvent);
       }
-    }
-  }, [isDragging, dragStart])
+    };
+  }, [isDragging, dragStart]);
 
   // Función para calcular la posición del camión en la ruta
-  const getTruckPosition = (routeId: number, progress: number): { x: number; y: number; segment: number } => {
-    const route = routes[routeId as keyof typeof routes]
-    const points = route.points
+  const getTruckPosition = (
+    routeId: number,
+    progress: number
+  ): { x: number; y: number; segment: number } => {
+    const route = routes[routeId as keyof typeof routes];
+    const points = route.points;
 
     // Si solo hay un punto, devolver ese punto con segment = 0
-    if (points.length === 1) return { ...points[0], segment: 0 }
+    if (points.length === 1) return { ...points[0], segment: 0 };
 
     // Calcular en qué segmento de la ruta está el camión
-    const totalSegments = points.length - 1
-    const segmentLength = 1 / totalSegments
-    const currentSegment = Math.min(Math.floor(progress / segmentLength), totalSegments - 1)
-    const segmentProgress = (progress - currentSegment * segmentLength) / segmentLength
+    const totalSegments = points.length - 1;
+    const segmentLength = 1 / totalSegments;
+    const currentSegment = Math.min(Math.floor(progress / segmentLength), totalSegments - 1);
+    const segmentProgress = (progress - currentSegment * segmentLength) / segmentLength;
 
     // Calcular la posición interpolada entre los puntos del segmento
-    const start = points[currentSegment]
-    const end = points[currentSegment + 1]
+    const start = points[currentSegment];
+    const end = points[currentSegment + 1];
 
     return {
       x: start.x + (end.x - start.x) * segmentProgress,
       y: start.y + (end.y - start.y) * segmentProgress,
       segment: currentSegment,
-    }
-  }
+    };
+  };
 
   // Función para calcular la rotación objetivo del camión según la dirección de la ruta
   const getTargetRotation = (routeId: number, segment: number): number => {
-    const route = routes[routeId as keyof typeof routes]
-    const points = route.points
+    const route = routes[routeId as keyof typeof routes];
+    const points = route.points;
 
     // Si solo hay un punto o estamos en el último segmento, mantener la rotación actual
-    if (points.length <= 1 || segment >= points.length - 1) return 90
+    if (points.length <= 1 || segment >= points.length - 1) return 90;
 
     // Calcular el ángulo entre los puntos del segmento
-    const start = points[segment]
-    const end = points[segment + 1]
+    const start = points[segment];
+    const end = points[segment + 1];
 
     // Calcular el ángulo en radianes y convertir a grados
     // Añadir 90 grados para corregir la orientación
-    const angle = Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90
+    const angle = Math.atan2(end.y - start.y, end.x - start.x) * (180 / Math.PI) + 90;
 
-    return angle
-  }
+    return angle;
+  };
 
   // Función para normalizar ángulos (asegurar que estén entre -180 y 180)
   const normalizeAngle = (angle: number) => {
-    let normalized = angle
-    while (normalized > 180) normalized -= 360
-    while (normalized < -180) normalized += 360
-    return normalized
-  }
+    let normalized = angle;
+    while (normalized > 180) normalized -= 360;
+    while (normalized < -180) normalized += 360;
+    return normalized;
+  };
 
   // Función para calcular la rotación más corta entre dos ángulos
   const getShortestRotation = (current: number, target: number): number => {
-    const normalizedCurrent = normalizeAngle(current)
-    const normalizedTarget = normalizeAngle(target)
+    const normalizedCurrent = normalizeAngle(current);
+    const normalizedTarget = normalizeAngle(target);
 
-    let diff = normalizedTarget - normalizedCurrent
+    let diff = normalizedTarget - normalizedCurrent;
 
     // Asegurar que tomamos el camino más corto
-    if (diff > 180) diff -= 360
-    if (diff < -180) diff += 360
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
 
-    return diff
-  }
+    return diff;
+  };
 
   // Efecto para animar los camiones en las rutas con rotación suave
   useEffect(() => {
     const interval = setInterval(() => {
       setTruckPositions((prev) => {
-        const newPositions = { ...prev }
+        const newPositions = { ...prev };
 
         // Actualizar cada camión
         Object.keys(newPositions).forEach((truckId) => {
-          const truck = newPositions[truckId]
-          const routeId = truck.route
+          const truck = newPositions[truckId];
+          const routeId = truck.route;
 
           // Calcular nueva posición y segmento
           const newProgress =
-            (truck.progress + (truckId === "truck1" ? 0.005 : truckId === "truck2" ? 0.003 : 0.004)) % 1
-          const position = getTruckPosition(routeId, newProgress)
-          const segment = position.segment
+            (truck.progress +
+              (truckId === "truck1" ? 0.005 : truckId === "truck2" ? 0.003 : 0.004)) %
+            1;
+          const position = getTruckPosition(routeId, newProgress);
+          const segment = position.segment;
 
           // Calcular rotación objetivo basada en el segmento actual
-          const targetRotation = getTargetRotation(routeId, segment)
+          const targetRotation = getTargetRotation(routeId, segment);
 
           // Calcular la diferencia de rotación más corta
-          const rotationDiff = getShortestRotation(truck.currentRotation, targetRotation)
+          const rotationDiff = getShortestRotation(truck.currentRotation, targetRotation);
 
           // Aplicar una parte de la rotación (giro gradual)
           // Ajustar el factor 0.1 para controlar la velocidad de giro
-          const newRotation = truck.currentRotation + rotationDiff * 0.1
+          const newRotation = truck.currentRotation + rotationDiff * 0.1;
 
           // Actualizar el camión
           newPositions[truckId] = {
             ...truck,
             progress: newProgress,
             currentRotation: newRotation,
-          }
-        })
+          };
+        });
 
-        return newPositions
-      })
-    }, 50)
+        return newPositions;
+      });
+    }, 50);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   // Función para manejar el hover sobre una ruta
   const handleRouteHover = (routeId: number) => {
-    setHoveredRoute(routeId)
-  }
+    setHoveredRoute(routeId);
+  };
 
   // Función para manejar cuando el mouse sale de una ruta
   const handleRouteLeave = () => {
-    setHoveredRoute(null)
-  }
+    setHoveredRoute(null);
+  };
 
   // Añadir funciones para manejar el hover sobre un bloqueo después de handleRouteLeave
   const handleBlockadeHover = (blockadeId: string) => {
-    setHoveredBlockade(blockadeId)
-  }
+    setHoveredBlockade(blockadeId);
+  };
 
   const handleBlockadeLeave = () => {
-    setHoveredBlockade(null)
-  }
+    setHoveredBlockade(null);
+  };
 
   // Reemplazar la función renderTruck con esta nueva implementación de vista cenital
   const renderTruck = (color: string, vehicleId: string) => {
-    const hasBreakdown = vehicleId && vehicleBreakdowns[vehicleId]
-    const truckColor = hasBreakdown ? "#ef4444" : color
+    const hasBreakdown = vehicleId && vehicleBreakdowns[vehicleId];
+    const truckColor = hasBreakdown ? "#ef4444" : color;
 
     return (
       <>
         {/* Cuerpo principal del camión (vista cenital) */}
-        <rect x="-15" y="-25" width="30" height="50" rx="3" fill={truckColor} stroke="white" strokeWidth="2" />
+        <rect
+          x="-15"
+          y="-25"
+          width="30"
+          height="50"
+          rx="3"
+          fill={truckColor}
+          stroke="white"
+          strokeWidth="2"
+        />
 
         {/* Cabina (parte frontal del camión) */}
-        <rect x="-15" y="-25" width="30" height="15" rx="3" fill="#333" stroke="white" strokeWidth="1" />
+        <rect
+          x="-15"
+          y="-25"
+          width="30"
+          height="15"
+          rx="3"
+          fill="#333"
+          stroke="white"
+          strokeWidth="1"
+        />
 
         {/* Flecha direccional para indicar el frente */}
         <polygon points="0,-20 -8,-10 8,-10" fill="white" />
@@ -442,10 +466,46 @@ export function LogisticsDashboard() {
         />
 
         {/* Ruedas (vistas desde arriba) */}
-        <rect x="-17" y="-15" width="4" height="8" rx="1" fill="black" stroke="white" strokeWidth="0.5" />
-        <rect x="13" y="-15" width="4" height="8" rx="1" fill="black" stroke="white" strokeWidth="0.5" />
-        <rect x="-17" y="10" width="4" height="8" rx="1" fill="black" stroke="white" strokeWidth="0.5" />
-        <rect x="13" y="10" width="4" height="8" rx="1" fill="black" stroke="white" strokeWidth="0.5" />
+        <rect
+          x="-17"
+          y="-15"
+          width="4"
+          height="8"
+          rx="1"
+          fill="black"
+          stroke="white"
+          strokeWidth="0.5"
+        />
+        <rect
+          x="13"
+          y="-15"
+          width="4"
+          height="8"
+          rx="1"
+          fill="black"
+          stroke="white"
+          strokeWidth="0.5"
+        />
+        <rect
+          x="-17"
+          y="10"
+          width="4"
+          height="8"
+          rx="1"
+          fill="black"
+          stroke="white"
+          strokeWidth="0.5"
+        />
+        <rect
+          x="13"
+          y="10"
+          width="4"
+          height="8"
+          rx="1"
+          fill="black"
+          stroke="white"
+          strokeWidth="0.5"
+        />
 
         {/* Indicador de avería si corresponde */}
         {hasBreakdown && (
@@ -457,8 +517,8 @@ export function LogisticsDashboard() {
           </>
         )}
       </>
-    )
-  }
+    );
+  };
 
   // Función auxiliar para oscurecer un color (para detalles del techo)
   const darkenColor = (color) => {
@@ -468,29 +528,29 @@ export function LogisticsDashboard() {
       purple: "#a855f7",
       blue: "#3b82f6",
       orange: "#f97316",
-    }
+    };
 
-    const hexColor = colorMap[color] || color
+    const hexColor = colorMap[color] || color;
 
     // Oscurecer el color un 20%
     return hexColor
       .replace(/^#/, "")
       .match(/.{2}/g)
       .map((x) => {
-        const num = Number.parseInt(x, 16)
-        const darkened = Math.max(0, num - 40)
-        return darkened.toString(16).padStart(2, "0")
+        const num = Number.parseInt(x, 16);
+        const darkened = Math.max(0, num - 40);
+        return darkened.toString(16).padStart(2, "0");
       })
-      .join("")
-  }
+      .join("");
+  };
 
   // Añadir una función para registrar una avería
   const registerBreakdown = (vehicleId, type) => {
-    const now = new Date()
-    const currentTurn = now.getHours() < 8 ? 1 : now.getHours() < 16 ? 2 : 3
+    const now = new Date();
+    const currentTurn = now.getHours() < 8 ? 1 : now.getHours() < 16 ? 2 : 3;
 
-    const availableDate = new Date(now)
-    let availableTurn = currentTurn
+    const availableDate = new Date(now);
+    let availableTurn = currentTurn;
 
     // Calcular disponibilidad según el tipo de incidente
     if (type === 1) {
@@ -499,18 +559,18 @@ export function LogisticsDashboard() {
     } else if (type === 2) {
       // Inoperativo por un turno completo
       if (currentTurn === 1) {
-        availableTurn = 3
+        availableTurn = 3;
       } else if (currentTurn === 2) {
-        availableDate.setDate(availableDate.getDate() + 1)
-        availableTurn = 1
+        availableDate.setDate(availableDate.getDate() + 1);
+        availableTurn = 1;
       } else {
-        availableDate.setDate(availableDate.getDate() + 1)
-        availableTurn = 2
+        availableDate.setDate(availableDate.getDate() + 1);
+        availableTurn = 2;
       }
     } else if (type === 3) {
       // Inoperativo por 3 días
-      availableDate.setDate(availableDate.getDate() + 3)
-      availableTurn = 1
+      availableDate.setDate(availableDate.getDate() + 3);
+      availableTurn = 1;
     }
 
     const breakdown = {
@@ -521,24 +581,24 @@ export function LogisticsDashboard() {
       availableDate,
       availableTurn,
       status: "active",
-    }
+    };
 
     setVehicleBreakdowns((prev) => ({
       ...prev,
       [vehicleId]: breakdown,
-    }))
+    }));
 
     // Cerrar el modal
-    setShowBreakdownModal(false)
-    setSelectedVehicle(null)
-  }
+    setShowBreakdownModal(false);
+    setSelectedVehicle(null);
+  };
 
   // Añadir una función para abrir el modal de averías
   const openBreakdownModal = (vehicle) => {
-    setSelectedVehicle(vehicle)
-    setBreakdownType(1)
-    setShowBreakdownModal(true)
-  }
+    setSelectedVehicle(vehicle);
+    setBreakdownType(1);
+    setShowBreakdownModal(true);
+  };
 
   const vehicles = [
     {
@@ -596,7 +656,7 @@ export function LogisticsDashboard() {
       status: "Disponible",
       hasRoute: true,
     },
-  ]
+  ];
 
   const orders = [
     {
@@ -648,7 +708,7 @@ export function LogisticsDashboard() {
       status: "Pendiente",
       position: "(25, 15)",
     },
-  ]
+  ];
 
   const routeSheets = [
     {
@@ -691,7 +751,7 @@ export function LogisticsDashboard() {
         },
       ],
     },
-  ]
+  ];
 
   return (
     <div className="flex h-full w-full overflow-hidden">
@@ -743,7 +803,7 @@ export function LogisticsDashboard() {
                   </div>
                   <button
                     onClick={() => {
-                      setAlertCount((prev) => Math.max(0, prev - 1))
+                      setAlertCount((prev) => Math.max(0, prev - 1));
                     }}
                     className="text-red-800"
                   >
@@ -811,7 +871,10 @@ export function LogisticsDashboard() {
                   <X size={16} />
                 </button>
               </div>
-              <button onClick={handleSearch} className="w-full py-1 bg-blue-600 text-white text-sm rounded">
+              <button
+                onClick={handleSearch}
+                className="w-full py-1 bg-blue-600 text-white text-sm rounded"
+              >
                 Buscar
               </button>
 
@@ -843,10 +906,10 @@ export function LogisticsDashboard() {
                 backgroundPosition: `${mapPosition.x}px ${mapPosition.y}px`,
                 transition: isDragging ? "none" : "background-position 0.1s ease",
               }}
-            >              
+            >
               {/* Líneas principales (cada 5 unidades) */}
-              <div 
-                className="absolute inset-0" 
+              <div
+                className="absolute inset-0"
                 style={{
                   backgroundSize: `${40 * 5 * zoomLevel}px ${40 * 5 * zoomLevel}px`,
                   backgroundImage:
@@ -855,50 +918,53 @@ export function LogisticsDashboard() {
                   transition: isDragging ? "none" : "background-position 0.1s ease",
                 }}
               />
-              
+
               {/* Borde del mapa - 70km x 50km */}
-              <div 
-                className="absolute inset-0 pointer-events-none" 
+              <div
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  border: '3px solid #2563eb', // Borde azul más visible
+                  border: "3px solid #2563eb", // Borde azul más visible
                   transform: `translate(${mapPosition.x}px, ${mapPosition.y}px)`,
                   width: `${70 * 40 * zoomLevel}px`,
                   height: `${50 * 40 * zoomLevel}px`,
-                  boxShadow: '0 0 0 1px rgba(0,0,0,0.1)',
-                  zIndex: 5
+                  boxShadow: "0 0 0 1px rgba(0,0,0,0.1)",
+                  zIndex: 5,
                 }}
               />
-              
+
               {/* Ejes X e Y */}
-              <div 
-                className="absolute inset-0 pointer-events-none" 
+              <div
+                className="absolute inset-0 pointer-events-none"
                 style={{
-                  borderLeft: '2px solid #000',
-                  borderBottom: '2px solid #000',
+                  borderLeft: "2px solid #000",
+                  borderBottom: "2px solid #000",
                   transform: `translate(${mapPosition.x}px, ${mapPosition.y}px)`,
                   width: `${70 * 40 * zoomLevel}px`,
                   height: `${50 * 40 * zoomLevel}px`,
                 }}
               />
-              
+
               {/* Contenedor para las etiquetas de coordenadas X */}
               <div className="absolute bottom-0 left-0 w-full h-6 overflow-hidden z-10">
                 {/* Generamos etiquetas dinámicas para el eje X */}
-                <div className="absolute inset-0" style={{ transform: `translateX(${mapPosition.x}px)` }}>
+                <div
+                  className="absolute inset-0"
+                  style={{ transform: `translateX(${mapPosition.x}px)` }}
+                >
                   {Array.from({ length: 71 }, (_, i) => {
                     // Determinar si mostrar esta etiqueta basado en el zoom
                     const shouldShow = i % 5 === 0 || (zoomLevel > 0.7 && i % 1 === 0);
                     if (!shouldShow) return null;
-                    
+
                     return (
-                      <div 
+                      <div
                         key={`x-${i}`}
                         className="absolute bottom-1 transform -translate-x-1/2"
                         style={{
                           left: `${i * 40 * zoomLevel}px`,
-                          color: i % 5 === 0 ? '#4b5563' : '#94a3b8',
-                          fontWeight: i % 5 === 0 ? 'bold' : 'normal',
-                          fontSize: i % 5 === 0 ? '0.8rem' : '0.7rem',
+                          color: i % 5 === 0 ? "#4b5563" : "#94a3b8",
+                          fontWeight: i % 5 === 0 ? "bold" : "normal",
+                          fontSize: i % 5 === 0 ? "0.8rem" : "0.7rem",
                         }}
                       >
                         {i}
@@ -907,31 +973,31 @@ export function LogisticsDashboard() {
                   })}
                 </div>
               </div>
-              
+
               {/* Contenedor para las etiquetas de coordenadas Y */}
               <div className="absolute top-0 left-0 w-6 h-full overflow-hidden z-10">
                 {/* Generamos etiquetas dinámicas para el eje Y */}
-                <div 
-                  className="absolute inset-0" 
-                  style={{ 
+                <div
+                  className="absolute inset-0"
+                  style={{
                     transform: `translate(0, ${mapPosition.y}px) scale(1, ${zoomLevel})`,
-                    transformOrigin: "0 0"
+                    transformOrigin: "0 0",
                   }}
                 >
                   {Array.from({ length: 51 }, (_, i) => {
                     // Determinar si mostrar esta etiqueta basado en el zoom
                     const shouldShow = i % 5 === 0 || (zoomLevel > 0.7 && i % 1 === 0);
                     if (!shouldShow) return null;
-                    
+
                     return (
-                      <div 
+                      <div
                         key={`y-${i}`}
                         className="absolute left-1 transform -translate-y-1/2"
                         style={{
                           bottom: `${i * 40}px`, // Quitamos el zoomLevel porque ya lo aplicamos en el contenedor
-                          color: i % 5 === 0 ? '#4b5563' : '#94a3b8',
-                          fontWeight: i % 5 === 0 ? 'bold' : 'normal',
-                          fontSize: i % 5 === 0 ? '0.8rem' : '0.7rem',
+                          color: i % 5 === 0 ? "#4b5563" : "#94a3b8",
+                          fontWeight: i % 5 === 0 ? "bold" : "normal",
+                          fontSize: i % 5 === 0 ? "0.8rem" : "0.7rem",
                         }}
                       >
                         {i}
@@ -941,9 +1007,9 @@ export function LogisticsDashboard() {
                 </div>
               </div>
             </div>
-            
+
             {/* Contenedor para los elementos del mapa */}
-            <div 
+            <div
               className="absolute inset-0"
               style={{
                 transform: `translate(${mapPosition.x}px, ${mapPosition.y}px) scale(${zoomLevel})`,
@@ -952,59 +1018,59 @@ export function LogisticsDashboard() {
             >
               {/* Almacenes - Coordenadas según las reglas del proyecto */}
               {/* Almacén Central (12, 8) */}
-              <div 
+              <div
                 className="absolute z-30"
                 style={{
-                  bottom: `${8 * 40}px`,  //Validar esto!!
+                  bottom: `${8 * 40}px`, //Validar esto!!
                   left: `${12 * 40}px`,
-                  width: '1px',
-                  height: '1px',
+                  width: "1px",
+                  height: "1px",
                 }}
               >
-                <div 
+                <div
                   className="absolute w-10 h-10 rounded-lg bg-blue-800 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
-                    transform: 'translate(-50%, 50%)',
+                    transform: "translate(-50%, 50%)",
                   }}
                 >
                   <Warehouse className="text-white" size={18} />
                 </div>
               </div>
-              
+
               {/* Almacén Intermedio Norte (42, 42) */}
-              <div 
+              <div
                 className="absolute z-30"
                 style={{
                   bottom: `${42 * 40}px`,
                   left: `${42 * 40}px`,
-                  width: '1px',
-                  height: '1px',
+                  width: "1px",
+                  height: "1px",
                 }}
               >
-                <div 
+                <div
                   className="absolute w-8 h-8 rounded-md bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
-                    transform: 'translate(-50%, 50%)',
+                    transform: "translate(-50%, 50%)",
                   }}
                 >
                   <Warehouse className="text-white" size={16} />
                 </div>
               </div>
-              
+
               {/* Almacén Intermedio Este (63, 3) */}
-              <div 
+              <div
                 className="absolute z-30"
                 style={{
                   bottom: `${3 * 40}px`,
                   left: `${63 * 40}px`,
-                  width: '1px',
-                  height: '1px',
+                  width: "1px",
+                  height: "1px",
                 }}
               >
-                <div 
+                <div
                   className="absolute w-8 h-8 rounded-md bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center"
                   style={{
-                    transform: 'translate(-50%, 50%)',
+                    transform: "translate(-50%, 50%)",
                   }}
                 >
                   <Warehouse className="text-white" size={16} />
@@ -1028,7 +1094,13 @@ export function LogisticsDashboard() {
                     strokeOpacity="0.8"
                   />
                   {routes[1].points.map((point, index) => (
-                    <circle key={`route1-point-${index}`} cx={point.x} cy={point.y} r="3" fill="green" />
+                    <circle
+                      key={`route1-point-${index}`}
+                      cx={point.x}
+                      cy={point.y}
+                      r="3"
+                      fill="green"
+                    />
                   ))}
                 </g>
 
@@ -1047,7 +1119,13 @@ export function LogisticsDashboard() {
                     strokeOpacity="0.8"
                   />
                   {routes[2].points.map((point, index) => (
-                    <circle key={`route2-point-${index}`} cx={point.x} cy={point.y} r="3" fill="purple" />
+                    <circle
+                      key={`route2-point-${index}`}
+                      cx={point.x}
+                      cy={point.y}
+                      r="3"
+                      fill="purple"
+                    />
                   ))}
                 </g>
 
@@ -1066,7 +1144,13 @@ export function LogisticsDashboard() {
                     strokeOpacity="0.8"
                   />
                   {routes[3].points.map((point, index) => (
-                    <circle key={`route3-point-${index}`} cx={point.x} cy={point.y} r="3" fill="blue" />
+                    <circle
+                      key={`route3-point-${index}`}
+                      cx={point.x}
+                      cy={point.y}
+                      r="3"
+                      fill="blue"
+                    />
                   ))}
                 </g>
 
@@ -1074,9 +1158,11 @@ export function LogisticsDashboard() {
                 {/* Camión en ruta 1 */}
                 {truckPositions.truck1 && (
                   <g
-                    transform={`translate(${getTruckPosition(1, truckPositions.truck1.progress).x}, ${
-                      getTruckPosition(1, truckPositions.truck1.progress).y
-                    }) rotate(${truckPositions.truck1.currentRotation})`}
+                    transform={`translate(${
+                      getTruckPosition(1, truckPositions.truck1.progress).x
+                    }, ${getTruckPosition(1, truckPositions.truck1.progress).y}) rotate(${
+                      truckPositions.truck1.currentRotation
+                    })`}
                   >
                     {renderTruck("green", "truck1")}
                   </g>
@@ -1085,9 +1171,11 @@ export function LogisticsDashboard() {
                 {/* Camión en ruta 2 */}
                 {truckPositions.truck2 && (
                   <g
-                    transform={`translate(${getTruckPosition(2, truckPositions.truck2.progress).x}, ${
-                      getTruckPosition(2, truckPositions.truck2.progress).y
-                    }) rotate(${truckPositions.truck2.currentRotation})`}
+                    transform={`translate(${
+                      getTruckPosition(2, truckPositions.truck2.progress).x
+                    }, ${getTruckPosition(2, truckPositions.truck2.progress).y}) rotate(${
+                      truckPositions.truck2.currentRotation
+                    })`}
                   >
                     {renderTruck("purple", "truck2")}
                   </g>
@@ -1096,9 +1184,11 @@ export function LogisticsDashboard() {
                 {/* Camión en ruta 3 */}
                 {truckPositions.truck3 && (
                   <g
-                    transform={`translate(${getTruckPosition(3, truckPositions.truck3.progress).x}, ${
-                      getTruckPosition(3, truckPositions.truck3.progress).y
-                    }) rotate(${truckPositions.truck3.currentRotation})`}
+                    transform={`translate(${
+                      getTruckPosition(3, truckPositions.truck3.progress).x
+                    }, ${getTruckPosition(3, truckPositions.truck3.progress).y}) rotate(${
+                      truckPositions.truck3.currentRotation
+                    })`}
                   >
                     {renderTruck("blue", "truck3")}
                   </g>
@@ -1138,14 +1228,26 @@ export function LogisticsDashboard() {
                 <div
                   className="absolute z-40 text-white text-xs p-2 rounded-sm shadow-md"
                   style={{
-                    top: hoveredRoute ? routes[hoveredRoute as keyof typeof routes].points[1].y - 40 : 0,
-                    left: hoveredRoute ? routes[hoveredRoute as keyof typeof routes].points[1].x + 20 : 0,
-                    backgroundColor: hoveredRoute === 1 ? "#22c55e" : hoveredRoute === 2 ? "#a855f7" : "#3b82f6",
+                    top: hoveredRoute
+                      ? routes[hoveredRoute as keyof typeof routes].points[1].y - 40
+                      : 0,
+                    left: hoveredRoute
+                      ? routes[hoveredRoute as keyof typeof routes].points[1].x + 20
+                      : 0,
+                    backgroundColor:
+                      hoveredRoute === 1 ? "#22c55e" : hoveredRoute === 2 ? "#a855f7" : "#3b82f6",
                   }}
                 >
-                  <div className="font-semibold">{hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.name}</div>
-                  <div className="text-[10px]">Tiempo: {hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.time}</div>
-                  <div className="text-[10px]">Distancia: {hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.distance}</div>
+                  <div className="font-semibold">
+                    {hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.name}
+                  </div>
+                  <div className="text-[10px]">
+                    Tiempo: {hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.time}
+                  </div>
+                  <div className="text-[10px]">
+                    Distancia:{" "}
+                    {hoveredRoute && routes[hoveredRoute as keyof typeof routes].info.distance}
+                  </div>
                 </div>
               )}
 
@@ -1159,7 +1261,9 @@ export function LogisticsDashboard() {
                     backgroundColor: "#ef4444",
                   }}
                 >
-                  <div className="font-semibold">{blockades.find((b) => b.id === hoveredBlockade).name}</div>
+                  <div className="font-semibold">
+                    {blockades.find((b) => b.id === hoveredBlockade).name}
+                  </div>
                   <div className="text-[10px]">
                     Razón: {blockades.find((b) => b.id === hoveredBlockade).info.reason}
                   </div>
@@ -1228,58 +1332,6 @@ export function LogisticsDashboard() {
             </div>
           </div>
         </div>
-        {showLegend && (
-          <div className="absolute top-20 right-4 z-30 bg-white rounded-md shadow-md p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full border border-gray-300"></div>
-                <span className="text-xs ml-1 font-medium">Leyenda</span>
-              </div>
-              <button
-                onClick={() => setShowLegend(false)}
-                className="text-gray-500 hover:text-gray-700"
-                title="Cerrar leyenda"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-xs">Disponible</span>
-              <span className="text-xs ml-auto">2/5</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-              <span className="text-xs">En ruta</span>
-              <span className="text-xs ml-auto">2/5</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-              <span className="text-xs">Mantenimiento</span>
-              <span className="text-xs ml-auto">1/5</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full bg-sky-400"></div>
-              <span className="text-xs">Pedidos</span>
-              <span className="text-xs ml-auto">7/10</span>
-            </div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-3 h-3 rounded-full bg-blue-700"></div>
-              <span className="text-xs">Planta principal</span>
-              <span className="text-xs ml-auto">1</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-600"></div>
-              <span className="text-xs">Puntos de abastecimiento</span>
-              <span className="text-xs ml-auto">2</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-700"></div>
-              <span className="text-xs">Bloqueos</span>
-              <span className="text-xs ml-auto">2</span>
-            </div>
-          </div>
-        )}
         {/* Vehicle/Orders Table - Now at the bottom with collapse/expand functionality */}
         <div className={`border-t transition-all duration-300 ${tableCollapsed ? "h-12" : ""}`}>
           {/* Header with collapse/expand button */}
@@ -1292,7 +1344,7 @@ export function LogisticsDashboard() {
                 onClick={() => setSelectedTab("vehiculos")}
               >
                 <Truck size={16} />
-                VEHÍCULOS
+                Camiones
               </button>
               <button
                 className={`flex items-center justify-center gap-1 px-4 py-2 ${
@@ -1300,14 +1352,7 @@ export function LogisticsDashboard() {
                 }`}
                 onClick={() => setSelectedTab("pedidos")}
               >
-                PEDIDOS
-              </button>
-              <button
-                className="flex items-center justify-center gap-1 px-4 py-2 bg-gray-100 hover:bg-gray-200"
-                onClick={() => setShowLegend(!showLegend)}
-                title={showLegend ? "Ocultar leyenda" : "Mostrar leyenda"}
-              >
-                LEYENDA
+                Pedidos
               </button>
             </div>
 
@@ -1339,10 +1384,15 @@ export function LogisticsDashboard() {
             <>
               <div className="p-2 border-t">
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <Search
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    size={16}
+                  />
                   <input
                     type="text"
-                    placeholder={selectedTab === "vehiculos" ? "Buscar vehículos" : "Buscar pedidos"}
+                    placeholder={
+                      selectedTab === "vehiculos" ? "Buscar vehículos" : "Buscar pedidos"
+                    }
                     className="pl-8 pr-4 py-1.5 border rounded-md text-sm w-64"
                   />
                 </div>
@@ -1371,8 +1421,8 @@ export function LogisticsDashboard() {
                                   vehicle.color === "green"
                                     ? "bg-green-500"
                                     : vehicle.color === "purple"
-                                      ? "bg-purple-500"
-                                      : "bg-orange-500"
+                                    ? "bg-purple-500"
+                                    : "bg-orange-500"
                                 }`}
                               ></div>
                               <span>{vehicle.code}</span>
@@ -1388,10 +1438,10 @@ export function LogisticsDashboard() {
                                     Number.parseInt(vehicle.fuel) > 80
                                       ? "bg-green-500"
                                       : Number.parseInt(vehicle.fuel) > 60
-                                        ? "bg-green-500"
-                                        : Number.parseInt(vehicle.fuel) > 40
-                                          ? "bg-yellow-500"
-                                          : "bg-red-500"
+                                      ? "bg-green-500"
+                                      : Number.parseInt(vehicle.fuel) > 40
+                                      ? "bg-yellow-500"
+                                      : "bg-red-500"
                                   }`}
                                   style={{ width: vehicle.fuel }}
                                 ></div>
@@ -1407,7 +1457,9 @@ export function LogisticsDashboard() {
                                   <div className="w-16 h-2 bg-blue-100 rounded-full overflow-hidden">
                                     <div className="h-full w-1/2 bg-blue-500 rounded-full"></div>
                                   </div>
-                                  <span className="text-xs text-blue-500">{vehicle.deliveryPoint}</span>
+                                  <span className="text-xs text-blue-500">
+                                    {vehicle.deliveryPoint}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -1446,7 +1498,15 @@ export function LogisticsDashboard() {
                           <td className="py-2 px-4">{order.client}</td>
                           <td className="py-2 px-4">{order.volume} m³</td>
                           <td className="py-2 px-4">
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${order.status === "En curso" ? "bg-blue-100 text-blue-800" : order.status === "Pendiente" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800"}`}>
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-xs ${
+                                order.status === "En curso"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : order.status === "Pendiente"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
                               {order.status}
                             </span>
                           </td>
@@ -1462,5 +1522,5 @@ export function LogisticsDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

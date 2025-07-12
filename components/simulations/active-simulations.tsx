@@ -1,30 +1,59 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { PlayCircle, Calendar, AlertOctagon, ExternalLink, Play, Trash, FileText, CheckCircle, Pause, MoreVertical, Trash2, Zap, Clock, AlertTriangle, MapPin, Truck, Settings, Eye } from "lucide-react"
-import { formatDateTime } from "@/lib/utils"
-import { useRouter } from "next/navigation"
-import { getSimulationStatus, getSimulationResult, cancelSimulation } from "@/store/simulation/simulation-slice"
-import { useSimulationContext } from "@/contexts/simulationContext"
-import { Progress } from "../ui/progress"
-import { SimulationInterface } from "@/interfaces/simulation.interface"
-import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform"
-import { Spinner } from "../ui/spinner"
-import { useMapContext } from "@/contexts/MapContext"
-import SimulationService from "@/services/simulation.service"
-import { toast } from "sonner"
-import { useToast } from "@/hooks/use-toast"
-import { ToastAction } from "../ui/toast"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import useLegendSummary from "@/hooks/use-legend-summary"
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
+import {
+  PlayCircle,
+  Calendar,
+  AlertOctagon,
+  ExternalLink,
+  Play,
+  Trash,
+  FileText,
+  CheckCircle,
+  Pause,
+  MoreVertical,
+  Trash2,
+  Zap,
+  Clock,
+  AlertTriangle,
+  MapPin,
+  Truck,
+  Settings,
+  Eye,
+} from "lucide-react";
+import { formatDateTime } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import {
+  getSimulationStatus,
+  getSimulationResult,
+  cancelSimulation,
+} from "@/store/simulation/simulation-slice";
+import { useSimulationContext } from "@/contexts/SimulationContext";
+import { Progress } from "../ui/progress";
+import { SimulationInterface } from "@/interfaces/simulation.interface";
+import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform";
+import { Spinner } from "../ui/spinner";
+import { useMapContext } from "@/contexts/MapContext";
+import SimulationService from "@/services/simulation.service";
+import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "../ui/toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import useLegendSummary from "@/hooks/use-legend-summary";
 
 type ActiveSimulationsProps = {
-  onNewSimulation?: () => void
-}
+  onNewSimulation?: () => void;
+};
 
 const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => {
   return (
@@ -38,37 +67,37 @@ const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => 
           Comienza creando tu primera simulación para optimizar las rutas de distribución de GLP
         </p>
       </div>
-      <Button 
+      <Button
         onClick={onNewSimulation}
         className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-200"
         size="lg"
       >
-        <PlayCircle className="mr-2 h-5 w-5" /> 
+        <PlayCircle className="mr-2 h-5 w-5" />
         Crear Primera Simulación
       </Button>
     </div>
-  )
-}
+  );
+};
 
 export function ActiveSimulations({ onNewSimulation }: ActiveSimulationsProps) {
-  const dispatch = useAppDispatch()
-  const currentSimulation = useAppSelector((state) => state.simulation.currentSimulation)
+  const dispatch = useAppDispatch();
+  const currentSimulation = useAppSelector((state) => state.simulation.currentSimulation);
   const { simulaciones, getAllSimulacion, loadingSimulaciones } = useSimulationContext();
   const [toastSimulacion, setToastSimulacion] = useState<boolean>(false);
-  
+
   useEffect(() => {
     getAllSimulacion();
-  }, [])
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (currentSimulation?.id) {
-        dispatch(getSimulationStatus(currentSimulation.id))
+        dispatch(getSimulationStatus(currentSimulation.id));
       }
-    }, 1000)
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [dispatch, currentSimulation?.id])
+    return () => clearInterval(interval);
+  }, [dispatch, currentSimulation?.id]);
 
   return (
     <div className="space-y-6">
@@ -83,30 +112,30 @@ export function ActiveSimulations({ onNewSimulation }: ActiveSimulationsProps) {
         <EmptySimulationContent onNewSimulation={onNewSimulation} />
       ) : (
         <div className="grid gap-6">
-          {simulaciones.map(simulacion => (
-            <SimulationCard 
-              key={simulacion.key}
-              simulacion={simulacion} 
-            />
+          {simulaciones.map((simulacion) => (
+            <SimulationCard key={simulacion.key} simulacion={simulacion} />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
 
 const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => {
-  const { anio, mes, dia, ihora, iminuto, active } = simulacion
-  const [state, setState] = useState<"nolisto" | "listo" | "cargando">(active ? "listo" : "nolisto");
+  const { anio, mes, dia, ihora, iminuto, active } = simulacion;
+  const [state, setState] = useState<"nolisto" | "listo" | "cargando">(
+    active ? "listo" : "nolisto"
+  );
   const { setPedidosI, setBloqueosI, resetMap } = useMapContext();
-  const { toast } = useToast()
-  const { seleccionarSimulacion, verificarSimulacionSeleccionada, deleteSimulacion } = useSimulationContext();
-  const router = useRouter()
+  const { toast } = useToast();
+  const { seleccionarSimulacion, verificarSimulacionSeleccionada, deleteSimulacion } =
+    useSimulationContext();
+  const router = useRouter();
   const { reset } = useLegendSummary();
 
   const handleViewMap = (simulationId: string = "") => {
-    router.push("/mapa")
-  }
+    router.push("/mapa");
+  };
 
   const handleReset = async () => {
     try {
@@ -122,7 +151,7 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
         description: "Error al resetear la simulación.",
       });
     }
-  }
+  };
 
   // Función para obtener configuración visual de tipos de simulación
   const getSimulationTypeConfig = () => {
@@ -135,8 +164,8 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
           borderColor: "border-l-blue-500",
           name: "Día a Día",
           description: "Simulación operativa diaria",
-          gradient: "from-blue-500 to-blue-600"
-        }
+          gradient: "from-blue-500 to-blue-600",
+        };
       case "Semanal":
         return {
           icon: Calendar,
@@ -145,8 +174,8 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
           borderColor: "border-l-green-500",
           name: "Semanal",
           description: "Simulación de planificación semanal",
-          gradient: "from-green-500 to-green-600"
-        }
+          gradient: "from-green-500 to-green-600",
+        };
       case "Colapso":
         return {
           icon: AlertTriangle,
@@ -155,8 +184,8 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
           borderColor: "border-l-red-500",
           name: "Colapso",
           description: "Simulación crítica de colapso",
-          gradient: "from-red-500 to-red-600"
-        }
+          gradient: "from-red-500 to-red-600",
+        };
       default:
         return {
           icon: FileText,
@@ -165,34 +194,56 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
           borderColor: "border-l-gray-500",
           name: simulacion.tipo || "Desconocido",
           description: "Tipo de simulación",
-          gradient: "from-gray-500 to-gray-600"
-        }
+          gradient: "from-gray-500 to-gray-600",
+        };
     }
-  }
+  };
 
   const procesarNuevaSimulacion = async () => {
     if (verificarSimulacionSeleccionada()) {
       toast({
         variant: "destructive",
         description: "No puedes iniciar la simulación, hasta parar la activada",
-        action: <ToastAction altText="Se canceló esta simulación">Se canceló esta simulación</ToastAction>
-      })
+        action: (
+          <ToastAction altText="Se canceló esta simulación">Se canceló esta simulación</ToastAction>
+        ),
+      });
       return;
     }
     try {
-      setState('cargando');
-      await SimulationService.initSimulation((dia * 1440) + (ihora * 60) + iminuto, 10, dia, mes, anio, iminuto, ihora);
-      const resPedido = await SimulationService.simulacionPedidoSemanal(anio, mes, dia, ihora, iminuto);
-      const resBloqueo = await SimulationService.simulacionBloqueosSemanal(anio, mes, dia, ihora, iminuto);
+      setState("cargando");
+      await SimulationService.initSimulation(
+        dia * 1440 + ihora * 60 + iminuto,
+        10,
+        dia,
+        mes,
+        anio,
+        iminuto,
+        ihora
+      );
+      const resPedido = await SimulationService.simulacionPedidoSemanal(
+        anio,
+        mes,
+        dia,
+        ihora,
+        iminuto
+      );
+      const resBloqueo = await SimulationService.simulacionBloqueosSemanal(
+        anio,
+        mes,
+        dia,
+        ihora,
+        iminuto
+      );
       setPedidosI(resPedido.data);
       setBloqueosI(resBloqueo.data);
       seleccionarSimulacion(simulacion);
-      new Promise(resolve => setTimeout(resolve, 3000));
-      setState('listo');
+      new Promise((resolve) => setTimeout(resolve, 3000));
+      setState("listo");
     } catch (error) {
-      setState('nolisto');
+      setState("nolisto");
     }
-  }
+  };
 
   const getStatusConfig = () => {
     switch (state) {
@@ -202,40 +253,42 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
           color: "text-green-600",
           bgColor: "bg-green-100",
           text: "Listo para ejecutar",
-          badge: "success"
-        }
+          badge: "success",
+        };
       case "cargando":
         return {
           icon: Spinner,
           color: "text-blue-600",
           bgColor: "bg-blue-100",
           text: "Inicializando...",
-          badge: "secondary"
-        }
+          badge: "secondary",
+        };
       case "nolisto":
         return {
           icon: AlertTriangle,
           color: "text-orange-600",
           bgColor: "bg-orange-100",
           text: "Pendiente de configuración",
-          badge: "outline"
-        }
+          badge: "outline",
+        };
     }
-  }
+  };
 
   const config = getSimulationTypeConfig();
   const statusConfig = getStatusConfig();
 
   const archivoPedidoMes = () => {
     return formatearNombreArchivoPedido(anio.toString());
-  }
+  };
 
   const archivoBloqueoMes = () => {
     return formatearNombreBloqueos(anio.toString());
-  }
+  };
 
   return (
-    <Card className={`border-l-4 ${config.borderColor} hover:shadow-lg transition-all duration-200 group`}>
+    <Card
+      className={`border-l-4 ${config.borderColor} hover:shadow-lg transition-all duration-200 group`}
+    >
       <CardContent className="p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           {/* Información principal */}
@@ -252,7 +305,7 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
                   </Badge>
                 </div>
                 <p className="text-gray-600">{config.description}</p>
-                
+
                 {/* Detalles de la simulación */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
                   <div className="flex items-center gap-2">
@@ -264,20 +317,16 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      {ihora.toString().padStart(2, '0')}:{iminuto.toString().padStart(2, '0')}
+                      {ihora.toString().padStart(2, "0")}:{iminuto.toString().padStart(2, "0")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">
-                      {archivoPedidoMes()}
-                    </span>
+                    <span className="text-sm text-gray-600">{archivoPedidoMes()}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">
-                      {archivoBloqueoMes()}
-                    </span>
+                    <span className="text-sm text-gray-600">{archivoBloqueoMes()}</span>
                   </div>
                 </div>
               </div>
@@ -302,7 +351,11 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -316,7 +369,7 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
                   Resetear
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={() => deleteSimulacion(simulacion)}
                   className="text-red-600"
                 >
@@ -329,5 +382,5 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

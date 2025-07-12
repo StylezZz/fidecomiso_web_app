@@ -16,16 +16,15 @@ export const useTruckRouteManager = ({
   pedidoNewShow,
   onRouteRef,
   setCurrNode,
-  setPedidosInComming
+  setPedidosInComming,
 }: UseTruckRouteManagerProps) => {
-
-  const { vehiculesRoutes, setTrucks } = useMapContext();
+  const { vehiculesRoutes } = useMapContext();
   const { addActiveTrunck } = useLengendSummary();
 
   useEffect(() => {
     if (!pedidoNewShow || onRouteRef.current) return;
 
-    const indexCamion = vehiculesRoutes.findIndex(camion => camion.placa === truckPlate);
+    const indexCamion = vehiculesRoutes.findIndex((camion) => camion.placa === truckPlate);
     if (indexCamion === -1) return;
 
     const camion = vehiculesRoutes[indexCamion];
@@ -34,24 +33,18 @@ export const useTruckRouteManager = ({
 
     addActiveTrunck(camion.tipoCamion);
 
-    const indexRoute = rutasAsignadas.findIndex(ruta => 
-      ruta.pedidosAsignados.some(p => p.idPedido === pedidoNewShow.idPedido)
+    const indexRoute = rutasAsignadas.findIndex((ruta) =>
+      ruta.pedidosAsignados.some((p) => p.idPedido === pedidoNewShow.idPedido)
     );
-    
+
     if (indexRoute === -1) return;
 
     const rutaAsignada = rutasAsignadas[indexRoute];
     setPedidosInComming(rutaAsignada.pedidosAsignados);
 
-    setTrucks(prev => prev.map(t => 
-      t.placa === truckPlate ? { ...t, route: rutaAsignada } : t
-    ));
-    
     setCurrNode(0);
     onRouteRef.current = true;
   }, [pedidoNewShow]);
 };
 
-
 export default useTruckRouteManager;
-

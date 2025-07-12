@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
 import { PedidoI } from "@/interfaces/newinterfaces/pedido.interface";
 import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
-import { AlmacenInfo } from "@/components/map/StoreHouse/StoreHouse";
+import { AlmacenInfo } from "@/components/map/almacen/Almacen";
 import { TooltipType } from "@/components/map/tooltip/MapTooltip";
 
 type TooltipData = VehiculoI | PedidoI | BloqueoI | AlmacenInfo | null;
@@ -19,24 +19,23 @@ export const useMapTooltip = () => {
     isVisible: false,
     type: null,
     data: null,
-    position: { x: 0, y: 0 }
+    position: { x: 0, y: 0 },
   });
 
-  const showTooltip = useCallback((
-    type: TooltipType,
-    data: TooltipData,
-    position: { x: number; y: number }
-  ) => {
-    setTooltip({
-      isVisible: true,
-      type,
-      data,
-      position
-    });
-  }, []);
+  const showTooltip = useCallback(
+    (type: TooltipType, data: TooltipData, position: { x: number; y: number }) => {
+      setTooltip({
+        isVisible: true,
+        type,
+        data,
+        position,
+      });
+    },
+    []
+  );
 
   const hideTooltip = useCallback(() => {
-    setTooltip(prev => ({ ...prev, isVisible: false }));
+    setTooltip((prev) => ({ ...prev, isVisible: false }));
   }, []);
 
   const getTooltipProps = useCallback(() => {
@@ -53,11 +52,16 @@ export const useMapTooltip = () => {
           fields: [
             { label: "Pos", value: `${pedido.posX}, ${pedido.posY}` },
             { label: "Vol", value: `${pedido.cantidadGLP} L` },
-            { label: "Hora", value: `${pedido.hora.toString().padStart(2, '0')}:${pedido.minuto.toString().padStart(2, '0')}` }
+            {
+              label: "Hora",
+              value: `${pedido.hora.toString().padStart(2, "0")}:${pedido.minuto
+                .toString()
+                .padStart(2, "0")}`,
+            },
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
-          iconColor: "#f4c167"
+          iconColor: "#f4c167",
         };
 
       case TooltipType.CAMION:
@@ -69,11 +73,11 @@ export const useMapTooltip = () => {
           fields: [
             { label: "Carga", value: `${camion.carga} / ${camion.glpDisponible} L` },
             { label: "Ubicación", value: `${ubicacion.x}, ${ubicacion.y}` },
-            { label: "Estado", value: camion.enAveria ? 'En Avería' : 'Operativo' }
+            { label: "Estado", value: camion.enAveria ? "En Avería" : "Operativo" },
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
-          iconColor: "#3b82f6"
+          iconColor: "#3b82f6",
         };
 
       case TooltipType.ALMACEN:
@@ -88,16 +92,16 @@ export const useMapTooltip = () => {
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
-          iconColor: almacen.typeHouse === "warehouse" ? "#3b82f6" : "#1e40af"
+          iconColor: almacen.typeHouse === "warehouse" ? "#3b82f6" : "#1e40af",
         };
 
       case TooltipType.BLOQUEO:
         const bloqueo = tooltip.data as BloqueoI;
         let distance = 0;
-        for(let tramo of bloqueo.tramo){
-          let {x_fin,x_ini,y_fin,y_ini} = tramo
-          if(x_fin === x_ini) distance += Math.abs(y_fin-y_ini);
-          if(y_fin === y_ini) distance += Math.abs(x_fin-x_ini);
+        for (let tramo of bloqueo.tramo) {
+          let { x_fin, x_ini, y_fin, y_ini } = tramo;
+          if (x_fin === x_ini) distance += Math.abs(y_fin - y_ini);
+          if (y_fin === y_ini) distance += Math.abs(x_fin - x_ini);
         }
         return {
           type: tooltip.type,
@@ -105,11 +109,11 @@ export const useMapTooltip = () => {
           fields: [
             { label: "Distancia", value: `${distance} Km` },
             { label: "Inicio", value: new Date(bloqueo.fechaInicio).toLocaleString() },
-            { label: "Fin", value: new Date(bloqueo.fechaFin).toLocaleString() }
+            { label: "Fin", value: new Date(bloqueo.fechaFin).toLocaleString() },
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
-          iconColor: "red"
+          iconColor: "red",
         };
 
       default:
@@ -121,6 +125,6 @@ export const useMapTooltip = () => {
     tooltip,
     showTooltip,
     hideTooltip,
-    getTooltipProps
+    getTooltipProps,
   };
 };

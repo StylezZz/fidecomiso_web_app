@@ -1,22 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef, useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Slider } from "@/components/ui/slider"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
-import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { startSimulation } from "@/store/simulation/simulation-slice"
-import { useToast } from "@/hooks/use-toast"
-import { useMapContext } from "@/contexts/MapContext"
+import { useState, useRef, useEffect } from "react";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   X,
   AlertTriangle,
@@ -25,15 +16,7 @@ import {
   CheckCircle,
   Calendar,
   CalendarDays,
-  AlertOctagon,
   Settings,
-  Truck,
-  Map,
-  BarChart,
-  FileUp,
-  ArrowRight,
-  Cog,
-  Paperclip,
   Database,
   Zap,
   Clock,
@@ -42,26 +25,28 @@ import {
   ChevronLeft,
   Play,
   Loader2,
-  MapPin
-} from "lucide-react"
-import { obtenerAnioArchPedido, obtenerAnioDesdeNombre, obtenerMesArchPedido, obtenerMesDesdeNombre, readFileBloqueos, readFilePedidos } from "@/utils/readFiles"
-import { Pedido } from "@/interfaces/order/pedido.interface"
-import SimulationService from "@/services/simulation.service"
-import { SimulationInterface, SimulationType } from "@/interfaces/simulation.interface"
-import { RadioGroup } from "../ui/radio-group"
-import { Dropdown } from "react-day-picker"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Label } from "../ui/label"
-import { useSimulationContext } from "@/contexts/simulationContext"
-import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform"
-import PedidosService from "@/services/pedidos.service"
-import BlockService from "@/services/block.service"
-import { Calendar as CalendarComponent } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { Badge } from "@/components/ui/badge"
+  MapPin,
+} from "lucide-react";
+import {
+  obtenerAnioArchPedido,
+  obtenerAnioDesdeNombre,
+  obtenerMesArchPedido,
+  obtenerMesDesdeNombre,
+  readFileBloqueos,
+  readFilePedidos,
+} from "@/utils/readFiles";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Label } from "../ui/label";
+import { es } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+import BlockService from "@/services/block.service";
+import PedidosService from "@/services/pedidos.service";
+import { useSimulationContext } from "@/contexts/SimulationContext";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { SimulationInterface, SimulationType } from "@/interfaces/simulation.interface";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 const formSchema = z.object({
   type: z.string(),
@@ -77,30 +62,28 @@ const formSchema = z.object({
   useDataFile: z.boolean().default(false),
   showRealTimeMap: z.boolean().default(true),
   generateDetailedReports: z.boolean().default(true),
-})
+});
 
-type FormValues = z.infer<typeof formSchema>
+type SimulationSetupProps = {
+  onClose: () => void;
+};
 
-type SimulationWizardProps = {
-  onClose: () => void
-}
+export function SimulationSetup({ onClose }: SimulationSetupProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [uploadedFilePedido, setUploadedFilePedido] = useState<File | null>(null);
+  const [uploadedFileBloqueo, setUploadedFileBloqueo] = useState<File | null>(null);
 
-export function SimulationWizard({ onClose }: SimulationWizardProps) {
-  const { toast } = useToast()
-  const { setPedidos, getVehiculesRoutesFlow } = useMapContext();
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
-  const [uploadedFilePedido, setUploadedFilePedido] = useState<File | null>(null)
-  const [uploadedFileBloqueo, setUploadedFileBloqueo] = useState<File | null>(null)
-
-  const [fileContent, setFileContent] = useState<string | null>(null)
-  const [fileValidationStatus, setFileValidationStatus] = useState<"idle" | "validating" | "valid" | "invalid">("idle")
-  const [validationProgress, setValidationProgress] = useState(0)
-  const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [fileValidationStatus, setFileValidationStatus] = useState<
+    "idle" | "validating" | "valid" | "invalid"
+  >("idle");
+  const [validationProgress, setValidationProgress] = useState(0);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   //useState para el seguimiento de iniciar simulacion
-  const { obtenerArchivosBloqueos, obtenerArchivosPedidos, saveSimulacion } = useSimulationContext();
+  const { obtenerArchivosBloqueos, obtenerArchivosPedidos, saveSimulacion } =
+    useSimulationContext();
   const [simulationType, setSimulationType] = useState<SimulationType>();
   const [hasPreviousData, setHasPreviousData] = useState<"has" | "hasnt">();
   const [pedidosArch, setPedidosArch] = useState<string[]>([]);
@@ -108,20 +91,24 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
   const [loadingArch, setLoadingArc] = useState<boolean>(false);
   const [namePedido, setNamePedido] = useState<string>("");
   const [nameBloqueo, setNameBloqueo] = useState<string>("");
-  
+
   // Nuevos estados para fecha y hora usando Date
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [selectedTime, setSelectedTime] = useState<string>("00:00")
-  
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("00:00");
+
   // Estados legacy para mantener compatibilidad con la lógica existente
-  const [fecha, setFecha] = useState<{ anio: string, mes: string, dia: string }>({ anio: "", dia: "", mes: "" });
-  const [hora, setHora] = useState<{ hora: string, minuto: string }>({ hora: "", minuto: "" });
-  
+  const [fecha, setFecha] = useState<{ anio: string; mes: string; dia: string }>({
+    anio: "",
+    dia: "",
+    mes: "",
+  });
+  const [hora, setHora] = useState<{ hora: string; minuto: string }>({ hora: "", minuto: "" });
+
   const [loadingBloqueoPedidos, setLoadingBloqueoPedidos] = useState<boolean>(false);
   const [creandoSimulacion, setCreandoSimulacion] = useState<boolean>(false);
   const [errorSimulacion, setErrorSimulacion] = useState<boolean>(false);
   const [errorMsg, setErroMsg] = useState<string>("");
-  
+
   const months = [
     { value: "01", label: "Enero" },
     { value: "02", label: "Febrero" },
@@ -135,33 +122,33 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
     { value: "10", label: "Octubre" },
     { value: "11", label: "Noviembre" },
     { value: "12", label: "Diciembre" },
-  ]
+  ];
 
   // Efecto para sincronizar la fecha seleccionada con los estados legacy
   useEffect(() => {
     if (selectedDate) {
-      const year = selectedDate.getFullYear().toString()
-      const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0')
-      const day = selectedDate.getDate().toString().padStart(2, '0')
-      
+      const year = selectedDate.getFullYear().toString();
+      const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+      const day = selectedDate.getDate().toString().padStart(2, "0");
+
       setFecha({
         anio: year,
         mes: month,
-        dia: day
-      })
+        dia: day,
+      });
     }
-  }, [selectedDate])
+  }, [selectedDate]);
 
   // Efecto para sincronizar la hora seleccionada con los estados legacy
   useEffect(() => {
     if (selectedTime) {
-      const [hours, minutes] = selectedTime.split(':')
+      const [hours, minutes] = selectedTime.split(":");
       setHora({
         hora: hours,
-        minuto: minutes
-      })
+        minuto: minutes,
+      });
     }
-  }, [selectedTime])
+  }, [selectedTime]);
 
   const obtuvoArch = useRef<boolean>(false);
   useEffect(() => {
@@ -181,7 +168,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       cargarArchivos();
     }
     console.log("entra");
-  }, [hasPreviousData])
+  }, [hasPreviousData]);
 
   const readFileText = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -209,10 +196,12 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
   const handleFileUploadBloqueos = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !file.name.toLowerCase().includes("bloqueos") || !file.name.endsWith(".txt")) {
-      alert("Debes subir un archivo de bloqueos en formato .txt que contenga 'bloqueos' en el nombre");
+      alert(
+        "Debes subir un archivo de bloqueos en formato .txt que contenga 'bloqueos' en el nombre"
+      );
       return;
     }
-    setUploadedFileBloqueo(file)
+    setUploadedFileBloqueo(file);
     const content = await readFileText(file);
     if (uploadedFilePedido) {
       const pedidoContent = await readFileText(uploadedFilePedido);
@@ -225,11 +214,19 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       case SimulationType.COLAPSO:
         return [];
       case SimulationType.SEMANAL:
-        return [dayInit, dayInit + 1, dayInit + 2, dayInit + 3, dayInit + 4, dayInit + 5, dayInit + 6];
+        return [
+          dayInit,
+          dayInit + 1,
+          dayInit + 2,
+          dayInit + 3,
+          dayInit + 4,
+          dayInit + 5,
+          dayInit + 6,
+        ];
       case SimulationType.DIA_DIA:
-        return [dayInit]
+        return [dayInit];
     }
-  }
+  };
 
   const generarSimulacion = async () => {
     nextStep();
@@ -254,42 +251,43 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       setCreandoSimulacion(true);
       let responsePedidos;
       let lengthPedidos = -1;
-      const dias : number[] = getDiasSimulacion(simulationType!,Number(fecha.dia));
+      const dias: number[] = getDiasSimulacion(simulationType!, Number(fecha.dia));
       //await new Promise((resolve) => setTimeout(resolve, 3000));
-      if(dias.length >=0){
-          responsePedidos = await PedidosService.getOrders(dias,Number(fecha.anio),Number(fecha.mes));
-          lengthPedidos =responsePedidos.data.pedidos.length;
-      } 
-          
+      if (dias.length >= 0) {
+        responsePedidos = await PedidosService.getOrders(
+          dias,
+          Number(fecha.anio),
+          Number(fecha.mes)
+        );
+        lengthPedidos = responsePedidos.data.pedidos.length;
+      }
 
-      console.log("se crea simulacion y el pedido",namePedido);
-      const newSimulation : SimulationInterface ={
+      console.log("se crea simulacion y el pedido", namePedido);
+      const newSimulation: SimulationInterface = {
         tipo: simulationType!,
-        fechaInicial: fecha.anio+"/"+fecha.mes+"/"+fecha.dia,
-        hora:hora.hora+":"+hora.minuto,
-        mesPedido:obtenerMesArchPedido(namePedido) ?? 0,
-        anioPedido:obtenerAnioArchPedido(namePedido) ?? 0,
-        mesBloqueo:obtenerMesDesdeNombre(nameBloqueo)?? 0,
-        anioBloqueo:obtenerAnioDesdeNombre(nameBloqueo) ?? 0 ,
+        fechaInicial: fecha.anio + "/" + fecha.mes + "/" + fecha.dia,
+        hora: hora.hora + ":" + hora.minuto,
+        mesPedido: obtenerMesArchPedido(namePedido) ?? 0,
+        anioPedido: obtenerAnioArchPedido(namePedido) ?? 0,
+        mesBloqueo: obtenerMesDesdeNombre(nameBloqueo) ?? 0,
+        anioBloqueo: obtenerAnioDesdeNombre(nameBloqueo) ?? 0,
         anio: Number(fecha.anio) ?? 0,
         mes: Number(fecha.mes) ?? 0,
         dia: Number(fecha.dia) ?? 0,
         ihora: Number(hora.hora) ?? 0,
         iminuto: Number(hora.minuto) ?? 0,
-        active:false,
-        pedidosNum:lengthPedidos  // en caso sea -1,  se coloca No definido
-      }
+        active: false,
+        pedidosNum: lengthPedidos, // en caso sea -1,  se coloca No definido
+      };
       saveSimulacion(newSimulation);
       setCreandoSimulacion(false);
-      }
-    catch(error){
+    } catch (error) {
       setErrorSimulacion(true);
-      setErroMsg((error as Error).message)
-    }
-    finally{
+      setErroMsg((error as Error).message);
+    } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   const validateFile = async (
     contentPedido?: string,
@@ -305,7 +303,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
 
     const totalSteps = 5;
     for (let i = 1; i <= totalSteps; i++) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setValidationProgress((i / totalSteps) * 100);
     }
 
@@ -315,11 +313,13 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       //await getVehiculesRoutesFlow(pedidos, filePedidos, bloqueos, fileBloqueo);
 
       //Extraer datos desde el nombre del archivo de pedidos
-      const nombreArchivoPedido = filePedidos.name; 
+      const nombreArchivoPedido = filePedidos.name;
       const regexFecha = /ventas(\d{4})(\d{2})/;
       const match = nombreArchivoPedido.match(regexFecha);
       if (!match) {
-        throw new Error("El nombre del archivo de pedidos no contiene una fecha válida en formato ventasYYYYMM.txt");
+        throw new Error(
+          "El nombre del archivo de pedidos no contiene una fecha válida en formato ventasYYYYMM.txt"
+        );
       }
 
       const anioPedido = parseInt(match[1]);
@@ -330,7 +330,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       const anioBloqueo = anioPedido;
       const mesBloqueo = mesPedido;
 
-      console.log("se obtiene",fileBloqueo.name,filePedidos.name);
+      console.log("se obtiene", fileBloqueo.name, filePedidos.name);
       setFileValidationStatus("valid");
     } catch (error) {
       setValidationErrors(["Error en el archivo de pedidos o bloqueos"]);
@@ -340,41 +340,41 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
 
   const nextStep = () => {
     if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const getStepIcon = (step: number) => {
     switch (step) {
       case 1:
-        return <Target className="h-5 w-5" />
+        return <Target className="h-5 w-5" />;
       case 2:
-        return <Settings className="h-5 w-5" />
+        return <Settings className="h-5 w-5" />;
       case 3:
-        return <CheckCircle className="h-5 w-5" />
+        return <CheckCircle className="h-5 w-5" />;
       default:
-        return <Calendar className="h-5 w-5" />
+        return <Calendar className="h-5 w-5" />;
     }
-  }
+  };
 
   const getStepTitle = (step: number) => {
     switch (step) {
       case 1:
-        return "Tipo de Simulación"
+        return "Tipo de Simulación";
       case 2:
-        return "Configuración"
+        return "Configuración";
       case 3:
-        return "Confirmación"
+        return "Confirmación";
       default:
-        return "Paso"
+        return "Paso";
     }
-  }
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -382,65 +382,70 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
         return (
           <div className="space-y-8">
             <div className="text-center space-y-2">
-              <h3 className="text-xl font-semibold text-gray-900">Selecciona el tipo de simulación</h3>
-              <p className="text-gray-600">Elige la modalidad que mejor se adapte a tus necesidades</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Selecciona el tipo de simulación
+              </h3>
+              <p className="text-gray-600">
+                Elige la modalidad que mejor se adapte a tus necesidades
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <Card
                 className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                  simulationType === SimulationType.DIA_DIA 
-                    ? "ring-2 ring-blue-500 bg-blue-50/50" 
+                  simulationType === SimulationType.DIA_DIA
+                    ? "ring-2 ring-blue-500 bg-blue-50/50"
                     : "hover:bg-gray-50"
                 }`}
                 onClick={() => setSimulationType(SimulationType.DIA_DIA)}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-center mb-4">
-                    <div className={`p-3 rounded-xl ${
-                      simulationType === SimulationType.DIA_DIA 
-                        ? "bg-blue-500" 
-                        : "bg-blue-100"
-                    }`}>
-                      <Clock className={`h-6 w-6 ${
-                        simulationType === SimulationType.DIA_DIA 
-                          ? "text-white" 
-                          : "text-blue-600"
-                      }`} />
+                    <div
+                      className={`p-3 rounded-xl ${
+                        simulationType === SimulationType.DIA_DIA ? "bg-blue-500" : "bg-blue-100"
+                      }`}
+                    >
+                      <Clock
+                        className={`h-6 w-6 ${
+                          simulationType === SimulationType.DIA_DIA ? "text-white" : "text-blue-600"
+                        }`}
+                      />
                     </div>
                   </div>
                   <CardTitle className="text-lg text-center">Operación Día a Día</CardTitle>
                 </CardHeader>
                 <CardContent className="text-center">
                   <p className="text-sm text-gray-600 mb-4">
-                    Realiza operaciones en tiempo real representando el funcionamiento diario del sistema.
+                    Realiza operaciones en tiempo real representando el funcionamiento diario del
+                    sistema.
                   </p>
-                  <Badge className="bg-blue-50 text-blue-700 border-blue-200">
-                    Tiempo Real
-                  </Badge>
+                  <Badge className="bg-blue-50 text-blue-700 border-blue-200">Tiempo Real</Badge>
                 </CardContent>
               </Card>
 
               <Card
                 className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                  simulationType === SimulationType.SEMANAL 
-                    ? "ring-2 ring-green-500 bg-green-50/50" 
+                  simulationType === SimulationType.SEMANAL
+                    ? "ring-2 ring-green-500 bg-green-50/50"
                     : "hover:bg-gray-50"
                 }`}
                 onClick={() => setSimulationType(SimulationType.SEMANAL)}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-center mb-4">
-                    <div className={`p-3 rounded-xl ${
-                      simulationType === SimulationType.SEMANAL 
-                        ? "bg-green-500" 
-                        : "bg-green-100"
-                    }`}>
-                      <CalendarDays className={`h-6 w-6 ${
-                        simulationType === SimulationType.SEMANAL 
-                          ? "text-white" 
-                          : "text-green-600"
-                      }`} />
+                    <div
+                      className={`p-3 rounded-xl ${
+                        simulationType === SimulationType.SEMANAL ? "bg-green-500" : "bg-green-100"
+                      }`}
+                    >
+                      <CalendarDays
+                        className={`h-6 w-6 ${
+                          simulationType === SimulationType.SEMANAL
+                            ? "text-white"
+                            : "text-green-600"
+                        }`}
+                      />
                     </div>
                   </div>
                   <CardTitle className="text-lg text-center">Simulación Semanal</CardTitle>
@@ -449,32 +454,30 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                   <p className="text-sm text-gray-600 mb-4">
                     Simula operaciones durante una semana completa (168 horas).
                   </p>
-                  <Badge className="bg-green-50 text-green-700 border-green-200">
-                    Proyección
-                  </Badge>
+                  <Badge className="bg-green-50 text-green-700 border-green-200">Proyección</Badge>
                 </CardContent>
               </Card>
 
               <Card
                 className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                  simulationType === SimulationType.COLAPSO 
-                    ? "ring-2 ring-red-500 bg-red-50/50" 
+                  simulationType === SimulationType.COLAPSO
+                    ? "ring-2 ring-red-500 bg-red-50/50"
                     : "hover:bg-gray-50"
                 }`}
                 onClick={() => setSimulationType(SimulationType.COLAPSO)}
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-center mb-4">
-                    <div className={`p-3 rounded-xl ${
-                      simulationType === SimulationType.COLAPSO 
-                        ? "bg-red-500" 
-                        : "bg-red-100"
-                    }`}>
-                      <AlertTriangle className={`h-6 w-6 ${
-                        simulationType === SimulationType.COLAPSO 
-                          ? "text-white" 
-                          : "text-red-600"
-                      }`} />
+                    <div
+                      className={`p-3 rounded-xl ${
+                        simulationType === SimulationType.COLAPSO ? "bg-red-500" : "bg-red-100"
+                      }`}
+                    >
+                      <AlertTriangle
+                        className={`h-6 w-6 ${
+                          simulationType === SimulationType.COLAPSO ? "text-white" : "text-red-600"
+                        }`}
+                      />
                     </div>
                   </div>
                   <CardTitle className="text-lg text-center">Simulación Colapso</CardTitle>
@@ -483,14 +486,12 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                   <p className="text-sm text-gray-600 mb-4">
                     Simula operaciones hasta llegar al colapso del sistema.
                   </p>
-                  <Badge className="bg-red-50 text-red-700 border-red-200">
-                    Límites
-                  </Badge>
+                  <Badge className="bg-red-50 text-red-700 border-red-200">Límites</Badge>
                 </CardContent>
               </Card>
             </div>
           </div>
-        )
+        );
 
       case 2:
         return (
@@ -562,7 +563,9 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                     <div className="flex items-center gap-2 text-sm text-blue-700">
                       <Clock className="h-4 w-4" />
                       <span>
-                        La simulación comenzará el {format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })} a las {selectedTime}
+                        La simulación comenzará el{" "}
+                        {format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })} a las{" "}
+                        {selectedTime}
                       </span>
                     </div>
                   </div>
@@ -588,26 +591,26 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
               <CardContent className="p-6">
                 {/* Opciones de origen de datos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card 
+                  <Card
                     className={`cursor-pointer transition-all duration-200 ${
-                      hasPreviousData === "hasnt" 
-                        ? "ring-2 ring-purple-500 bg-purple-50/50" 
+                      hasPreviousData === "hasnt"
+                        ? "ring-2 ring-purple-500 bg-purple-50/50"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => setHasPreviousData("hasnt")}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          hasPreviousData === "hasnt" 
-                            ? "bg-purple-500" 
-                            : "bg-purple-100"
-                        }`}>
-                          <Upload className={`h-5 w-5 ${
-                            hasPreviousData === "hasnt" 
-                              ? "text-white" 
-                              : "text-purple-600"
-                          }`} />
+                        <div
+                          className={`p-2 rounded-lg ${
+                            hasPreviousData === "hasnt" ? "bg-purple-500" : "bg-purple-100"
+                          }`}
+                        >
+                          <Upload
+                            className={`h-5 w-5 ${
+                              hasPreviousData === "hasnt" ? "text-white" : "text-purple-600"
+                            }`}
+                          />
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900">Subir archivos nuevos</h4>
@@ -619,26 +622,26 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                     </CardContent>
                   </Card>
 
-                  <Card 
+                  <Card
                     className={`cursor-pointer transition-all duration-200 ${
-                      hasPreviousData === "has" 
-                        ? "ring-2 ring-purple-500 bg-purple-50/50" 
+                      hasPreviousData === "has"
+                        ? "ring-2 ring-purple-500 bg-purple-50/50"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => setHasPreviousData("has")}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          hasPreviousData === "has" 
-                            ? "bg-purple-500" 
-                            : "bg-purple-100"
-                        }`}>
-                          <FileText className={`h-5 w-5 ${
-                            hasPreviousData === "has" 
-                              ? "text-white" 
-                              : "text-purple-600"
-                          }`} />
+                        <div
+                          className={`p-2 rounded-lg ${
+                            hasPreviousData === "has" ? "bg-purple-500" : "bg-purple-100"
+                          }`}
+                        >
+                          <FileText
+                            className={`h-5 w-5 ${
+                              hasPreviousData === "has" ? "text-white" : "text-purple-600"
+                            }`}
+                          />
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-900">Usar archivos existentes</h4>
@@ -655,10 +658,14 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                 {hasPreviousData === "hasnt" && (
                   <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
                     <div className="text-center">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Archivos Requeridos</h3>
-                      <p className="text-sm text-gray-600">Sube los archivos necesarios para la simulación</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Archivos Requeridos
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Sube los archivos necesarios para la simulación
+                      </p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Archivo de Pedidos */}
                       <div className="space-y-4">
@@ -671,7 +678,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                             <p className="text-xs text-gray-600">Formato: ventasYYYYMM.txt</p>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Input
                             id="file-pedidos"
@@ -680,13 +687,13 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                             className="hidden"
                             onChange={handleFileUploadPedidos}
                           />
-                          <Button 
-                            type="button" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => document.getElementById("file-pedidos")?.click()}
                             className="w-full bg-white hover:bg-gray-50"
                           >
-                            <Upload className="mr-2 h-4 w-4" /> 
+                            <Upload className="mr-2 h-4 w-4" />
                             Seleccionar archivo
                           </Button>
                         </div>
@@ -700,9 +707,9 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                                 ({Math.round(uploadedFilePedido.size / 1024)} KB)
                               </span>
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => setUploadedFilePedido(null)}
                               className="h-8 w-8"
                             >
@@ -723,7 +730,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                             <p className="text-xs text-gray-600">Formato: bloqueosYYYYMM.txt</p>
                           </div>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Input
                             id="file-bloqueos"
@@ -732,13 +739,13 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                             className="hidden"
                             onChange={handleFileUploadBloqueos}
                           />
-                          <Button 
-                            type="button" 
-                            variant="outline" 
+                          <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => document.getElementById("file-bloqueos")?.click()}
                             className="w-full bg-white hover:bg-gray-50"
                           >
-                            <Upload className="mr-2 h-4 w-4" /> 
+                            <Upload className="mr-2 h-4 w-4" />
                             Seleccionar archivo
                           </Button>
                         </div>
@@ -747,14 +754,16 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                           <div className="flex items-center justify-between rounded-lg border bg-white p-3">
                             <div className="flex items-center gap-3">
                               <FileText className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium">{uploadedFileBloqueo.name}</span>
+                              <span className="text-sm font-medium">
+                                {uploadedFileBloqueo.name}
+                              </span>
                               <span className="text-xs text-gray-500">
                                 ({Math.round(uploadedFileBloqueo.size / 1024)} KB)
                               </span>
                             </div>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => setUploadedFileBloqueo(null)}
                               className="h-8 w-8"
                             >
@@ -771,10 +780,14 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                 {hasPreviousData === "has" && (
                   <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
                     <div className="text-center">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Archivos Disponibles</h3>
-                      <p className="text-sm text-gray-600">Selecciona los archivos que deseas usar</p>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        Archivos Disponibles
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        Selecciona los archivos que deseas usar
+                      </p>
                     </div>
-                    
+
                     {loadingArch ? (
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
@@ -799,7 +812,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                             </SelectContent>
                           </Select>
                         </div>
-                        
+
                         <div className="space-y-3">
                           <Label className="font-semibold text-sm text-gray-700">
                             Archivo de Bloqueos
@@ -824,7 +837,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
               </CardContent>
             </Card>
           </div>
-        )
+        );
 
       case 3:
         return (
@@ -857,7 +870,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                           <p className="font-semibold text-gray-900">{simulationType}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-100 rounded-lg">
                           <Calendar className="h-4 w-4 text-purple-600" />
@@ -865,12 +878,15 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                         <div>
                           <p className="text-sm font-medium text-gray-600">Fecha de Inicio</p>
                           <p className="font-semibold text-gray-900">
-                            {selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: es }) : "No seleccionada"} {selectedTime}
+                            {selectedDate
+                              ? format(selectedDate, "dd/MM/yyyy", { locale: es })
+                              : "No seleccionada"}{" "}
+                            {selectedTime}
                           </p>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-green-100 rounded-lg">
@@ -883,7 +899,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                           </p>
                         </div>
                       </div>
-                      
+
                       {hasPreviousData === "hasnt" && (
                         <div className="flex items-center gap-3">
                           <div className="p-2 bg-orange-100 rounded-lg">
@@ -892,7 +908,8 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
                           <div>
                             <p className="text-sm font-medium text-gray-600">Archivos Cargados</p>
                             <p className="font-semibold text-gray-900">
-                              {uploadedFilePedido ? "✓ Pedidos" : "✗ Pedidos"}, {uploadedFileBloqueo ? "✓ Bloqueos" : "✗ Bloqueos"}
+                              {uploadedFilePedido ? "✓ Pedidos" : "✗ Pedidos"},{" "}
+                              {uploadedFileBloqueo ? "✓ Bloqueos" : "✗ Bloqueos"}
                             </p>
                           </div>
                         </div>
@@ -908,12 +925,12 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
               {errorSimulacion && <SimulationError msg={errorMsg} />}
             </div>
           </div>
-        )
+        );
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <Card className="border-2 border-blue-200 shadow-xl">
@@ -928,12 +945,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
             <p className="text-sm text-gray-600">Configura tu simulación de distribución GLP</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="h-8 w-8"
-        >
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -941,20 +953,14 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
       {/* Progress Bar */}
       <div className="px-6 py-4 bg-gray-50">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">
-            Paso {currentStep} de 3
-          </span>
-          <span className="text-sm text-gray-500">
-            {getStepTitle(currentStep)}
-          </span>
+          <span className="text-sm font-medium text-gray-700">Paso {currentStep} de 3</span>
+          <span className="text-sm text-gray-500">{getStepTitle(currentStep)}</span>
         </div>
         <Progress value={(currentStep / 3) * 100} className="h-2" />
       </div>
 
       {/* Content */}
-      <div className="p-6">
-        {renderStepContent()}
-      </div>
+      <div className="p-6">{renderStepContent()}</div>
 
       {/* Footer */}
       <div className="flex items-center justify-between p-6 border-t bg-gray-50">
@@ -1000,7 +1006,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
         </div>
       </div>
     </Card>
-  )
+  );
 }
 
 const LoadingPedidosBloqueos = () => {
@@ -1013,8 +1019,8 @@ const LoadingPedidosBloqueos = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 const LoadingSimulacion = () => {
   return (
@@ -1026,8 +1032,8 @@ const LoadingSimulacion = () => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 const SimulationError = ({ msg }: { msg: string }) => {
   return (
@@ -1039,5 +1045,5 @@ const SimulationError = ({ msg }: { msg: string }) => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

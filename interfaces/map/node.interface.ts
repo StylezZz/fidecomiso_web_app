@@ -1,6 +1,6 @@
-export interface Node{
-    id?:string
-    x: number;
-    y: number;
-    isBloq?:boolean;
+export interface Nodo {
+  id?: string;
+  x: number;
+  y: number;
+  estaBloqueado?: boolean;
 }
