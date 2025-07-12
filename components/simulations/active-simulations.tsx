@@ -29,8 +29,8 @@ type ActiveSimulationsProps = {
 const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => {
   return (
     <div className="flex flex-col items-center justify-center space-y-6 py-16">
-      <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full">
-        <Zap className="h-12 w-12 text-blue-500" />
+      <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full">
+        <Zap className="h-12 w-12 text-gray-500" />
       </div>
       <div className="text-center space-y-2">
         <h3 className="text-xl font-semibold text-gray-900">No hay simulaciones registradas</h3>
@@ -40,7 +40,7 @@ const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => 
       </div>
       <Button 
         onClick={onNewSimulation}
-        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-200"
         size="lg"
       >
         <PlayCircle className="mr-2 h-5 w-5" /> 
@@ -289,7 +289,7 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
             <Button
               onClick={procesarNuevaSimulacion}
               disabled={state === "cargando"}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700"
               size="sm"
             >
               {state === "cargando" ? (
@@ -302,7 +302,7 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-gray-300 text-gray-700 hover:bg-gray-50">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
