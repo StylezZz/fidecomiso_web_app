@@ -1,7 +1,6 @@
 import type React from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/contexts/auth-context"
 import { StoreProvider } from "@/contexts/store-provider"
 import "@/app/globals.css"
 import { MapProvider } from "@/contexts/MapContext"
@@ -20,7 +19,6 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <AuthProvider>
             <SimulationProvider>
              <MapProvider>
                 <StoreProvider>
@@ -29,7 +27,6 @@ export default function RootLayout({
                 </StoreProvider>
               </MapProvider>
             </SimulationProvider>
-          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -22,7 +22,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
 
 interface MainLayoutProps {
     children: ReactNode
@@ -30,9 +29,6 @@ interface MainLayoutProps {
 
 export function MainLayout({children}: MainLayoutProps) {
   const pathname = usePathname();
-  const {logout, isAuthenticated} = useAuth();
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true); 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Pedidos", href: "/pedidos", icon: Calendar },
@@ -89,27 +85,6 @@ export function MainLayout({children}: MainLayoutProps) {
             <header className="flex h-16 items-center justify-between border-b bg-background px-6 w-full">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  Sistema Activo
-                </Badge>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <User className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={logout}>
-                      <LogOut/>
-                      Cerrar sesión
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </header>
           <main className="flex-1 overflow-auto p-6 w-full relative">
