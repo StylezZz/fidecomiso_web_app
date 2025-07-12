@@ -5,14 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { PlayCircle, Calendar, AlertOctagon, ExternalLink, Play, Trash, FileText, CheckCircle, Pause, MoreVertical, Trash2, Zap, Clock, AlertTriangle } from "lucide-react"
+import { PlayCircle, Calendar, AlertOctagon, ExternalLink, Play, Trash, FileText, CheckCircle, Pause, MoreVertical, Trash2, Zap, Clock, AlertTriangle, MapPin, Truck, Settings, Eye } from "lucide-react"
 import { formatDateTime } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { getSimulationStatus, getSimulationResult, cancelSimulation } from "@/store/simulation/simulation-slice"
 import { useSimulationContext } from "@/contexts/simulationContext"
 import { Progress } from "../ui/progress"
 import { SimulationInterface } from "@/interfaces/simulation.interface"
-import { stat } from "fs"
 import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform"
 import { Spinner } from "../ui/spinner"
 import { useMapContext } from "@/contexts/MapContext"
@@ -20,92 +19,92 @@ import SimulationService from "@/services/simulation.service"
 import { toast } from "sonner"
 import { useToast } from "@/hooks/use-toast"
 import { ToastAction } from "../ui/toast"
-import { DropdownMenu } from "@radix-ui/react-dropdown-menu"
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import useLegendSummary from "@/hooks/use-legend-summary"
+
 type ActiveSimulationsProps = {
   onNewSimulation?: () => void
 }
 
-const EmptySimulationContent =({onNewSimulation}: ActiveSimulationsProps)=>{
-  return(
-    <div className="flex flex-col items-center justify-center space-y-4 py-12">
-      <p className="text-center text-muted-foreground">
-      No existen Simulaciones registradas. Haga clic en "Nueva Simulación" para comenzar.
-      </p>
-      <Button onClick={onNewSimulation}>
-        <PlayCircle className="mr-2 h-4 w-4" /> Nueva Simulación
+const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => {
+  return (
+    <div className="flex flex-col items-center justify-center space-y-6 py-16">
+      <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full">
+        <Zap className="h-12 w-12 text-blue-500" />
+      </div>
+      <div className="text-center space-y-2">
+        <h3 className="text-xl font-semibold text-gray-900">No hay simulaciones registradas</h3>
+        <p className="text-gray-600 max-w-md">
+          Comienza creando tu primera simulación para optimizar las rutas de distribución de GLP
+        </p>
+      </div>
+      <Button 
+        onClick={onNewSimulation}
+        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        size="lg"
+      >
+        <PlayCircle className="mr-2 h-5 w-5" /> 
+        Crear Primera Simulación
       </Button>
     </div>
   )
 }
 
-
-
 export function ActiveSimulations({ onNewSimulation }: ActiveSimulationsProps) {
   const dispatch = useAppDispatch()
   const currentSimulation = useAppSelector((state) => state.simulation.currentSimulation)
-  const {simulaciones,getAllSimulacion,loadingSimulaciones} = useSimulationContext();
-  const [toastSimulacion,setToastSimulacion] = useState<boolean>(false);
-  useEffect(()=>{
+  const { simulaciones, getAllSimulacion, loadingSimulaciones } = useSimulationContext();
+  const [toastSimulacion, setToastSimulacion] = useState<boolean>(false);
+  
+  useEffect(() => {
     getAllSimulacion();
-  },[])
-
+  }, [])
 
   useEffect(() => {
-  const interval = setInterval(() => {
-    if (currentSimulation?.id) {
-      dispatch(getSimulationStatus(currentSimulation.id))
-    }
-  }, 1000)
+    const interval = setInterval(() => {
+      if (currentSimulation?.id) {
+        dispatch(getSimulationStatus(currentSimulation.id))
+      }
+    }, 1000)
 
-  return () => clearInterval(interval)
-}, [dispatch, currentSimulation?.id])
-
+    return () => clearInterval(interval)
+  }, [dispatch, currentSimulation?.id])
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="w-full">
-          <div className="flex justify-between w-100">
-          <div className="flex flex-col gap-2">
-          <CardTitle>Simulaciones Registradas</CardTitle>
-          <CardDescription>Simulaciones Guardadas con pedidos y bloqueos | Solo se debe iniciar una simulación</CardDescription>
+    <div className="space-y-6">
+      {loadingSimulaciones ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-3">
+            <Spinner />
+            <span className="text-gray-600">Cargando simulaciones...</span>
           </div>
-          <Button onClick={onNewSimulation} className="w-[200px]">
-            <PlayCircle className="mr-2 h-4 w-4" /> Nueva Simulación
-          </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          {
-            loadingSimulaciones && <Spinner/>
-          }
-          {
-             (!loadingSimulaciones&&simulaciones.length === 0) ? <EmptySimulationContent onNewSimulation={onNewSimulation}/>:
-              simulaciones.map(simulacion => (
-                <SimulationCard 
-                key={simulacion.key}
-                simulacion={simulacion} />
-            )
-              )   
-          }
-        </CardContent>
-      </Card>
+        </div>
+      ) : simulaciones.length === 0 ? (
+        <EmptySimulationContent onNewSimulation={onNewSimulation} />
+      ) : (
+        <div className="grid gap-6">
+          {simulaciones.map(simulacion => (
+            <SimulationCard 
+              key={simulacion.key}
+              simulacion={simulacion} 
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
-  const {anio,mes,dia,ihora,iminuto,active}=simulacion
-  const [state,setState] = useState<"nolisto"|"listo" | "cargando">(active ? "listo" : "nolisto");
-  const {setPedidosI,setBloqueosI, resetMap} = useMapContext();
-  const {toast} =useToast()
-  const {seleccionarSimulacion,verificarSimulacionSeleccionada,deleteSimulacion}= useSimulationContext();
+const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => {
+  const { anio, mes, dia, ihora, iminuto, active } = simulacion
+  const [state, setState] = useState<"nolisto" | "listo" | "cargando">(active ? "listo" : "nolisto");
+  const { setPedidosI, setBloqueosI, resetMap } = useMapContext();
+  const { toast } = useToast()
+  const { seleccionarSimulacion, verificarSimulacionSeleccionada, deleteSimulacion } = useSimulationContext();
   const router = useRouter()
-  const {reset}= useLegendSummary();
+  const { reset } = useLegendSummary();
 
-  const handleViewMap = (simulationId: string= "") => {
+  const handleViewMap = (simulationId: string = "") => {
     router.push("/mapa")
   }
 
@@ -117,7 +116,6 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
       toast({
         description: "Simulación reseteada correctamente.",
       });
-      // qué debe eliminar?
     } catch (error) {
       toast({
         variant: "destructive",
@@ -125,7 +123,6 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
       });
     }
   }
-
 
   // Función para obtener configuración visual de tipos de simulación
   const getSimulationTypeConfig = () => {
@@ -137,7 +134,8 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
           bgColor: "bg-blue-50",
           borderColor: "border-l-blue-500",
           name: "Día a Día",
-          description: "Simulación operativa diaria"
+          description: "Simulación operativa diaria",
+          gradient: "from-blue-500 to-blue-600"
         }
       case "Semanal":
         return {
@@ -146,7 +144,8 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
           bgColor: "bg-green-50",
           borderColor: "border-l-green-500",
           name: "Semanal",
-          description: "Simulación de planificación semanal"
+          description: "Simulación de planificación semanal",
+          gradient: "from-green-500 to-green-600"
         }
       case "Colapso":
         return {
@@ -155,7 +154,8 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
           bgColor: "bg-red-50",
           borderColor: "border-l-red-500",
           name: "Colapso",
-          description: "Simulación crítica de colapso"
+          description: "Simulación crítica de colapso",
+          gradient: "from-red-500 to-red-600"
         }
       default:
         return {
@@ -164,215 +164,170 @@ const SimulationCard = ({simulacion}:{simulacion: SimulationInterface})=>{
           bgColor: "bg-gray-50",
           borderColor: "border-l-gray-500",
           name: simulacion.tipo || "Desconocido",
-          description: "Tipo de simulación"
+          description: "Tipo de simulación",
+          gradient: "from-gray-500 to-gray-600"
         }
     }
   }
 
-  const procesarNuevaSimulacion = async()=>{
-    //colocar condicional que no iniciar si hay otro simulacion activa
-    if(verificarSimulacionSeleccionada()){
+  const procesarNuevaSimulacion = async () => {
+    if (verificarSimulacionSeleccionada()) {
       toast({
-        variant:"destructive",
-        description:"No puedes iniciar la simulación, hasta parar la activada",
-        action:<ToastAction altText="Se canceló esta simulación">Se canceló esta simulación</ToastAction>
+        variant: "destructive",
+        description: "No puedes iniciar la simulación, hasta parar la activada",
+        action: <ToastAction altText="Se canceló esta simulación">Se canceló esta simulación</ToastAction>
       })
       return;
     }
-    try{
+    try {
       setState('cargando');
-      await SimulationService.initSimulation((dia*1440)+(ihora*60)+iminuto,10,dia,mes,anio,iminuto,ihora);
-      const resPedido = await SimulationService.simulacionPedidoSemanal(anio,mes,dia,ihora,iminuto);
-      const resBloqueo = await SimulationService.simulacionBloqueosSemanal(anio,mes,dia,ihora,iminuto);
+      await SimulationService.initSimulation((dia * 1440) + (ihora * 60) + iminuto, 10, dia, mes, anio, iminuto, ihora);
+      const resPedido = await SimulationService.simulacionPedidoSemanal(anio, mes, dia, ihora, iminuto);
+      const resBloqueo = await SimulationService.simulacionBloqueosSemanal(anio, mes, dia, ihora, iminuto);
       setPedidosI(resPedido.data);
       setBloqueosI(resBloqueo.data);
-      //colocar inicializar simulacion
       seleccionarSimulacion(simulacion);
-      new Promise(resolve => setTimeout(resolve,3000)); //para asegurar el usestate de seleccionar simulacion
+      new Promise(resolve => setTimeout(resolve, 3000));
       setState('listo');
-    }
-    catch(error){
+    } catch (error) {
       setState('nolisto');
     }
   }
 
-    const getStatusConfig = () => {
-      switch (state) {
-        case "listo":
-          return {
-            badge: { text: "Completada", variant: "secondary" as const, color: "bg-green-100 text-green-800 border-green-200" },
-            title: "Simulación Completada",
-            description: "La simulación ha terminado exitosamente. Puedes ver los resultados en el mapa.",
-            color: "bg-green-100 text-green-800 border-green-200 hover:bg-green-200 flex items-center gap-1 px-2 py-0.5 whitespace-nowrap",
-            icon: CheckCircle,
-            text: "Completada"
-          };
-        case "cargando":
-          return {
-            badge: { text: "En Proceso", variant: "outline" as const, color: "bg-blue-100 text-blue-800 border-blue-200" },
-            title: "Simulación en Proceso",
-            description: "La simulación está ejecutándose. Por favor espera a que termine.",
-            color: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200 flex items-center gap-1 px-2 py-0.5 whitespace-nowrap",
-            icon: Clock,
-            text: "En Proceso"
-          };
-        default:
-          return {
-            badge: { text: "Pendiente", variant: "outline" as const, color: "bg-gray-100 text-gray-800 border-gray-200" },
-            title: "Simulación Pendiente",
-            description: "La simulación está lista para ejecutarse.",
-            color: "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200 flex items-center gap-1 px-2 py-0.5 whitespace-nowrap",
-            icon: Clock,
-            text: "Pendiente"
-          };
-      }
-    };
-
-    const statusConfig = getStatusConfig();
-    const typeConfig = getSimulationTypeConfig();
-    const archivoPedidoMes = ()=>{
-      if(simulacion.mesPedido.toString().length == 1)return "0"+simulacion.mesPedido.toString();
-      else return simulacion.mesPedido.toString();
+  const getStatusConfig = () => {
+    switch (state) {
+      case "listo":
+        return {
+          icon: CheckCircle,
+          color: "text-green-600",
+          bgColor: "bg-green-100",
+          text: "Listo para ejecutar",
+          badge: "success"
+        }
+      case "cargando":
+        return {
+          icon: Spinner,
+          color: "text-blue-600",
+          bgColor: "bg-blue-100",
+          text: "Inicializando...",
+          badge: "secondary"
+        }
+      case "nolisto":
+        return {
+          icon: AlertTriangle,
+          color: "text-orange-600",
+          bgColor: "bg-orange-100",
+          text: "Pendiente de configuración",
+          badge: "outline"
+        }
     }
-    const archivoBloqueoMes =()=>{
-      if(simulacion.mesBloqueo.toString().length ==1) return "0"+simulacion.mesBloqueo.toString();
-      else return simulacion.mesBloqueo.toString();
-    }
+  }
 
-    return (
-      <Card
-        className={`border-l-4 ${
-          state === "nolisto"
-            ? typeConfig.borderColor
-              : state === "cargando"
-                ? "border-l-green-500"
-                : "border-l-green-600"
-        }`}
-      >
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <h3 className="text-lg font-semibold">Simulación</h3>
-              <Badge className={typeConfig.color}>
-                <typeConfig.icon className="h-3 w-3 mr-1" />
-                {typeConfig.name}
-              </Badge>
-              {state !== "nolisto" && (
-                <Badge className={statusConfig.color}>
-                  <statusConfig.icon className="h-3 w-3 mr-1" />
-                  {statusConfig.text}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              {(state === "listo") && (
-                <Button variant="outline" size="sm" onClick={()=>{handleViewMap("")}}>
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Ver en Mapa
-                </Button>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    className="text-red-600 focus:text-red-600"
-                    onClick={()=>{
-                      deleteSimulacion(simulacion);
-                    }}  
-                  >
-                    <Trash2 className="w-4 h-4 mr-2"/>
-                    Eliminar 
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground flex items-center gap-2">
-            <Calendar className="h-4 w-4"/>
-            {typeConfig.description} • Creada el {simulacion.fechaInicial} {simulacion.hora}
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Status Section */}
-          <div className={`${typeConfig.bgColor} rounded-lg p-4 space-y-3`}>
-            <div className="flex items-center space-x-2">
-              {state === "cargando" && <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />}
-              {state === "listo" && <CheckCircle className="w-4 h-4 text-green-600" />}
-              {state === "nolisto" && <div className="w-4 h-4 bg-gray-400 rounded-full" />}
-              <span className="font-medium">{statusConfig.title}</span>
-            </div>
-            <p className="text-sm text-muted-foreground">{statusConfig.description}</p>
+  const config = getSimulationTypeConfig();
+  const statusConfig = getStatusConfig();
 
-            {state === "cargando" && (
-              <div className="flex items-center space-x-2 text-sm">
-                <div className="flex space-x-1">
-                  <div
-                    className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
-                    style={{animation: "bounce 0.5s infinite", animationDelay: "0ms",}}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
-                    style={{animation: "bounce 0.5s infinite", animationDelay: "150ms",}}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
-                    style={{animation: "bounce 0.5s infinite" ,animationDelay: "300ms", }}
-                  ></div>
+  const archivoPedidoMes = () => {
+    return formatearNombreArchivoPedido(anio.toString());
+  }
+
+  const archivoBloqueoMes = () => {
+    return formatearNombreBloqueos(anio.toString());
+  }
+
+  return (
+    <Card className={`border-l-4 ${config.borderColor} hover:shadow-lg transition-all duration-200 group`}>
+      <CardContent className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Información principal */}
+          <div className="flex-1 space-y-4">
+            <div className="flex items-start gap-4">
+              <div className={`p-3 rounded-xl bg-gradient-to-br ${config.gradient}`}>
+                <config.icon className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-semibold text-gray-900">{config.name}</h3>
+                  <Badge variant={statusConfig.badge as any} className="text-xs">
+                    {statusConfig.text}
+                  </Badge>
                 </div>
-                <span className="text-muted-foreground">Procesando simulación...</span>
+                <p className="text-gray-600">{config.description}</p>
+                
+                {/* Detalles de la simulación */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {dia}/{mes}/{anio}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {ihora.toString().padStart(2, '0')}:{iminuto.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {archivoPedidoMes()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {archivoBloqueoMes()}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Simulation Details */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-muted-foreground">Tipo:</span>
-              <p className="font-medium">{simulacion.tipo}</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Pedidos:</span>
-              <p className="font-medium">{simulacion.pedidosNum !== -1 ? `${simulacion.pedidosNum} Pedidos Totales`: `No definido`}</p>
-            </div>
-            <div>
-              <span className="text-muted-foreground">Estado:</span>
-              <p className="font-medium">{statusConfig.badge.text}</p>
-            </div>
-          </div>
+          {/* Acciones */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              onClick={procesarNuevaSimulacion}
+              disabled={state === "cargando"}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              size="sm"
+            >
+              {state === "cargando" ? (
+                <Spinner className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {state === "cargando" ? "Iniciando..." : "Iniciar"}
+            </Button>
 
-          {/* Files Used */}
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Archivos utilizados:</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-              <div className="flex items-center space-x-2 bg-muted/50 rounded p-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                <span>Pedidos: {simulacion.anioPedido?  formatearNombreArchivoPedido("ventas"+simulacion.anioPedido.toString()+archivoPedidoMes()+".txt") : "No definido"}</span>
-              </div>
-              <div className="flex items-center space-x-2 bg-muted/50 rounded p-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                <span>Bloqueos: {simulacion.anioBloqueo?  formatearNombreBloqueos(simulacion.anioBloqueo.toString()+archivoBloqueoMes()+".bloqueos.txt") : "No definido"}</span>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button disabled={state=="listo"} onClick={()=>procesarNuevaSimulacion()}>
-                <Play className="h-4 w-4 mr-2"/> Iniciar Simulación
-              </Button>
-              <Button disabled={state=="listo"} onClick={handleReset}>
-                <Trash className="h-4 w-4 mr-2"/> Reset
-              </Button>
-              {
-                state=="cargando" &&
-                <Button className="space-x-2 bg-red-600 hover:bg-red-400" >
-                  <Pause className="h-4 w-4" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
-              }
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleViewMap()}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver en Mapa
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleReset}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Resetear
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => deleteSimulacion(simulacion)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </CardContent>
-      </Card>
-    )
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
