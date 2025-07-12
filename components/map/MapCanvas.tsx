@@ -431,8 +431,3 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({open}, ref) => {
 MapCanvas.displayName = 'MapCanvas';
 
 export default MapCanvas;
-
-/*
-Made by Dalpb
-
-*/

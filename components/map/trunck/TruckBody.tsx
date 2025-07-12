@@ -262,4 +262,3 @@ export default React.memo(TruckBody, (prevProps, nextProps) => {
     prevProps.scale === nextProps.scale
   );
 });
-// Made by Dalpb

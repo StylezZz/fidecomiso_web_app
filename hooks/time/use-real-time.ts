@@ -60,6 +60,3 @@ const useRealTime = ({initTimer,simulacionIniciada}:RealTimeProps) : RealTimeRet
 }
 
 export default useRealTime;
-/*
-made by Dalpb
-*/

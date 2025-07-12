@@ -14,6 +14,3 @@ export const defineColorTruck = (typeParam: TypeTruck | undefined) : string =>{
     }
 }
   
-/*
-made by Dalpb
-*/

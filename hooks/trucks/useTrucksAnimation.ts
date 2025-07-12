@@ -127,4 +127,3 @@ const useTruckAnimation = ({ route, truckPlate,onOrderDelivery }: UseTruckAnimat
 }
 
 export default useTruckAnimation;
-// /*Made by Dalpb */
