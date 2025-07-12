@@ -30,7 +30,7 @@ export function SimulationsView() {
           </div>
           <Button 
             onClick={handleNewSimulation} 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 shadow-lg hover:shadow-xl transition-all duration-200"
             size="lg"
           >
             <Plus className="mr-2 h-5 w-5" /> 

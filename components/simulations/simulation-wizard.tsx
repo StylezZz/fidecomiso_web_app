@@ -962,7 +962,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
           variant="outline"
           onClick={prevStep}
           disabled={currentStep === 1}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
         >
           <ChevronLeft className="h-4 w-4" />
           Anterior
@@ -973,7 +973,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
             <Button
               onClick={generarSimulacion}
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700"
             >
               {isSubmitting ? (
                 <>
@@ -991,7 +991,7 @@ export function SimulationWizard({ onClose }: SimulationWizardProps) {
             <Button
               onClick={nextStep}
               disabled={!simulationType || (currentStep === 2 && !selectedDate)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              className="bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700"
             >
               Siguiente
               <ChevronRight className="ml-2 h-4 w-4" />
