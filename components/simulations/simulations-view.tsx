@@ -1,20 +1,16 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
 import { MainLayout } from "@/components/layout/main-layout"
 import { SimulationWizard } from "@/components/simulations/simulation-wizard"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useEffect, useState } from "react"
 //import { SimulationStatus } from "@/components/simulations/simulation-status"
 import { SimulationHistory } from "@/components/simulations/simulation-history"
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { fetchSimulationTypes, resetSimulationState } from "@/store/simulation/simulation-slice"
-import { Activity, BarChart2, PlusCircle, FileText } from "lucide-react"
-import { ActiveSimulations } from "./active-simulations"
-import { SimulationForm } from "./simulation-form"
-import { SimulationResultsOverview } from "./simulation-results-overview"
-import { MapProvider } from "@/contexts/MapContext"
+import { resetSimulationState } from "@/store/simulation/simulation-slice"
+import { Activity, FileText } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { ActiveSimulations } from "./active-simulations"
 
 export function SimulationsView() {
   const [showWizard, setShowWizard] = useState(false);

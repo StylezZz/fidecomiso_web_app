@@ -1,5 +1,5 @@
 
-export interface VehiculoI {
+export interface VehiculoI { // Se deja tal cual
   id: number
   codigo: string
   tara: number
@@ -30,19 +30,19 @@ export interface Route {
   id: number
   x: number
   y: number
-  startTime: number
-  arriveTime: number
-  vehiculo: any
-  pedidoRuta?: PedidoRuta
+  tiempoInicio: number   // startTime -> tiempoInicio
+  tiempoFin: number      // arriveTime -> tiempoFin
+  camion: any
+  pedido?: PedidoRuta
   anio: number
   mes: number
-  nodoAnteriorX: number
-  nodoAnteriorY: number
-  antecesor: any
+  xprevio: number
+  yprevio: number
+  nodoPrevio: any
   costoTotal: number
-  pedido: boolean
-  route: boolean
-  depot: boolean
+  esPedido: boolean      // pedido -> esPedido
+  esRuta: boolean      // route -> esRuta
+  esAlmacen: boolean  // depot -> esAlmacen
 }
 //wea que mandamos nulo nomas
 export interface PedidoRuta {
@@ -78,19 +78,19 @@ export interface UbicacionActual {
   id: number
   x: number
   y: number
-  startTime: number
-  arriveTime: number
-  vehiculo: any
-  pedidoRuta: any
+  tiempoInicio: number
+  tiempoFin: number
+  camion: any
+  pedido: any
   anio: number
   mes: number
-  nodoAnteriorX: number
-  nodoAnteriorY: number
-  antecesor: any
+  xprevio: number
+  yprevio: number
+  nodoPrevio: any
   costoTotal: number
-  pedido: boolean
-  route: boolean
-  depot: boolean
+  esPedido: boolean
+  esRuta: boolean
+  esAlmacen: boolean
 }
 
 export interface PedidosAsignado {
@@ -119,5 +119,4 @@ export interface PedidosAsignado {
   fecDia: string
   tiempoRegistroStr: any
   cliente: any
-  horaInicio: number
 }

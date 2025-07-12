@@ -105,14 +105,14 @@ export const Truck = React.memo<TruckProps>(({  scale,dataVehiculo, setCamionSel
       for(let j=0;j < route.length;j++){
         const currentPoint = route[j];
         // Verificamos si el camión está en este punto de la ruta en este momento
-        const currentTimeRange = timerSimulacion >= currentPoint.startTime && timerSimulacion <= currentPoint.arriveTime;
-        
+        const currentTimeRange = timerSimulacion >= currentPoint.tiempoInicio && timerSimulacion <= currentPoint.tiempoFin;
+
         if(currentTimeRange){
           // El camión está en algún punto de la ruta
           camionEnRuta = true;
           
           // Si es un depósito/almacén, ocultamos el camión
-          if(currentPoint.depot){
+          if(currentPoint.esAlmacen){
             setVisible(false);
             console.log("Camión ", codigo, "está en almacén, ocultando");
           } else {
@@ -133,7 +133,7 @@ export const Truck = React.memo<TruckProps>(({  scale,dataVehiculo, setCamionSel
       if(!camionEnRuta){
         // Verificamos si ha completado su ruta
         const ultimoPunto = route[route.length - 1];
-        if(timerSimulacion > ultimoPunto.arriveTime){
+        if(timerSimulacion > ultimoPunto.tiempoFin){
           setVisible(false); // Ocultamos el camión si ha completado su ruta
           console.log("Camión ", codigo, "ha completado su ruta, ocultando");
         }
