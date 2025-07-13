@@ -1,7 +1,7 @@
-import { DashboardView } from "@/components/dashboard/dashboard-view"
+import { DashboardView } from "@/view/DashboardView";
 
 export default function DashboardPage() {
-  return <DashboardView />
+  return <DashboardView />;
 }
 
 export const dynamic = "force-dynamic";

@@ -1,29 +1,29 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MainLayout } from "@/components/layout/main-layout"
-import { PlanningForm } from "@/components/planner/planning-form"
-import { PlanningStatus } from "@/components/planner/planning-status"
-import { PlanningResults } from "@/components/planner/planning-results"
-import { useAppDispatch, useAppSelector } from "@/hooks/use-redux"
-import { fetchAlgorithms, resetPlanningState } from "@/store/planner/planner-slice"
-import { Play } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { PlanningForm } from "@/components/planner/planning-form";
+import { PlanningStatus } from "@/components/planner/planning-status";
+import { PlanningResults } from "@/components/planner/planning-results";
+import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
+import { fetchAlgorithms, resetPlanningState } from "@/store/planner/planner-slice";
+import { Play } from "lucide-react";
 
 export function PlannerView() {
-  const [showForm, setShowForm] = useState(false)
-  const dispatch = useAppDispatch()
-  const currentPlanning = useAppSelector((state) => state.planner.currentPlanning)
+  const [showForm, setShowForm] = useState(false);
+  const dispatch = useAppDispatch();
+  const currentPlanning = useAppSelector((state) => state.planner.currentPlanning);
 
   useEffect(() => {
-    dispatch(fetchAlgorithms())
-  }, [dispatch])
+    dispatch(fetchAlgorithms());
+  }, [dispatch]);
 
   const handleNewPlanning = () => {
-    dispatch(resetPlanningState())
-    setShowForm(true)
-  }
+    dispatch(resetPlanningState());
+    setShowForm(true);
+  };
 
   return (
     <MainLayout>
@@ -49,7 +49,9 @@ export function PlannerView() {
           <Card>
             <CardHeader>
               <CardTitle>Planificador de Rutas</CardTitle>
-              <CardDescription>Optimice la asignación de pedidos a camiones y genere rutas eficientes</CardDescription>
+              <CardDescription>
+                Optimice la asignación de pedidos a camiones y genere rutas eficientes
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col items-center justify-center space-y-4 py-12">
@@ -65,5 +67,5 @@ export function PlannerView() {
         )}
       </div>
     </MainLayout>
-  )
+  );
 }

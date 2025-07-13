@@ -1,5 +1,5 @@
 import { Nodo } from "@/interfaces/map/node.interface";
-import { Route } from "@/interfaces/newinterfaces/vehiculos.interface";
+import { Ruta } from "@/interfaces/simulation/camion.interface";
 
 enum Direction {
   IZQUIERDA = "Izquierda",
@@ -20,7 +20,7 @@ const useCalRoute = () => {
     }
   };
 
-  const calculateRotation = (currentNode: Route, nextNode: Route): number => {
+  const calculateRotation = (currentNode: Ruta, nextNode: Ruta): number => {
     const dx = nextNode.x - currentNode.x;
     const dy = nextNode.y - currentNode.y;
 

@@ -1,28 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/hooks/use-redux";
 import { Card, CardContent } from "@/components/ui/card";
-import { ActiveSimulations } from "./active-simulations";
-import { MainLayout } from "@/components/layout/main-layout";
+import { MainLayout } from "@/components/layout/MainLayout";
 import { resetSimulationState } from "@/store/simulation/simulation-slice";
 import { SimulationSetup } from "@/components/simulations/simulation-setup";
+import { ActiveSimulations } from "@/components/simulations/active-simulations";
 
 export function SimulationsView() {
-  const [showWizard, setShowWizard] = useState(false);
   const dispatch = useAppDispatch();
+  const [configuracion, setConfiguracion] = useState(false);
 
   const handleNewSimulation = () => {
     dispatch(resetSimulationState());
-    setShowWizard(true);
+    setConfiguracion(true);
   };
 
   return (
     <MainLayout>
       <div className="space-y-6 w-full">
-        {/* Header simplificado */}
+        {/* Cabecera */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Lista de Simulaciones</h1>
@@ -44,10 +44,10 @@ export function SimulationsView() {
           </CardContent>
         </Card>
 
-        {/* Wizard inline en lugar de modal */}
-        {showWizard && (
+        {/* Configuración de simulaciones */}
+        {configuracion && (
           <div className="mt-8">
-            <SimulationSetup onClose={() => setShowWizard(false)} />
+            <SimulationSetup onClose={() => setConfiguracion(false)} />
           </div>
         )}
       </div>

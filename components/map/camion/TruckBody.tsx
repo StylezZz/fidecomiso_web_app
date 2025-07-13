@@ -1,8 +1,8 @@
 import { TipoCamion } from "@/interfaces/map/Truck.interface";
 import { defineColorTruck } from "@/utils/trucksUtils";
-import { Group, Circle, Text, Line, Rect } from "react-konva";
+import { Group, Circle, Text, Line, Rect, Ellipse } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
-import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
+import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { TooltipType } from "@/components/map/tooltip/MapTooltip";
 import React from "react";
@@ -15,10 +15,10 @@ interface TruckBodyProps {
   hasBreakdown: boolean | undefined;
   scale: number;
   camionId?: string;
-  vehiculoData: VehiculoI;
-  setCamionSeleccionado: Dispatch<SetStateAction<VehiculoI | null>>;
+  vehiculoData: CamionI;
+  setCamionSeleccionado: Dispatch<SetStateAction<CamionI | null>>;
   setToolTipCamionPos: Dispatch<SetStateAction<{ x: number; y: number }>>;
-  onTooltip?: (type: TooltipType, data: VehiculoI, position: { x: number; y: number }) => void;
+  onTooltip?: (type: TooltipType, data: CamionI, position: { x: number; y: number }) => void;
   isSelected?: boolean;
 }
 
@@ -72,61 +72,170 @@ const TruckBody = React.memo(
           e.target.getStage()!.container().style.cursor = "default";
         }}
       >
-        {/* Sombra */}
-        <Circle x={0} y={4} radius={12} fill="#000000" opacity={0.2} listening={false} />
+        {/* NOTA: El camión está orientado con el frente hacia la IZQUIERDA */}
+        {/* Esto significa que cuando angularRotation = 0, apunta hacia la izquierda */}
 
-        {/* Círculo principal del camión */}
-        <Circle
-          radius={12}
+        {/* Compartimento de carga (atrás) */}
+        <Rect
+          x={-4}
+          y={-6}
+          width={14}
+          height={8}
+          cornerRadius={1}
           fill={truckColor}
-          stroke="#ffffff"
-          strokeWidth={3}
+          stroke="#333"
+          strokeWidth={0.5}
           shadowColor="#000000"
-          shadowBlur={12}
-          shadowOpacity={0.4}
-          shadowOffsetX={0}
-          shadowOffsetY={3}
+          shadowBlur={8}
+          shadowOpacity={0.3}
+          shadowOffsetX={1}
+          shadowOffsetY={1}
           listening={true}
-          hitStrokeWidth={20}
+          hitStrokeWidth={15}
         />
 
-        {/* Indicador de dirección (flecha pequeña) */}
-        <Line
-          points={[0, -8, 0, 8]}
-          stroke="#ffffff"
-          strokeWidth={3}
-          lineCap="round"
+        {/* Cabina del conductor (adelante) */}
+        <Rect
+          x={-10}
+          y={-3}
+          width={7}
+          height={6}
+          cornerRadius={1}
+          fill={truckColor}
+          stroke="#333"
+          strokeWidth={0.5}
+          listening={true}
+        />
+
+        {/* Parabrisas */}
+        <Rect
+          x={-9.5}
+          y={-2.5}
+          width={3}
+          height={3}
+          cornerRadius={0.3}
+          fill="#87CEEB"
+          stroke="#333"
+          strokeWidth={0.3}
+          opacity={0.8}
           listening={false}
         />
-        <Line
-          points={[-4, 4, 0, 8, 4, 4]}
-          stroke="#ffffff"
-          strokeWidth={3}
-          lineCap="round"
+
+        {/* Ventana lateral de la cabina */}
+        <Rect
+          x={-6}
+          y={-2}
+          width={2.5}
+          height={2.5}
+          cornerRadius={0.3}
+          fill="#87CEEB"
+          stroke="#333"
+          strokeWidth={0.3}
+          opacity={0.8}
           listening={false}
         />
+
+        {/* Parrilla frontal */}
+        <Rect
+          x={-11.5}
+          y={-1.5}
+          width={1.5}
+          height={3}
+          cornerRadius={0.2}
+          fill="#333"
+          stroke="#222"
+          strokeWidth={0.2}
+          listening={false}
+        />
+
+        {/* Rueda delantera */}
+        <Circle
+          x={-7}
+          y={2.5}
+          radius={2}
+          fill="#333"
+          stroke="#000"
+          strokeWidth={0.5}
+          listening={false}
+        />
+        <Circle x={-7} y={2.5} radius={1.2} fill="#666" listening={false} />
+        <Circle x={-7} y={2.5} radius={0.6} fill="#999" opacity={0.6} listening={false} />
+
+        {/* Rueda trasera */}
+        <Circle
+          x={4}
+          y={2.5}
+          radius={2}
+          fill="#333"
+          stroke="#000"
+          strokeWidth={0.5}
+          listening={false}
+        />
+        <Circle x={4} y={2.5} radius={1.2} fill="#666" listening={false} />
+        <Circle x={4} y={2.5} radius={0.6} fill="#999" opacity={0.6} listening={false} />
+
+        {/* Faro delantero */}
+        <Circle
+          x={-10.5}
+          y={-1}
+          radius={0.8}
+          fill="#FFFFE0"
+          stroke="#FFA500"
+          strokeWidth={0.3}
+          opacity={0.9}
+          listening={false}
+        />
+
+        {/* Línea de separación entre cabina y carga */}
+        <Line
+          points={[-4, -6, -4, 2]}
+          stroke="#333"
+          strokeWidth={0.5}
+          opacity={0.7}
+          listening={false}
+        />
+
+        {/* Detalles de la carrocería */}
+        <Rect
+          x={-2}
+          y={-5}
+          width={8}
+          height={1}
+          cornerRadius={0.2}
+          fill="#333"
+          opacity={0.3}
+          listening={false}
+        />
+
+        {/* Manija de la puerta */}
+        <Circle x={-4.5} y={-1} radius={0.3} fill="#333" listening={false} />
 
         {/* Indicador de avería */}
         {hasBreakdown && (
-          <Circle
-            x={0}
-            y={-20}
-            radius={6}
-            fill="#ef4444"
-            stroke="#ffffff"
-            strokeWidth={2}
-            listening={false}
-          >
+          <Group>
+            <Circle
+              x={0}
+              y={-12}
+              radius={4}
+              fill="#ef4444"
+              stroke="#ffffff"
+              strokeWidth={1.5}
+              listening={false}
+              shadowColor="#000000"
+              shadowBlur={4}
+              shadowOpacity={0.3}
+            />
             <Text
               text="!"
               fill="white"
-              fontSize={8}
+              fontSize={6}
               fontStyle="bold"
               align="center"
-              x={-3}
-              y={-4}
+              x={-1.5}
+              y={-14}
+              listening={false}
             />
-          </Circle>
+          </Group>
         )}
 
         {/* Círculo de selección */}
@@ -134,11 +243,12 @@ const TruckBody = React.memo(
           <Circle
             x={0}
             y={0}
-            radius={20}
+            radius={15}
             stroke="#3b82f6"
-            strokeWidth={3}
-            dash={[5, 5]}
+            strokeWidth={2}
+            dash={[4, 4]}
             listening={false}
+            opacity={0.8}
           />
         )}
       </Group>
@@ -148,7 +258,7 @@ const TruckBody = React.memo(
 
 // Componente del Tooltip (mantener el existente)
 interface ToolTipCamionProps {
-  camion: VehiculoI;
+  camion: CamionI;
   posX: number;
   posY: number;
 }

@@ -64,24 +64,9 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,_gray_1px,_transparent_0)] bg-[size:20px_20px]"></div>
       </div>
 
-      <div className="relative flex h-full items-center justify-between px-6">
+      <div className="relative flex h-full items-center justify-between px-6 py-2">
         {/* LEFT: Navigation & Secondary Controls */}
         <div className="flex items-center gap-4">
-          {/* Exit Button */}
-          <Link href="/simulaciones">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-400 transition-all duration-200"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Salir
-            </Button>
-          </Link>
-
-          {/* Separator */}
-          <div className="h-6 w-px bg-gray-300"></div>
-
           {/* Simulation Controls */}
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200">
             <Button
@@ -153,11 +138,11 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
         {/* CENTER: Primary Information (Most Important) */}
         <div className="flex items-center gap-6">
           {/* Simulation Time */}
-          <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-4 py-2.5 border border-blue-200 shadow-sm">
+          <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-4 py-1 border border-blue-200 shadow-sm">
             <Calendar className="h-5 w-5 text-blue-600" />
             <div className="text-center">
               <div className="text-xs text-blue-600 font-medium mb-0.5">Simulación</div>
-              <div className="text-lg font-bold text-gray-900 leading-tight">
+              <div className="text-md font-bold text-gray-900 leading-tight">
                 {day}d {String(hour).padStart(2, "0")}h {String(minute).padStart(2, "0")}m
               </div>
             </div>
@@ -167,11 +152,11 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
           <div className="h-8 w-px bg-gray-300"></div>
 
           {/* Real Time */}
-          <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-2.5 border border-emerald-200 shadow-sm">
+          <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-1 border border-emerald-200 shadow-sm">
             <Clock className="h-5 w-5 text-emerald-600" />
             <div className="text-center">
               <div className="text-xs text-emerald-600 font-medium mb-0.5">Tiempo Real</div>
-              <div className="text-lg font-bold text-gray-900 leading-tight">
+              <div className="text-md font-bold text-gray-900 leading-tight">
                 {String(realHour).padStart(2, "0")}:{String(realMinute).padStart(2, "0")}:
                 {String(realSecond).padStart(2, "0")}
               </div>

@@ -63,7 +63,7 @@ class ReportsService {
   async getPedidosDivididos(): Promise<PedidosDivididosResponse> {
     try {
       const response = await axios.get<PedidosDivididosResponse>(
-        `${BASE_URL}/api/genetico/simulacionRuta/pedidoDividido`,
+        `${BASE_URL}/api/genetico/reportes/pedidoDividido`,
         {
           headers: {
             accept: "*/*",
@@ -89,7 +89,7 @@ class ReportsService {
   async getPedidosCompletos(): Promise<PedidosCompletosResponse> {
     try {
       const response = await axios.get<PedidosCompletosResponse>(
-        `${BASE_URL}/api/genetico/simulacionRuta/pedido`,
+        `${BASE_URL}/api/genetico/pedidos`,
         {
           headers: {
             accept: "*/*",

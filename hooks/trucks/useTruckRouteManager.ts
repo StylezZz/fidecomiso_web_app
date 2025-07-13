@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { Pedido } from "@/interfaces/order/pedido.interface";
 import { useMapContext } from "@/contexts/MapContext";
 import useLengendSummary from "@/hooks/use-legend-summary";
+import { Pedido } from "@/interfaces/order/pedido.interface";
 
 interface UseTruckRouteManagerProps {
   truckPlate: string;

@@ -1,24 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { Wrench, Clock, Car, Settings, Calendar } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Wrench, Clock, Car, Settings, Calendar } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface MantenimientoModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (camionId: string, tipoMantenimiento: number) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (camionId: string, tipoMantenimiento: number) => void;
 }
 
 export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoModalProps) {
-  const [camionId, setCamionId] = useState("")
-  const [tipoMantenimiento, setTipoMantenimiento] = useState<string>("1")
-  const [error, setError] = useState<string | null>(null)
+  const [camionId, setCamionId] = useState("");
+  const [tipoMantenimiento, setTipoMantenimiento] = useState<string>("1");
+  const [error, setError] = useState<string | null>(null);
 
   // Lista de camiones disponibles (puedes obtener esto dinámicamente)
   const camionesDisponibles = [
@@ -42,70 +48,73 @@ export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoM
     { id: "TD08", tipo: "Camión Tipo D", estado: "Disponible" },
     { id: "TD09", tipo: "Camión Tipo D", estado: "Disponible" },
     { id: "TD10", tipo: "Camión Tipo D", estado: "Disponible" },
-  ]
+  ];
 
   const tiposMantenimiento = [
-    { 
-      id: "1", 
-      nombre: "Mantenimiento Básico (TM1)", 
+    {
+      id: "1",
+      nombre: "Mantenimiento Básico (TM1)",
       descripcion: "Cambio de aceite, filtros y revisión general",
       tiempo: "4 horas",
       icon: "🔧",
-      frecuencia: "Cada 5,000 km"
+      frecuencia: "Cada 5,000 km",
     },
-    { 
-      id: "2", 
-      nombre: "Mantenimiento Intermedio (TM2)", 
+    {
+      id: "2",
+      nombre: "Mantenimiento Intermedio (TM2)",
       descripcion: "Revisión de frenos, suspensión y sistema eléctrico",
       tiempo: "8 horas",
       icon: "⚙️",
-      frecuencia: "Cada 15,000 km"
+      frecuencia: "Cada 15,000 km",
     },
-    { 
-      id: "3", 
-      nombre: "Mantenimiento Mayor (TM3)", 
+    {
+      id: "3",
+      nombre: "Mantenimiento Mayor (TM3)",
       descripcion: "Revisión completa del motor, transmisión y sistemas",
       tiempo: "24 horas",
       icon: "🔨",
-      frecuencia: "Cada 50,000 km"
+      frecuencia: "Cada 50,000 km",
     },
-    { 
-      id: "4", 
-      nombre: "Mantenimiento Preventivo (TM4)", 
+    {
+      id: "4",
+      nombre: "Mantenimiento Preventivo (TM4)",
       descripcion: "Mantenimiento programado preventivo completo",
       tiempo: "48 horas",
       icon: "🛠️",
-      frecuencia: "Cada 100,000 km"
-    }
-  ]
+      frecuencia: "Cada 100,000 km",
+    },
+  ];
 
   const handleSubmit = () => {
     // Validación básica
     if (!camionId.trim()) {
-      setError("Debe seleccionar un camión")
-      return
+      setError("Debe seleccionar un camión");
+      return;
     }
 
     // Convertir el tipo de mantenimiento a número
-    const tipoMantenimientoNum = parseInt(tipoMantenimiento)
-    
-    // Llamar a la función onSubmit con los datos
-    onSubmit(camionId, tipoMantenimientoNum)
-    
-    // Mostrar notificación de éxito
-    const tipoSeleccionado = tiposMantenimiento.find(t => t.id === tipoMantenimiento)
-    toast.success(`Mantenimiento ${tipoSeleccionado?.nombre} programado para el camión ${camionId}`, {
-      description: "El camión será retirado del servicio durante el mantenimiento"
-    })
-    
-    // Limpiar el formulario y cerrar el modal
-    setCamionId("")
-    setTipoMantenimiento("1")
-    setError(null)
-    onClose()
-  }
+    const tipoMantenimientoNum = parseInt(tipoMantenimiento);
 
-  const tipoSeleccionado = tiposMantenimiento.find(t => t.id === tipoMantenimiento)
+    // Llamar a la función onSubmit con los datos
+    onSubmit(camionId, tipoMantenimientoNum);
+
+    // Mostrar notificación de éxito
+    const tipoSeleccionado = tiposMantenimiento.find((t) => t.id === tipoMantenimiento);
+    toast.success(
+      `Mantenimiento ${tipoSeleccionado?.nombre} programado para el camión ${camionId}`,
+      {
+        description: "El camión será retirado del servicio durante el mantenimiento",
+      }
+    );
+
+    // Limpiar el formulario y cerrar el modal
+    setCamionId("");
+    setTipoMantenimiento("1");
+    setError(null);
+    onClose();
+  };
+
+  const tipoSeleccionado = tiposMantenimiento.find((t) => t.id === tipoMantenimiento);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -184,7 +193,7 @@ export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoM
                     ))}
                   </SelectContent>
                 </Select>
-                
+
                 {tipoSeleccionado && (
                   <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
@@ -213,7 +222,7 @@ export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoM
           <Button variant="outline" onClick={onClose} className="px-6">
             Cancelar
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmit}
             className="px-6 bg-blue-600 hover:bg-blue-700"
             disabled={!camionId}
@@ -223,5 +232,5 @@ export function MantenimientoModal({ isOpen, onClose, onSubmit }: MantenimientoM
         </div>
       </DialogContent>
     </Dialog>
-  )
-} 
+  );
+}

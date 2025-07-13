@@ -1,11 +1,10 @@
-import { Block } from "@/interfaces/map/block.interface";
 import { Circle, Group, Line, Rect, Text } from "react-konva";
 import { useMapContext } from "@/contexts/MapContext";
 import useCalRoute from "@/hooks/useCalRoute";
-import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
+import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { NodoBloqueadoI } from "@/interfaces/newinterfaces/node.interfaces";
-import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
+import { NodoBloqueadoI } from "@/interfaces/simulation/node.interfaces";
+import { KonvaEventObject } from "konva/lib/Node";
 import { formatearFecha } from "@/utils/fetchTransform";
 import { TooltipType } from "@/components/map/tooltip/MapTooltip";
 

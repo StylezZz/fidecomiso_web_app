@@ -1,6 +1,6 @@
 import { HttpResponse } from "@/interfaces/HttpResponse";
 import http from "@/utils/http";
-import { AveriaI, TipoAveria } from "@/interfaces/newinterfaces/averia.interface";
+import { AveriaI, TipoAveria } from "@/interfaces/simulation/averia.interface";
 
 class SimulationService {
   private static base: string = "/api/simulacion";
@@ -158,10 +158,7 @@ class SimulationService {
       const averiasAEnviar =
         averias || (this.averiasPendientes.length > 0 ? this.averiasPendientes : null);
       console.log("averias a enviar: ", averiasAEnviar);
-      const res = await http.post(
-        `/genetico/simulacionRuta/semanal?${queryString}`,
-        averiasAEnviar
-      );
+      const res = await http.post(`/genetico/semanal?${queryString}`, averiasAEnviar);
 
       // Si se usaron las averías pendientes y la llamada fue exitosa, limpiarlas
       if (!averias && this.averiasPendientes.length > 0 && res.success) {
@@ -202,10 +199,7 @@ class SimulationService {
         averias || (this.averiasPendientes.length > 0 ? this.averiasPendientes : null);
       console.log("averias a enviar (día a día): ", averiasAEnviar);
 
-      const res = await http.post(
-        `/genetico/simulacionRuta/dia-dia?${queryString}`,
-        averiasAEnviar
-      );
+      const res = await http.post(`/genetico/dia?${queryString}`, averiasAEnviar);
 
       // Si se usaron las averías pendientes y la llamada fue exitosa, limpiarlas
       if (!averias && this.averiasPendientes.length > 0 && res.success) {
@@ -221,7 +215,7 @@ class SimulationService {
 
   public static async resetSimulation(): Promise<HttpResponse> {
     try {
-      const res = await http.post(`/genetico/simulacionRuta/reset`, null);
+      const res = await http.post(`/genetico/reiniciar`, null);
       if (!res.success) throw new Error("Error al resetear la simulación");
       // Limpiar las averías pendientes al resetear la simulación
       this.limpiarAverias();

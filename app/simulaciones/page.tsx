@@ -1,4 +1,4 @@
-import { SimulationsView } from "@/components/simulations/simulations-view";
+import { SimulationsView } from "@/view/SimulationView";
 
 export default function SimulationsPage() {
   return <SimulationsView />;

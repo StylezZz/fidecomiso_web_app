@@ -15,17 +15,13 @@ import {
   CheckCircle,
   Clock,
   Package,
-  Timer,
-  BarChart3,
   RefreshCw,
   AlertTriangle,
   XCircle,
-  Target,
   MapPin,
   User,
 } from "lucide-react";
 import { formatearFecha } from "@/utils/fetchTransform";
-import { SimulationType } from "@/interfaces/simulation.interface";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useReports } from "@/hooks/useReports";
@@ -42,8 +38,6 @@ export const FinishModal = ({ isOpen }: FinishModalProps) => {
     useMapContext();
   const { day, hour: simuHour, minute: simMinute } = simulationTime.time;
   const { hour, minute, second } = realTime.realTime;
-  const [isPlaying, setisPlaying] = useState<boolean>(false);
-  // ✅ USAR LOS DATOS CORRECTOS DE LA API
   const { data } = useReports();
 
   const dateInit = new Date(anio, mes - 1, dia, ihora, iminuto);

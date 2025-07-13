@@ -5,7 +5,7 @@ import useCalRoute from "@/hooks/useCalRoute";
 import { LineRoute } from "../MapRoute/mapRoute";
 import TruckBody from "./TruckBody";
 import { defineColorTruck } from "@/utils/trucksUtils";
-import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
+import { CamionI } from "@/interfaces/simulation/camion.interface";
 import Konva from "konva";
 import useLengendSummary from "@/hooks/use-legend-summary";
 import { Dispatch, SetStateAction } from "react";
@@ -14,10 +14,10 @@ import { TooltipType } from "@/components/map/tooltip/MapTooltip";
 
 interface TruckProps {
   scale: number;
-  dataVehiculo: VehiculoI;
-  setCamionSeleccionado: Dispatch<SetStateAction<VehiculoI | null>>;
+  dataVehiculo: CamionI;
+  setCamionSeleccionado: Dispatch<SetStateAction<CamionI | null>>;
   setToolTipCamionPos: Dispatch<SetStateAction<{ x: number; y: number }>>;
-  onTooltip?: (type: TooltipType, data: VehiculoI, position: { x: number; y: number }) => void;
+  onTooltip?: (type: TooltipType, data: CamionI, position: { x: number; y: number }) => void;
   isSelected?: boolean;
 }
 
@@ -58,14 +58,6 @@ export const Camion = React.memo<TruckProps>(
     const [visible, setVisible] = useState<boolean>(false);
     const primerRender = useRef<boolean>(true);
 
-    const [animating, setAnimating] = useState<boolean>(false);
-    const [startPos, setStartPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [endPos, setEndPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-    const [progress, setProgress] = useState<number>(0);
-    const [currentSegmentStartTime, setCurrentSegmentStartTime] = useState<number>(0);
-    const [currentSegmentDuration, setCurrentSegmentDuration] = useState<number>(0);
-
-    //posicionar la primera ves
     useEffect(() => {
       if (route.length < 2 || !route) return;
       const { x, y } = calculatePos(
@@ -76,11 +68,7 @@ export const Camion = React.memo<TruckProps>(
         mapHeight
       );
       const angle = calculateRotation(route[0], route[1]);
-      //setXPos(x);
-      //setYPos(y);
       setAngularRotation(angle);
-      //setAngularRotation(0); // Inicialmente no hay rotación
-      //setUbicacionVehiculo(id,route[0].x,route[0].y);
     }, [route]);
 
     const [averiado, setAveriado] = useState<boolean>(false);

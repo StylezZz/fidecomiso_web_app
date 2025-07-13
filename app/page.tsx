@@ -1,9 +1,8 @@
-import { redirect } from "next/navigation"
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  // Redirect to dashboard
-  redirect("/dashboard")
-  return null
+  redirect("/simulation");
+  return null;
 }
 
 export const dynamic = "force-dynamic";

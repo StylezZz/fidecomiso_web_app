@@ -13,10 +13,10 @@ import { Block } from "@/interfaces/map/block.interface";
 import SimulationService from "@/services/simulation.service";
 import { SimulationType } from "@/interfaces/simulation.interface";
 import { useSimulationContext } from "@/contexts/SimulationContext";
-import { PedidoI } from "@/interfaces/newinterfaces/pedido.interface";
+import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import useRealTime, { RealTimeReturn } from "@/hooks/time/use-real-time";
-import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
-import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
+import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
+import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { manageTimeReturn, useManageTime } from "@/hooks/time/use-manage-time";
 import { CamionConRuta, CamionConRutas, TipoCamion } from "@/interfaces/map/Truck.interface";
 import useSimulationTime, { SimulationTimeReturn } from "@/hooks/time/use-simulation-time";
@@ -63,8 +63,8 @@ interface MapContextType {
   setPedidosI: Dispatch<SetStateAction<PedidoI[]>>;
   bloqueosI: BloqueoI[];
   setBloqueosI: Dispatch<SetStateAction<BloqueoI[]>>;
-  dataVehiculos: VehiculoI[];
-  setDataVehiculos: Dispatch<SetStateAction<VehiculoI[]>>;
+  camionesRuta: CamionI[];
+  setCamionesRuta: Dispatch<SetStateAction<CamionI[]>>;
   setUbicacionVehiculo: (index: number, x: number, y: number) => void;
   resetMap: () => void;
   finish: boolean;
@@ -98,7 +98,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const [bloqueos, setBloqueos] = useState<Block[]>([]);
   const [pedidosI, setPedidosI] = useState<PedidoI[]>([]);
   const [bloqueosI, setBloqueosI] = useState<BloqueoI[]>([]);
-  const [dataVehiculos, setDataVehiculos] = useState<VehiculoI[]>([]);
+  const [camionesRuta, setCamionesRuta] = useState<CamionI[]>([]);
   const [simulacionIniciada, setSimulacionIniciada] = useState<boolean>(false);
   const [cantidadEntregados, setCantidadEntregados] = useState<number>(0);
   const [loadingVehiculesRoutes, setLoadingVehiculesRoutes] = useState<boolean>(false);
@@ -115,15 +115,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     setSimulacionIniciada,
     simulacionIniciada,
   }); //establece parametros de speed, intervalms,minutosporiteracion, inicio del simulacion
-  const {
-    initTimer,
-    speedTime,
-    displaySpeed,
-    speedReal,
-    intervalMs,
-    minutosPorIteracion,
-    stopTimer,
-  } = manageTime;
+  const { initTimer, speedTime, intervalMs, minutosPorIteracion, stopTimer } = manageTime;
 
   const simulationTime: SimulationTimeReturn = useSimulationTime({
     initTimer,
@@ -153,7 +145,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const [pedidoSeleccionadoId, setPedidoSeleccionadoId] = useState<number | null>(null);
 
   function setUbicacionVehiculo(index: number, x: number, y: number) {
-    setDataVehiculos((dataVehiculos) => {
+    setCamionesRuta((dataVehiculos) => {
       return dataVehiculos.map((vehiculo) =>
         vehiculo.id === index
           ? { ...vehiculo, ubicacionActual: { ...vehiculo.ubicacionActual, x, y } }
@@ -184,7 +176,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       if (resRutas) {
-        setDataVehiculos(resRutas.data);
+        setCamionesRuta(resRutas.data);
 
         // 🎯 NUEVA LÓGICA: Solo para COLAPSO
         if (tipo == SimulationType.COLAPSO) {
@@ -277,8 +269,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const resetMap = () => {
     setPedidosI([]);
     setBloqueosI([]);
-    setTrucks([]);
-    setDataVehiculos([]);
+    setCamionesRuta([]);
     //simulacion iniciada
     setSimulacionIniciada(false);
     //timers
@@ -310,10 +301,9 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     return pedidosVencidosArray;
   };
 
-  // 🎯 COPIAR de MapCanvas.tsx
   const obtenerPedidosEntregados = () => {
     let pedidos: number[] = [];
-    dataVehiculos?.forEach((vehiculo) => {
+    camionesRuta?.forEach((vehiculo) => {
       if (vehiculo.route) {
         vehiculo.route.forEach((punto) => {
           if (
@@ -352,8 +342,8 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
         bloqueosI,
         setBloqueosI,
         setPedidosI,
-        dataVehiculos,
-        setDataVehiculos,
+        camionesRuta,
+        setCamionesRuta,
         setUbicacionVehiculo,
         resetMap,
         cantidadEntregados,

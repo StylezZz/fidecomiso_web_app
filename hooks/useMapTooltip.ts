@@ -1,11 +1,11 @@
 import { useState, useCallback } from "react";
-import { VehiculoI } from "@/interfaces/newinterfaces/vehiculos.interface";
-import { PedidoI } from "@/interfaces/newinterfaces/pedido.interface";
-import { BloqueoI } from "@/interfaces/newinterfaces/bloqueo.interface";
+import { CamionI } from "@/interfaces/simulation/camion.interface";
+import { PedidoI } from "@/interfaces/simulation/pedido.interface";
+import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { AlmacenInfo } from "@/components/map/almacen/Almacen";
 import { TooltipType } from "@/components/map/tooltip/MapTooltip";
 
-type TooltipData = VehiculoI | PedidoI | BloqueoI | AlmacenInfo | null;
+type TooltipData = CamionI | PedidoI | BloqueoI | AlmacenInfo | null;
 
 interface TooltipState {
   isVisible: boolean;
@@ -65,7 +65,7 @@ export const useMapTooltip = () => {
         };
 
       case TooltipType.CAMION:
-        const camion = tooltip.data as VehiculoI;
+        const camion = tooltip.data as CamionI;
         const ubicacion = camion.ubicacionActual || { x: 0, y: 0 };
         return {
           type: tooltip.type,

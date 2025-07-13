@@ -1,28 +1,16 @@
-import {
-  Play,
-  Pause,
-  LogOut,
-  Plus,
-  AlertTriangle,
-  Focus,
-  RotateCcw as ResetIcon,
-  Settings,
-} from "lucide-react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { useMapContext } from "@/contexts/MapContext";
 import PedidosService from "@/services/pedidos.service";
 import { PedidoFormData } from "@/interfaces/pedido.dto";
 import { mapPedidoFormToDTO } from "@/utils/pedido-mapper";
-import { PedidoModal } from "@/components/map/PedidoModal";
-import { AveriaModal } from "@/components/map/AveriaModal";
+import { PedidoModal } from "@/components/map/modals/pedido-modal";
+import { AveriaModal } from "@/components/map/modals/averia-modal";
 import SimulationService from "@/services/simulation.service";
-import { PedidoI } from "@/interfaces/newinterfaces/pedido.interface";
+import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { ElegantHeader } from "@/components/map/header/elegant-header";
-import { MantenimientoModal } from "@/components/map/MantenimientoModal";
+import { MantenimientoModal } from "@/components/map/modals/mantenimiento-modal";
 
 interface MapHeaderProp {
   setOpenSide: React.Dispatch<React.SetStateAction<boolean>>;
@@ -196,4 +184,4 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
       )}
     </>
   );
-}
+};

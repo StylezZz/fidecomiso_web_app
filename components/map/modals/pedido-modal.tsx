@@ -1,25 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { PedidoFormData } from "@/interfaces/pedido.dto"
-import { User, Package, Clock, Calendar, MapPin, Plus, Info } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PedidoFormData } from "@/interfaces/pedido.dto";
+import { User, Package, Clock, Calendar, MapPin, Plus, Info } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PedidoModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (pedidoData: PedidoFormData) => Promise<void>
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (pedidoData: PedidoFormData) => Promise<void>;
 }
 
 export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [formData, setFormData] = useState<PedidoFormData>({
     codigo: "",
     volumen: 0,
@@ -31,17 +37,16 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
     mes: new Date().getMonth() + 1,
     dia: new Date().getDate(),
     hora: new Date().getHours(),
-    minuto: new Date().getMinutes()
-  })
+    minuto: new Date().getMinutes(),
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      await onSubmit(formData)
-      onClose()
-      // Resetear formulario
+      await onSubmit(formData);
+      onClose();
       setFormData({
         codigo: "",
         volumen: 0,
@@ -53,15 +58,15 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
         mes: new Date().getMonth() + 1,
         dia: new Date().getDate(),
         hora: new Date().getHours(),
-        minuto: new Date().getMinutes()
-      })
-      setSelectedDate(new Date())
+        minuto: new Date().getMinutes(),
+      });
+      setSelectedDate(new Date());
     } catch (error) {
-      console.error("Error al registrar pedido:", error)
+      console.error("Reigstro de pedido fallido:", error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof PedidoFormData, value: string | number | boolean) => {
     // Validar límites del mapa para posiciones
@@ -78,28 +83,26 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
       if (numValue < 4) value = 4;
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
-
-
-  const handleTimeChange = (type: 'hora' | 'minuto', value: string) => {
-    const numValue = Number(value)
-    if (type === 'hora' && numValue >= 0 && numValue <= 23) {
-      setFormData(prev => ({ ...prev, hora: numValue }))
-    } else if (type === 'minuto' && numValue >= 0 && numValue <= 59) {
-      setFormData(prev => ({ ...prev, minuto: numValue }))
+  const handleTimeChange = (type: "hora" | "minuto", value: string) => {
+    const numValue = Number(value);
+    if (type === "hora" && numValue >= 0 && numValue <= 23) {
+      setFormData((prev) => ({ ...prev, hora: numValue }));
+    } else if (type === "minuto" && numValue >= 0 && numValue <= 59) {
+      setFormData((prev) => ({ ...prev, minuto: numValue }));
     }
-  }
+  };
 
   const generateClientCode = () => {
-    const randomNum = Math.floor(Math.random() * 999) + 1
-    const code = `C-${randomNum.toString().padStart(3, '0')}`
-    setFormData(prev => ({ ...prev, codigo: code }))
-  }
+    const randomNum = Math.floor(Math.random() * 999) + 1;
+    const code = `C-${randomNum.toString().padStart(3, "0")}`;
+    setFormData((prev) => ({ ...prev, codigo: code }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -107,7 +110,7 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold">Nuevo Pedido</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Información del Cliente */}
           <Card>
@@ -134,9 +137,9 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
                       className="flex-1"
                       required
                     />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={generateClientCode}
                       className="whitespace-nowrap"
@@ -216,7 +219,10 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tiempoEspera" className="text-sm font-medium flex items-center gap-1">
+                  <Label
+                    htmlFor="tiempoEspera"
+                    className="text-sm font-medium flex items-center gap-1"
+                  >
                     <Clock className="h-3 w-3 text-gray-500" />
                     Tiempo de Espera (horas)
                   </Label>
@@ -254,17 +260,19 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
                     <Label className="text-sm font-medium">Fecha de Registro</Label>
                     <Input
                       type="date"
-                      value={`${formData.año}-${formData.mes.toString().padStart(2, '0')}-${formData.dia.toString().padStart(2, '0')}`}
+                      value={`${formData.año}-${formData.mes
+                        .toString()
+                        .padStart(2, "0")}-${formData.dia.toString().padStart(2, "0")}`}
                       onChange={(e) => {
-                        const date = new Date(e.target.value)
+                        const date = new Date(e.target.value);
                         if (!isNaN(date.getTime())) {
-                          setSelectedDate(date)
-                          setFormData(prev => ({
+                          setSelectedDate(date);
+                          setFormData((prev) => ({
                             ...prev,
                             año: date.getFullYear(),
                             mes: date.getMonth() + 1,
-                            dia: date.getDate()
-                          }))
+                            dia: date.getDate(),
+                          }));
                         }
                       }}
                       className="text-sm"
@@ -276,28 +284,34 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
                     <Label className="text-sm font-medium">Hora de Registro</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Select value={formData.hora.toString()} onValueChange={(value) => handleTimeChange('hora', value)}>
+                        <Select
+                          value={formData.hora.toString()}
+                          onValueChange={(value) => handleTimeChange("hora", value)}
+                        >
                           <SelectTrigger className="text-sm">
                             <SelectValue placeholder="Hora" />
                           </SelectTrigger>
                           <SelectContent>
                             {Array.from({ length: 24 }, (_, i) => (
                               <SelectItem key={i} value={i.toString()}>
-                                {i.toString().padStart(2, '0')}
+                                {i.toString().padStart(2, "0")}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
-                        <Select value={formData.minuto.toString()} onValueChange={(value) => handleTimeChange('minuto', value)}>
+                        <Select
+                          value={formData.minuto.toString()}
+                          onValueChange={(value) => handleTimeChange("minuto", value)}
+                        >
                           <SelectTrigger className="text-sm">
                             <SelectValue placeholder="Min" />
                           </SelectTrigger>
                           <SelectContent>
                             {Array.from({ length: 60 }, (_, i) => (
                               <SelectItem key={i} value={i.toString()}>
-                                {i.toString().padStart(2, '0')}
+                                {i.toString().padStart(2, "0")}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -315,25 +329,19 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
             <Button type="button" variant="outline" onClick={onClose} className="px-6">
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-              className="px-6"
-            >
+            <Button type="submit" disabled={isSubmitting} className="px-6">
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Guardando...
                 </>
               ) : (
-                <>
-                  Crear Pedido
-                </>
+                <>Crear Pedido</>
               )}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
