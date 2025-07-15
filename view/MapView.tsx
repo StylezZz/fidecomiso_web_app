@@ -2,10 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
-import { MapHeader } from "@/components/map/map-header";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { MapHeader } from "@/components/map/header";
+import { MainLayout } from "@/components/layout/main";
 
-const MapCanvas = dynamic(() => import("@/components/map/map-view"), {
+const MapCanvas = dynamic(() => import("@/components/map/view"), {
   ssr: false,
   loading: () => (
     <div className="flex h-96 items-center justify-center text-muted-foreground text-lg">

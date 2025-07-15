@@ -133,6 +133,13 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
               )}
             </div>
           </div>
+          <div className="hidden lg:flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-1 border border-slate-200">
+            <div className="flex items-center gap-1.5">
+              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">Ctrl</kbd>
+              <span className="text-xs text-gray-400">+</span>
+              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">B</kbd>
+            </div>
+          </div>
         </div>
 
         {/* CENTER: Primary Information (Most Important) */}

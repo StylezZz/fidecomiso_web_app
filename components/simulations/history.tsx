@@ -1,28 +1,20 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  AlertTriangle, 
-  BarChart, 
-  Truck, 
-  Wrench, 
-  Clock, 
-  Calendar, 
-  Timer, 
-  MapPin, 
-  CheckCircle,
-  Fuel,
-  Gauge,
+import {
+  Activity,
+  AlertTriangle,
+  BarChart,
+  Calendar,
   Lightbulb,
-  Zap,
   Settings,
-  Target,
-  TrendingUp,
   Shield,
-  Activity
+  Target,
+  Timer,
+  TrendingUp,
+  Zap
 } from "lucide-react"
 
 export function SimulationHistory() {

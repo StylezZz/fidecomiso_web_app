@@ -1,23 +1,3 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-} from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Clock,
-  Siren,
-  ArrowDown,
-  Search,
-  Truck,
-  Package,
-} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,8 +6,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMapContext } from "@/contexts/MapContext";
+import { useMapContext } from "@/contexts/ContextMap";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
+import {
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Package,
+  Search,
+  Siren,
+  Truck,
+  Zap,
+} from "lucide-react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -48,11 +48,7 @@ export const MapPanel = () => {
   const [selectedTab, setSelectedTab] = useState("camiones");
   const {
     camionesRuta,
-    pedidosI,
-    camionSeleccionadoId,
-    setCamionSeleccionadoId,
-    pedidoSeleccionadoId,
-    setPedidoSeleccionadoId,
+    pedidosI
   } = useMapContext();
 
   const [pedidosPage, setPedidosPage] = useState<number>(0);
@@ -505,12 +501,17 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
     }
   };
 
-  // ✅ ESTADOS SIMPLIFICADOS: Solo "En ruta" o "En almacén"
   const getEstadoCamion = (truck: CamionI) => {
     const tieneRuta = truck.route && truck.route.length > 0;
-    const estaEnAlmacen = truck.route?.some((punto) => punto.esAlmacen) || false;
+    const posicionAlmacenCentral = {x: 12, y: 8};
+    const posicionAlmacenEste = {x:63, y: 3};
+    const posicionAlmacenNorte = {x:42,y:42};
 
-    if (tieneRuta && !estaEnAlmacen) {
+    const estaEnPosicionAlmacen = truck.ubicacionActual.x === posicionAlmacenCentral.x && truck.ubicacionActual.y === posicionAlmacenCentral.y ||
+      truck.ubicacionActual.x === posicionAlmacenEste.x && truck.ubicacionActual.y === posicionAlmacenEste.y ||
+      truck.ubicacionActual.x === posicionAlmacenNorte.x && truck.ubicacionActual.y === posicionAlmacenNorte.y;
+    console.log("Estado del camión:", { tieneRuta, estaEnPosicionAlmacen });
+    if (tieneRuta && !estaEnPosicionAlmacen) {
       return {
         label: "En ruta",
         color: "text-emerald-700 bg-emerald-100 border-emerald-200",

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
 import { ordersService } from "@/services/orders-service"
-import PedidosService from "@/services/pedidos.service"
+import PedidosService from "@/services/orders.service"
 import type { Order, OrderCreateDto } from "@/types/order"
 import { adaptPedidosToOrders } from "@/utils/pedido-adapter"
 

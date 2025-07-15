@@ -1,10 +1,10 @@
-import { Stage, Layer, Line, Rect, Group, Text, Circle } from "react-konva";
-import useCalRoute from "@/hooks/useCalRoute";
-import { useMemo, Dispatch, SetStateAction } from "react";
-import { useMapContext } from "@/contexts/MapContext";
-import { KonvaEventObject } from "konva/lib/Node";
+import { TooltipType } from "@/components/map/tooltip/tooltip-component";
+import { useMapContext } from "@/contexts/ContextMap";
+import useCalRoute from "@/hooks/use-callroute";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
-import { TooltipType } from "@/components/map/tooltip/MapTooltip";
+import { KonvaEventObject } from "konva/lib/Node";
+import { Dispatch, SetStateAction, useMemo } from "react";
+import { Circle, Group, Line, Rect, Text } from "react-konva";
 
 interface PedidoCanvasProps {
   posX: number;

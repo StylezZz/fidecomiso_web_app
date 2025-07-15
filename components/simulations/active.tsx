@@ -1,47 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useMapContext } from "@/contexts/ContextMap";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
+import useLegendSummary from "@/hooks/use-legend-summary";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
-import {
-  PlayCircle,
-  Calendar,
-  AlertOctagon,
-  ExternalLink,
-  Play,
-  Trash,
-  FileText,
-  CheckCircle,
-  Pause,
-  MoreVertical,
-  Trash2,
-  Zap,
-  Clock,
-  AlertTriangle,
-  MapPin,
-  Truck,
-  Settings,
-  Eye,
-} from "lucide-react";
-import { formatDateTime } from "@/lib/utils";
-import { useRouter } from "next/navigation";
-import {
-  getSimulationStatus,
-  getSimulationResult,
-  cancelSimulation,
-} from "@/store/simulation/simulation-slice";
-import { useSimulationContext } from "@/contexts/SimulationContext";
-import { Progress } from "../ui/progress";
-import { SimulationInterface } from "@/interfaces/simulation.interface";
-import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform";
-import { Spinner } from "../ui/spinner";
-import { useMapContext } from "@/contexts/MapContext";
-import SimulationService from "@/services/simulation.service";
-import { toast } from "sonner";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "../ui/toast";
+import { SimulationInterface } from "@/interfaces/simulation.interface";
+import SimulationService from "@/services/simulation.service";
+import {
+  getSimulationStatus
+} from "@/store/simulation/simulation-slice";
+import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Eye,
+  FileText,
+  MapPin,
+  MoreVertical,
+  Play,
+  PlayCircle,
+  Settings,
+  Trash2,
+  Zap
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,7 +38,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import useLegendSummary from "@/hooks/use-legend-summary";
+import { Spinner } from "../ui/spinner";
+import { ToastAction } from "../ui/toast";
 
 type ActiveSimulationsProps = {
   onNewSimulation?: () => void;

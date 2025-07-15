@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { TrucksTable } from "@/components/trucks/trucks-table";
+import { MainLayout } from "@/components/layout/main";
+import { TrucksTable } from "@/components/trucks/table";
 import { Plus, Search, Download, Filter, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -134,44 +134,8 @@ export function TrucksView() {
       velocidad: apiTruck.velocidad,
       peso: apiTruck.peso,
     };
-  };
-
-  // Función para obtener datos de la API
-  // const fetchTrucks = async () => {
-  //   try {
-  //     setLoading(true)
-  //     setError(null)
-
-  //     const response = await fetch("http://200.16.7.188/api/camiones", {
-  //       method: 'GET',
-  //       headers: {
-  //         'accept': '*/*',
-  //         'Content-Type': 'application/json',
-  //       },
-  //     })
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`)
-  //     }
-
-  //     const data: ApiResponse = await response.json()
-  //     console.log('Datos de la API:', data) // Para debugging
-
-  //     Adaptar los datos
-  //     const adaptedTrucks = data.camiones.map(apiTruck =>
-  //       adaptApiTruckToUiTruck(apiTruck)
-  //     )
-
-  //     setTrucks(adaptedTrucks)
-  //   } catch (error) {
-  //     console.error('Error al obtener camiones:', error)
-  //     setError(error instanceof Error ? error.message : 'Error desconocido')
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
-  // Cargar datos al montar el componente
+  }; 
+  
   useEffect(() => {
     fetchTrucks();
   }, []);

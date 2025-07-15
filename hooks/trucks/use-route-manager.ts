@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useMapContext } from "@/contexts/MapContext";
+import { useMapContext } from "@/contexts/ContextMap";
 import useLengendSummary from "@/hooks/use-legend-summary";
 import { Pedido } from "@/interfaces/order/pedido.interface";
 

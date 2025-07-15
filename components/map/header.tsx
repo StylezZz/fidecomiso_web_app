@@ -1,16 +1,16 @@
-import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { ElegantHeader } from "@/components/map/header/upgrade-header";
+import { PedidoModal } from "@/components/map/modals/new-order";
+import { AveriaModal } from "@/components/map/modals/truck-breakdown";
+import { MantenimientoModal } from "@/components/map/modals/truck-maintenance";
+import { useMapContext } from "@/contexts/ContextMap";
 import { useToast } from "@/hooks/use-toast";
-import { useMapContext } from "@/contexts/MapContext";
-import PedidosService from "@/services/pedidos.service";
 import { PedidoFormData } from "@/interfaces/pedido.dto";
-import { mapPedidoFormToDTO } from "@/utils/pedido-mapper";
-import { PedidoModal } from "@/components/map/modals/pedido-modal";
-import { AveriaModal } from "@/components/map/modals/averia-modal";
-import SimulationService from "@/services/simulation.service";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
-import { ElegantHeader } from "@/components/map/header/elegant-header";
-import { MantenimientoModal } from "@/components/map/modals/mantenimiento-modal";
+import PedidosService from "@/services/orders.service";
+import SimulationService from "@/services/simulation.service";
+import { mapPedidoFormToDTO } from "@/utils/pedido-mapper";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface MapHeaderProp {
   setOpenSide: React.Dispatch<React.SetStateAction<boolean>>;

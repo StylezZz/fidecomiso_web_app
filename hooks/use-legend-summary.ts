@@ -1,4 +1,4 @@
-import { useMapContext } from "@/contexts/MapContext"
+import { useMapContext } from "@/contexts/ContextMap"
 
 interface legendSummaryHook{
     addActiveTrunck: (type: "TA"| "TB"| "TD"| "TC")=>void,
