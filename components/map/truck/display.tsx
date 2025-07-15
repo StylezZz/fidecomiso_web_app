@@ -4,7 +4,7 @@ import { Group, Circle, Text, Line, Rect, Ellipse } from "react-konva";
 import { KonvaEventObject } from "konva/lib/Node";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
-import { TooltipType } from "@/components/map/tooltip/MapTooltip";
+import { TooltipType } from "@/components/map/tooltip/tooltip-component";
 import React from "react";
 
 interface TruckBodyProps {

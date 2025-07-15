@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MainLayout } from "@/components/layout/MainLayout";
-import { PlanningForm } from "@/components/planner/planning-form";
-import { PlanningStatus } from "@/components/planner/planning-status";
-import { PlanningResults } from "@/components/planner/planning-results";
+import { MainLayout } from "@/components/layout/main";
+import { PlanningForm } from "@/components/planner/form";
+import { PlanningStatus } from "@/components/planner/status";
+import { PlanningResults } from "@/components/planner/results";
 import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
 import { fetchAlgorithms, resetPlanningState } from "@/store/planner/planner-slice";
 import { Play } from "lucide-react";

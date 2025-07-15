@@ -1,7 +1,7 @@
 "use client";
-import Almacen, { AlmacenInfo, ToolTipAlmacen } from "@/components/map/almacen/Almacen";
-import { Camion } from "@/components/map/camion/Camion";
-import { useMapContext } from "@/contexts/MapContext";
+import Almacen, { AlmacenInfo, ToolTipAlmacen } from "@/components/map/warehouse/warehouse-component";
+import { Camion } from "@/components/map/truck/controller";
+import { useMapContext } from "@/contexts/ContextMap";
 import Konva from "konva";
 import {
   forwardRef,
@@ -14,17 +14,17 @@ import {
   useState,
 } from "react";
 import confetti from "canvas-confetti";
-import { MapPanel } from "./map-panel";
+import { MapPanel } from "./panel";
 import { Layer, Stage } from "react-konva";
-import { FinishModal } from "./modals/finishModal";
-import { ToolTipCamion } from "./camion/TruckBody";
-import { useMapTooltip } from "@/hooks/useMapTooltip";
+import { FinishModal } from "./modals/simulation-completion";
+import { ToolTipCamion } from "./truck/display";
+import { useMapTooltip } from "@/hooks/use-tooltip";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import useLengendSummary from "@/hooks/use-legend-summary";
-import PedidoCanvas, { ToolTipPedido } from "./almacen/Pedido";
+import PedidoCanvas, { ToolTipPedido } from "./warehouse/order-package";
 import { generateGridLines } from "@/utils/simulationBuilders";
-import { MapTooltip } from "@/components/map/tooltip/MapTooltip";
-import { Bloqueo, ToolTipBlockRoute } from "./MapRoute/blockRoute";
+import { MapTooltip } from "@/components/map/tooltip/tooltip-component";
+import { Bloqueo, ToolTipBlockRoute } from "./MapRoute/blockage";
 import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { CamionI } from "@/interfaces/simulation/camion.interface";

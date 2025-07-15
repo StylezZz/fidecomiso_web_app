@@ -1,8 +1,8 @@
 import { Line, Text } from "react-konva";
 import { JSX } from "react";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
-import PedidoCanvas from "@/components/map/almacen/Pedido";
-import { useMapContext } from "@/contexts/MapContext";
+import PedidoCanvas from "@/components/map/warehouse/order-package";
+import { useMapContext } from "@/contexts/ContextMap";
 export function generateGridLines(
   mapWidth: number,
   mapHeight: number,

@@ -1,7 +1,7 @@
 "use client";
 import { SimulationInterface, SimulationType } from "@/interfaces/simulation.interface";
-import BlockService from "@/services/block.service";
-import PedidosService from "@/services/pedidos.service";
+import BlockService from "@/services/blockages.service";
+import PedidosService from "@/services/orders.service";
 import { createContext, useContext, useEffect, useState } from "react";
 interface SimulationContextType {
   simulaciones: SimulationInterface[];

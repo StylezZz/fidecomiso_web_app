@@ -1,16 +1,14 @@
-import React, { useRef, useCallback, useEffect, useMemo, useState, JSX } from "react";
-import { CamionConRutas, TipoCamion } from "@/interfaces/map/Truck.interface";
-import { useMapContext } from "@/contexts/MapContext";
-import useCalRoute from "@/hooks/useCalRoute";
-import { LineRoute } from "../MapRoute/mapRoute";
-import TruckBody from "./TruckBody";
-import { defineColorTruck } from "@/utils/trucksUtils";
-import { CamionI } from "@/interfaces/simulation/camion.interface";
-import Konva from "konva";
+import { TooltipType } from "@/components/map/tooltip/tooltip-component";
+import { useMapContext } from "@/contexts/ContextMap";
 import useLengendSummary from "@/hooks/use-legend-summary";
-import { Dispatch, SetStateAction } from "react";
-import { ToolTipCamion } from "./TruckBody";
-import { TooltipType } from "@/components/map/tooltip/MapTooltip";
+import useCalRoute from "@/hooks/use-callroute";
+import { TipoCamion } from "@/interfaces/map/Truck.interface";
+import { CamionI } from "@/interfaces/simulation/camion.interface";
+import { defineColorTruck } from "@/utils/trucksUtils";
+import Konva from "konva";
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { LineRoute } from "../MapRoute/route-renderer";
+import TruckBody from "./display";
 
 interface TruckProps {
   scale: number;

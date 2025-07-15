@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useMapContext } from "@/contexts/MapContext";
-import { useSimulationContext } from "@/contexts/SimulationContext";
+import { useMapContext } from "@/contexts/ContextMap";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import {
   Calendar,
@@ -24,7 +24,7 @@ import {
 import { formatearFecha } from "@/utils/fetchTransform";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useReports } from "@/hooks/useReports";
+import { useReports } from "@/hooks/use-reports";
 import { useEffect, useState } from "react";
 
 interface FinishModalProps {

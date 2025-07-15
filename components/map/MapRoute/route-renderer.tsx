@@ -2,8 +2,8 @@ import { Ruta } from "@/interfaces/simulation/camion.interface";
 import { Nodo } from "@/interfaces/map/node.interface";
 import { JSX, useEffect, useState } from "react";
 import { Line } from "react-konva";
-import useCalRoute from "@/hooks/useCalRoute";
-import { useMapContext } from "@/contexts/MapContext";
+import useCalRoute from "@/hooks/use-callroute";
+import { useMapContext } from "@/contexts/ContextMap";
 interface MapRouteProps {
   route: Ruta[];
   color: string;

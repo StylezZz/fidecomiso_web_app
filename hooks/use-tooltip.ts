@@ -2,8 +2,8 @@ import { useState, useCallback } from "react";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
-import { AlmacenInfo } from "@/components/map/almacen/Almacen";
-import { TooltipType } from "@/components/map/tooltip/MapTooltip";
+import { AlmacenInfo } from "@/components/map/warehouse/warehouse-component";
+import { TooltipType } from "@/components/map/tooltip/tooltip-component";
 
 type TooltipData = CamionI | PedidoI | BloqueoI | AlmacenInfo | null;
 

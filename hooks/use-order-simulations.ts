@@ -1,4 +1,4 @@
-import { useMapContext } from "@/contexts/MapContext"
+import { useMapContext } from "@/contexts/ContextMap"
 import { Pedido,EstadoPedido } from "@/interfaces/order/pedido.interface";
 import { useCallback } from "react";
 const usePedidosSimulation =()=>{

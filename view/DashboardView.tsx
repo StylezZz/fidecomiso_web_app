@@ -2,11 +2,11 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/use-redux";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/main";
 import { fetchDashboardData } from "@/store/dashboard/dashboard-slice";
-import { DashboardStats } from "@/components/dashboard/dashboard-stats";
+import { DashboardStats } from "@/components/dashboard/logistics-overview";
 import { DashboardOrders } from "@/components/dashboard/dashboard-orders";
-import { DashboardTrucks } from "@/components/dashboard/dashboard-trucks";
+import { DashboardTrucks } from "@/components/dashboard/fleet-overview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, TrendingUp, Package, Truck, Clock, Activity } from "lucide-react";

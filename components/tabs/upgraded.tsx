@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Truck, Package, Eye, BarChart3 } from "lucide-react";
+import { Package, Truck } from "lucide-react";
+import React from "react";
 
 interface Tab {
   id: string;

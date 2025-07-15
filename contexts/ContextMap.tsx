@@ -12,7 +12,7 @@ import {
 import { Block } from "@/interfaces/map/block.interface";
 import SimulationService from "@/services/simulation.service";
 import { SimulationType } from "@/interfaces/simulation.interface";
-import { useSimulationContext } from "@/contexts/SimulationContext";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import useRealTime, { RealTimeReturn } from "@/hooks/time/use-real-time";
 import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";

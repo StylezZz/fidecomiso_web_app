@@ -1,4 +1,4 @@
-import { useMapContext } from "@/contexts/MapContext";
+import { useMapContext } from "@/contexts/ContextMap";
 
 export const useTrucksCount = () => {
   const { camionesRuta: dataVehiculos } = useMapContext();

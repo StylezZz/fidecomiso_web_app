@@ -1,4 +1,4 @@
-import { useMapContext } from "@/contexts/MapContext";
+import { useMapContext } from "@/contexts/ContextMap";
 import useLengendSummary from "../use-legend-summary";
 import { useEffect, useRef, useState } from "react";
 import { Pedido } from "@/interfaces/order/pedido.interface";
