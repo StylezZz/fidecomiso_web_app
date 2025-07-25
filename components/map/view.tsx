@@ -1,5 +1,8 @@
 "use client";
-import Almacen, { AlmacenInfo, ToolTipAlmacen } from "@/components/map/warehouse/warehouse-component";
+import Almacen, {
+  AlmacenInfo,
+  ToolTipAlmacen,
+} from "@/components/map/warehouse/warehouse-component";
 import { Camion } from "@/components/map/truck/controller";
 import { useMapContext } from "@/contexts/ContextMap";
 import Konva from "konva";
@@ -28,6 +31,7 @@ import { Bloqueo, ToolTipBlockRoute } from "./MapRoute/blockage";
 import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
 
 interface MapProps {
   open: boolean;
@@ -63,6 +67,8 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     pedidoSeleccionadoId,
   } = useMapContext();
   const { timerSimulacion } = simulationTime;
+  const { simulacionSeleccionada } = useSimulationContext();
+  const { ihora, iminuto, dia, tipo, anio, mes } = simulacionSeleccionada;
 
   const { cellSizeXValue, cellSizeYValue, mapHeight, mapWidth, loading } = mapData;
   const [pedidosMostrar, setPedidosMostrar] = useState<JSX.Element[]>([]);
@@ -132,9 +138,32 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     return generateGridLines(mapWidth, mapHeight, cellSizeXValue, cellSizeYValue);
   }, [mapHeight, mapWidth, cellSizeXValue, cellSizeYValue]);
 
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const ajustarTiempoPorMes = (pedido: PedidoI, mesBase: number, anioBase: number) => {
+    const { horaDeInicio, mesPedido, anio } = pedido;
+
+    // Si es el mismo año y mes, usar horaDeInicio directamente
+    if (anio === anioBase && mesPedido === mesBase) {
+      return horaDeInicio;
+    }
+
+    // Si es el mes siguiente, solo sumar días del mes anterior
+    if (anio === anioBase && mesPedido === mesBase + 1) {
+      const diasMesAnterior = getDaysInMonth(anioBase, mesBase);
+      return horaDeInicio + diasMesAnterior * 1440;
+    }
+
+    // Para casos más complejos (varios meses), mantener lógica anterior
+    return horaDeInicio;
+  };
+
   useEffect(() => {
     const nuevoPedidosMostrar: JSX.Element[] = [];
 
+    // Bloqueos (sin cambios)
     const bloqueosActivos = bloqueosI.filter((data) => {
       const { diaInicio, diaFin, minutoFin, minutoInicio, horaFin, horaInicio } = data;
       const tiempoInicio = diaInicio * 24 * 60 + horaInicio * 60 + minutoInicio;
@@ -143,9 +172,26 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     });
     setBloqueosShow(bloqueosActivos);
 
+    console.log("Dia de simulación:", dia);
+    console.log("Hora de simulación:", ihora);
+    console.log("Mes de simulación:", mes);
+
+    // 🎯 PROCESAR PEDIDOS con tiempo ajustado
     for (let i = 0; i < pedidosI.length; i++) {
-      const { id, hora, minuto, posX, posY, dia } = pedidosI[i];
-      const tiempoMuestraPedido = dia * 24 * 60 + hora * 60 + minuto;
+      const { id, posX, posY } = pedidosI[i];
+
+      // ✅ USAR simulacionSeleccionada como base
+      const tiempoMuestraPedido = ajustarTiempoPorMes(
+        pedidosI[i],
+        mes, // mes base de simulación
+        anio // año base de simulación
+      );
+
+      console.log(
+        `Pedido ID: ${id}, horaDeInicio: ${pedidosI[i].horaDeInicio}, Fecha: ${pedidosI[i].fechaDeRegistro},
+       tiempo ajustado: ${tiempoMuestraPedido}, Timer: ${timerSimulacion}`
+      );
+
       if (tiempoMuestraPedido <= timerSimulacion && !pedidosEntregados.includes(id)) {
         nuevoPedidosMostrar.push(
           <PedidoCanvas
@@ -160,13 +206,15 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
           />
         );
       }
+
       if (pedidosEntregados.includes(id)) {
         setPedidosI((prev) => prev.filter((pedido) => pedido.id !== id));
       }
     }
+
     setPedidosMostrar(nuevoPedidosMostrar);
     pushPedidosPendientes(nuevoPedidosMostrar.length);
-  }, [timerSimulacion]);
+  }, [timerSimulacion, mes, dia, anio]); // ✅ Agregar dependencias del contexto
 
   useEffect(() => {
     if (!finish || tipoFinalizacion === "colapso") return;

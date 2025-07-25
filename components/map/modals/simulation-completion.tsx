@@ -38,7 +38,7 @@ export const FinishModal = ({ isOpen }: FinishModalProps) => {
     useMapContext();
   const { day, hour: simuHour, minute: simMinute } = simulationTime.time;
   const { hour, minute, second } = realTime.realTime;
-  // const { data } = useReports();
+  // const { data } = useReports(); BORRADO
   const data = null; // Simulación de datos para evitar errores en el ejemplo
 
   const dateInit = new Date(anio, mes - 1, dia, ihora, iminuto);

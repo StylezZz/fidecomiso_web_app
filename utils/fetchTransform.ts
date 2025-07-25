@@ -65,7 +65,6 @@ export function parseTrucksFetchArray(data: any[]): CamionConRutas[] {
 }
 
 export function formatearNombreArchivoPedido(nombreArchivo: string): string {
-  console.log("formateando", nombreArchivo);
   const match = nombreArchivo.match(/ventas(\d{4})(\d{2})\.txt/i);
   if (!match) return nombreArchivo;
 
