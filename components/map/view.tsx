@@ -97,21 +97,34 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     setIsPanelExpanded(!isPanelExpanded);
   };
 
-  const obtenerPedidosEntregados = useCallback((vehiculos: CamionI[], timer: number) => {
-    let pedidos: number[] = [];
-    vehiculos?.forEach((vehiculo) => {
-      if (vehiculo.route) {
-        vehiculo.route.forEach((punto) => {
-          if (punto.pedido) {
-            if (punto.pedido && punto.pedido.entregadoCompleto && punto.tiempoInicio <= timer) {
-              pedidos.push(punto.pedido.id);
+  const obtenerPedidosEntregados = useCallback(
+    (vehiculos: CamionI[], timer: number) => {
+      let pedidos: number[] = [];
+      vehiculos?.forEach((vehiculo) => {
+        if (vehiculo.route) {
+          vehiculo.route.forEach((punto) => {
+            if (punto.pedido) {
+              if (punto.pedido && punto.pedido.entregadoCompleto) {
+                const tiempoAjustado = ajustarTiempoPorMes(
+                  {
+                    mesPedido: punto.mes || mes,
+                    horaDeInicio: punto.tiempoInicio,
+                    anio: anio,
+                  } as any,
+                  mes, // mes base de simulación
+                  dia
+                );
+
+                if (tiempoAjustado <= timer) pedidos.push(punto.pedido.id);
+              }
             }
-          }
-        });
-      }
-    });
-    return pedidos;
-  }, []);
+          });
+        }
+      });
+      return pedidos;
+    },
+    [mes, dia, anio]
+  );
 
   const pedidosEntregados = useMemo(
     () => obtenerPedidosEntregados(dataVehiculos, timerSimulacion),
