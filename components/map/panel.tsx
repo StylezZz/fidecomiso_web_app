@@ -17,6 +17,7 @@ import {
   Search,
   Siren,
   Truck,
+  Warehouse,
   Zap,
 } from "lucide-react";
 import React, {
@@ -42,17 +43,60 @@ interface CamionStatus {
   orderIndex: number; // Para mantener orden estable
 }
 
+interface AlmacenInfo{
+  posX: number;
+  posY: number;
+  typeHouse: string;
+  nombre: string;
+  capacidad: string;
+  descripcion: string;
+  camionesActuales: number;
+}
+
+const ALMACENES_DATA: AlmacenInfo[] = [
+  {
+    posX: 12,
+    posY: 8,
+    typeHouse: "home",
+    nombre: "Almacen Central",
+    capacidad: "Ilimitada",
+    descripcion: "Centro de distribución principal",
+    camionesActuales: 0,
+  },
+  {
+    posX: 42,
+    posY: 42,
+    typeHouse: "warehouse",
+    nombre: "Almacén Norte",
+    capacidad: "50,000 L",
+    descripcion: "Almacén Intermedio Norte",
+    camionesActuales: 0,
+  },
+  {
+    posX: 63,
+    posY: 3,
+    typeHouse: "warehouse",
+    nombre: "Almacén Este",
+    capacidad: "50,000 L",
+    descripcion: "Almacén Intermedio Este",
+    camionesActuales: 0,
+  }
+]
+
 const PAGE_SIZE = 8;
 
 export const MapPanel = () => {
   const [selectedTab, setSelectedTab] = useState("camiones");
   const {
     camionesRuta,
-    pedidosI
+    pedidosI,
+    almacenSeleccionadoId,
+    setAlmacenSeleccionadoId,
   } = useMapContext();
 
   const [pedidosPage, setPedidosPage] = useState<number>(0);
   const [camionesPage, setCamionesPage] = useState<number>(0);
+  const [almacenesPage, setAlmacenesPage] = useState<number>(0);
 
   // ✅ Sistema de estado estable para camiones
   const camionStatusRef = useRef<Map<number, CamionStatus>>(new Map());
@@ -159,6 +203,42 @@ export const MapPanel = () => {
     }
   }, [isSearchingPedidos]);
 
+  const [isSearchingAlmacenes,setIsSearchingAlmacenes]= useState(false);
+  const [searchTermAlmacenes,setSearchTermAlmacenes]= useState("");
+  const searchAlmacenesInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAlmacenesSearch = useCallback((value:string)=>{
+    setSearchTermAlmacenes(value);
+    setAlmacenesPage(0);
+  },[]);
+
+  useEffect(() => {
+    if (isSearchingAlmacenes && searchAlmacenesInputRef.current) {
+      searchAlmacenesInputRef.current.focus();
+    }
+  }, [isSearchingAlmacenes]);
+
+  const filteredAlmacenes = useMemo(()=>{
+    if(!searchTermAlmacenes.trim())return ALMACENES_DATA;
+    
+    return ALMACENES_DATA.filter((almacen)=>
+      almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) || 
+      almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
+    );
+  },[searchTermAlmacenes]);
+
+  const visibleAlmacenes = useMemo(()=> filteredAlmacenes.slice(almacenesPage*PAGE_SIZE, (almacenesPage+1)*PAGE_SIZE), [filteredAlmacenes, almacenesPage]);
+
+  const nextAlmacenesPage = useCallback(()=>{
+    if((almacenesPage+1)*PAGE_SIZE < filteredAlmacenes.length){
+      setAlmacenesPage((p) => p + 1);
+    }
+  }, [almacenesPage, filteredAlmacenes.length]);
+
+  const prevAlmacenesPage = useCallback(()=>{
+    if(almacenesPage > 0 ) setAlmacenesPage((p)=>p-1);
+  }, [almacenesPage]);
+
   const pedidosWithPriority = useMemo(() => {
     if (!pedidosI?.length) return [];
 
@@ -211,6 +291,7 @@ export const MapPanel = () => {
             {[
               { id: "camiones", label: "Camiones", icon: Truck, count: sortedDataCamiones.length },
               { id: "pedidos", label: "Pedidos", icon: Package, count: pedidosI.length },
+              { id: "almacenes", label: "Almacenes", icon: Warehouse, count: ALMACENES_DATA.length },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = selectedTab === tab.id;
@@ -470,10 +551,250 @@ export const MapPanel = () => {
             </div>
           </div>
         )}
+
+        {selectedTab === "almacenes" && (
+          <div className="h-full flex flex-col">
+            {/* Header de almacenes con gradiente */}
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-blue-800 mb-1">Red de Almacenes</h3>
+                  <p className="text-sm text-blue-600">
+                    Mostrando {almacenesPage * PAGE_SIZE + 1}–
+                    {Math.min((almacenesPage + 1) * PAGE_SIZE, filteredAlmacenes.length)} de{" "}
+                    {filteredAlmacenes.length} almacenes
+                  </p>
+                  {almacenSeleccionadoId && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-200">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        Almacén seleccionado: {
+                          ALMACENES_DATA.find(a => `${a.posX}-${a.posY}` === almacenSeleccionadoId)?.nombre || "Desconocido"
+                        }
+                      </div>
+                      <button
+                        onClick={() => setAlmacenSeleccionadoId(null)}
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 p-1 rounded-md transition-colors duration-200"
+                        title="Deseleccionar almacén"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Controles de almacenes */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {isSearchingAlmacenes ? (
+                      <div className="relative">
+                        <input
+                          ref={searchAlmacenesInputRef}
+                          type="text"
+                          value={searchTermAlmacenes}
+                          onChange={(e) => handleAlmacenesSearch(e.target.value)}
+                          onBlur={() => !searchTermAlmacenes && setIsSearchingAlmacenes(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              handleAlmacenesSearch("");
+                              setIsSearchingAlmacenes(false);
+                            }
+                          }}
+                          className="w-40 text-sm py-2.5 pl-10 pr-4 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 bg-white shadow-sm"
+                          placeholder="Buscar almacén..."
+                        />
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsSearchingAlmacenes(true)}
+                        className="p-2.5 bg-white border-2 border-blue-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-sm"
+                        title="Buscar almacén"
+                      >
+                        <Search size={16} className="text-blue-500" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-blue-200">
+                    <button
+                      onClick={prevAlmacenesPage}
+                      disabled={almacenesPage === 0}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors"
+                    >
+                      <ChevronLeft size={16} className="text-blue-600" />
+                    </button>
+                    <div className="px-3 py-1 text-sm font-medium text-blue-700 min-w-[60px] text-center">
+                      {almacenesPage + 1} / {Math.ceil(filteredAlmacenes.length / PAGE_SIZE)}
+                    </div>
+                    <button
+                      onClick={nextAlmacenesPage}
+                      disabled={(almacenesPage + 1) * PAGE_SIZE >= filteredAlmacenes.length}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-50 transition-colors"
+                    >
+                      <ChevronRight size={16} className="text-blue-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla de almacenes */}
+            <div className="flex-1 overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-gradient-to-r from-blue-50 to-white border-b-2 border-blue-200">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-sm font-bold text-blue-700 py-4 px-6">
+                      Almacén
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-4">
+                      Tipo
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-4">
+                      Ubicación
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-4">
+                      Capacidad
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-6">
+                      Camiones
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleAlmacenes.map((almacen, index) => (
+                    <AlmacenRowImproved 
+                      key={`${almacen.posX}-${almacen.posY}-${index}`} 
+                      almacen={almacen} 
+                      isSelected={almacenSeleccionadoId === `${almacen.posX}-${almacen.posY}`}
+                      onSelect={setAlmacenSeleccionadoId}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+const AlmacenRowImproved = React.memo(({ 
+  almacen, 
+  isSelected, 
+  onSelect 
+}: { 
+  almacen: AlmacenInfo; 
+  isSelected: boolean;
+  onSelect: (id: string | null) => void;
+}) => {
+  const getAlmacenIcon = (typeHouse: string) => {
+    return typeHouse === "home" ? "🏢" : "🏭";
+  };
+
+  const getAlmacenColor = (typeHouse: string) => {
+    return typeHouse === "home" 
+      ? "bg-blue-400 shadow-blue-200" 
+      : "bg-cyan-400 shadow-cyan-200";
+  };
+
+  const getTipoLabel = (typeHouse: string) => {
+    return typeHouse === "home" ? "Central" : "Intermedio";
+  };
+
+  const handleClick = useCallback(() => {
+    const almacenId = `${almacen.posX}-${almacen.posY}`;
+    onSelect(isSelected ? null : almacenId);
+  }, [almacen.posX, almacen.posY, isSelected, onSelect]);
+
+  return (
+    <TableRow 
+      onClick={handleClick}
+      className={`cursor-pointer transition-all duration-200 hover:bg-blue-50 border-b border-blue-100 ${
+        isSelected ? "bg-blue-100 border-l-4 border-blue-500 shadow-lg ring-2 ring-blue-200" : ""
+      }`}
+    >
+      <TableCell className="py-4 px-6">
+        <div className="flex items-center gap-4">
+          <div
+            className={`w-4 h-4 rounded-full ${getAlmacenColor(
+              almacen.typeHouse
+            )} shadow-sm border-2 border-white ${
+              isSelected ? "ring-2 ring-blue-400 scale-125" : ""
+            } transition-all duration-200`}
+          />
+          <div>
+            <div className={`font-bold text-base ${
+              isSelected ? "text-blue-800" : "text-slate-800"
+            } transition-colors duration-200`}>
+              {almacen.nombre}
+            </div>
+            <div className={`text-sm ${
+              isSelected ? "text-blue-600" : "text-slate-500"
+            } transition-colors duration-200`}>
+              {almacen.descripcion}
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4">
+        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
+          isSelected 
+            ? "bg-blue-200 text-blue-800 border-blue-300 shadow-md" 
+            : "bg-blue-50 text-blue-700 border-blue-200"
+        } transition-all duration-200`}>
+          <span className="text-base">{getAlmacenIcon(almacen.typeHouse)}</span>
+          {getTipoLabel(almacen.typeHouse)}
+        </span>
+      </TableCell>
+      <TableCell className={`text-sm px-4 font-mono ${
+        isSelected ? "text-blue-700 font-semibold" : "text-slate-700"
+      } transition-colors duration-200`}>
+        ({almacen.posX}, {almacen.posY})
+      </TableCell>
+      <TableCell className="text-sm text-slate-700 px-4">
+        <div className="flex items-center gap-2">
+          <div className="text-lg">📦</div>
+          <div>
+            <span className={`text-sm font-bold ${
+              isSelected ? "text-blue-800" : "text-slate-800"
+            } transition-colors duration-200`}>
+              {almacen.capacidad}
+            </span>
+            <div className={`text-xs ${
+              isSelected ? "text-blue-600" : "text-slate-500"
+            } transition-colors duration-200`}>
+              capacidad
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-6">
+        <div className="flex items-center gap-3">
+          <div className="text-lg">🚛</div>
+          <div>
+            <span className={`text-sm font-bold ${
+              isSelected ? "text-blue-800" : "text-slate-800"
+            } transition-colors duration-200`}>
+              {almacen.camionesActuales}
+            </span>
+            <div className={`text-xs ${
+              isSelected ? "text-blue-600" : "text-slate-500"
+            } transition-colors duration-200`}>
+              en almacén
+            </div>
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+AlmacenRowImproved.displayName = "AlmacenRowImproved";
 
 // ✅ COMPONENTE DE FILA DE CAMIÓN MEJORADO CON ESTADOS SIMPLIFICADOS
 const CamionRowImproved = React.memo(({ truck }: TruckRow) => {

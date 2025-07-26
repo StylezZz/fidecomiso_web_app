@@ -35,11 +35,15 @@ const Almacen = ({
   setToolTipAlmacenPos,
   onTooltip,
 }: StoreHouseProps) => {
-  const { mapData } = useMapContext();
+  const { mapData, almacenSeleccionadoId, setAlmacenSeleccionadoId } = useMapContext();
   const { cellSizeXValue, cellSizeYValue, mapHeight } = mapData;
   const { calculatePos } = useCalRoute();
   const { x, y } = calculatePos(cellSizeXValue, cellSizeYValue, posX, posY, mapHeight);
   const { getTrucksInPosition } = useTrucksCount();
+
+  // Determinar si este almacén está seleccionado
+  const almacenId = `${posX}-${posY}`;
+  const isSelected = almacenSeleccionadoId === almacenId;
 
   const getAlmacenInfo = (): AlmacenInfo => {
     const cantidadCamiones = getTrucksInPosition(posX, posY);
@@ -97,6 +101,9 @@ const Almacen = ({
 
     const almacenInfo = getAlmacenInfo();
 
+    // Actualizar la selección en el contexto
+    setAlmacenSeleccionadoId(isSelected ? null : almacenId);
+
     if (onTooltip) {
       onTooltip(TooltipType.ALMACEN, almacenInfo, position);
     } else {
@@ -121,24 +128,54 @@ const Almacen = ({
         e.target.getStage()!.container().style.cursor = "default";
       }}
     >
-      {typeHouse === "home" ? <CentralWarehouseIcon /> : <IntermediateWarehouseIcon />}
+      {/* Anillo de selección */}
+      {isSelected && (
+        <Circle
+          x={0}
+          y={0}
+          radius={25}
+          stroke="#3b82f6"
+          strokeWidth={3}
+          dash={[5, 5]}
+          opacity={0.8}
+        />
+      )}
+      
+      {/* Componente del almacén */}
+      {typeHouse === "home" ? (
+        <CentralWarehouseIcon isSelected={isSelected} />
+      ) : (
+        <IntermediateWarehouseIcon isSelected={isSelected} />
+      )}
+      
+      {/* Indicador de selección adicional */}
+      {isSelected && (
+        <Circle
+          x={15}
+          y={-5}
+          radius={4}
+          fill="#3b82f6"
+          stroke="#ffffff"
+          strokeWidth={1}
+        />
+      )}
     </Group>
   );
 };
 
 // Almacén Central - Diseño más prominente con estrella y hexágono
-const CentralWarehouseIcon = () => {
+const CentralWarehouseIcon = ({ isSelected = false }: { isSelected?: boolean }) => {
   return (
     <Group scale={{ x: 1, y: 1 }} x={-15} y={-15}>
       {/* Fondo hexagonal */}
       <Path
         data="M15 0 L25 8.66 L25 21.66 L15 30.32 L5 21.66 L5 8.66 Z"
-        fill="#1e40af"
-        stroke="#ffffff"
-        strokeWidth={2}
+        fill={isSelected ? "#2563eb" : "#1e40af"}
+        stroke={isSelected ? "#60a5fa" : "#ffffff"}
+        strokeWidth={isSelected ? 3 : 2}
         shadowColor="black"
-        shadowBlur={8}
-        shadowOpacity={0.3}
+        shadowBlur={isSelected ? 12 : 8}
+        shadowOpacity={isSelected ? 0.5 : 0.3}
         shadowOffsetX={2}
         shadowOffsetY={2}
       />
@@ -149,9 +186,9 @@ const CentralWarehouseIcon = () => {
         y={15}
         numPoints={5}
         innerRadius={3}
-        outerRadius={8}
-        fill="#ffffff"
-        stroke="#1e40af"
+        outerRadius={isSelected ? 10 : 8}
+        fill={isSelected ? "#fbbf24" : "#ffffff"}
+        stroke={isSelected ? "#ffffff" : "#1e40af"}
         strokeWidth={1}
       />
 
@@ -174,7 +211,7 @@ const CentralWarehouseIcon = () => {
 };
 
 // Almacén Intermedio - Diseño más simple con cuadrado y techo
-const IntermediateWarehouseIcon = () => {
+const IntermediateWarehouseIcon = ({ isSelected = false }: { isSelected?: boolean }) => {
   return (
     <Group scale={{ x: 1, y: 1 }} x={-12} y={-12}>
       {/* Fondo cuadrado con bordes redondeados */}
@@ -183,29 +220,65 @@ const IntermediateWarehouseIcon = () => {
         y={8}
         width={16}
         height={16}
-        fill="#3b82f6"
-        stroke="#ffffff"
-        strokeWidth={2}
+        fill={isSelected ? "#2563eb" : "#3b82f6"}
+        stroke={isSelected ? "#60a5fa" : "#ffffff"}
+        strokeWidth={isSelected ? 3 : 2}
         cornerRadius={3}
         shadowColor="black"
-        shadowBlur={6}
-        shadowOpacity={0.2}
+        shadowBlur={isSelected ? 10 : 6}
+        shadowOpacity={isSelected ? 0.4 : 0.2}
         shadowOffsetX={1}
         shadowOffsetY={1}
       />
 
       {/* Techo triangular */}
-      <Path data="M4 8 L12 2 L20 8 Z" fill="#1e40af" stroke="#ffffff" strokeWidth={1.5} />
+      <Path 
+        data="M4 8 L12 2 L20 8 Z" 
+        fill={isSelected ? "#1d4ed8" : "#1e40af"} 
+        stroke={isSelected ? "#60a5fa" : "#ffffff"} 
+        strokeWidth={1.5} 
+      />
 
       {/* Puerta */}
-      <Rect x={9} y={16} width={6} height={8} fill="#ffffff" stroke="#3b82f6" strokeWidth={0.5} />
+      <Rect 
+        x={9} 
+        y={16} 
+        width={6} 
+        height={8} 
+        fill={isSelected ? "#fbbf24" : "#ffffff"} 
+        stroke="#3b82f6" 
+        strokeWidth={0.5} 
+      />
 
       {/* Ventanas laterales */}
-      <Rect x={6} y={10} width={2} height={2} fill="#ffffff" stroke="#3b82f6" strokeWidth={0.5} />
-      <Rect x={16} y={10} width={2} height={2} fill="#ffffff" stroke="#3b82f6" strokeWidth={0.5} />
+      <Rect 
+        x={6} 
+        y={10} 
+        width={2} 
+        height={2} 
+        fill={isSelected ? "#fbbf24" : "#ffffff"} 
+        stroke="#3b82f6" 
+        strokeWidth={0.5} 
+      />
+      <Rect 
+        x={16} 
+        y={10} 
+        width={2} 
+        height={2} 
+        fill={isSelected ? "#fbbf24" : "#ffffff"} 
+        stroke="#3b82f6" 
+        strokeWidth={0.5} 
+      />
 
       {/* Indicador de almacén intermedio (punto pequeño) */}
-      <Circle x={12} y={6} radius={1.5} fill="#ffffff" stroke="#1e40af" strokeWidth={0.5} />
+      <Circle 
+        x={12} 
+        y={6} 
+        radius={isSelected ? 2 : 1.5} 
+        fill={isSelected ? "#fbbf24" : "#ffffff"} 
+        stroke="#1e40af" 
+        strokeWidth={0.5} 
+      />
     </Group>
   );
 };
