@@ -82,6 +82,8 @@ interface MapContextType {
   setPedidoSeleccionadoId: Dispatch<SetStateAction<number | null>>;
   almacenSeleccionadoId: string | null;
   setAlmacenSeleccionadoId: Dispatch<SetStateAction<string | null>>;
+  bloqueoSeleccionadoId: number | null;
+  setBloqueoSeleccionadoId: Dispatch<SetStateAction<number | null>>;
 }
 
 const MapContext = createContext<MapContextType | null>(null);
@@ -157,6 +159,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const [camionSeleccionadoId, setCamionSeleccionadoId] = useState<number | null>(null);
   const [pedidoSeleccionadoId, setPedidoSeleccionadoId] = useState<number | null>(null);
   const [almacenSeleccionadoId, setAlmacenSeleccionadoId] = useState<string | null>(null);
+  const [bloqueoSeleccionadoId, setBloqueoSeleccionadoId] = useState<number | null>(null);
 
   function setUbicacionVehiculo(index: number, x: number, y: number) {
     setCamionesRuta((dataVehiculos) => {
@@ -373,6 +376,8 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
         setPedidoSeleccionadoId,
         almacenSeleccionadoId,
         setAlmacenSeleccionadoId,
+        bloqueoSeleccionadoId,
+        setBloqueoSeleccionadoId,
       }}
     >
       {children}

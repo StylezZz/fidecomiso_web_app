@@ -65,6 +65,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     tipoFinalizacion,
     camionSeleccionadoId,
     pedidoSeleccionadoId,
+    bloqueoSeleccionadoId,
   } = useMapContext();
   const { timerSimulacion } = simulationTime;
   const { simulacionSeleccionada } = useSimulationContext();
@@ -475,6 +476,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                   setBloqueoSeleccionado={setBloqueoSeleccionado}
                   setToolTipBlockPos={setToolTipBlockPos}
                   onTooltip={showTooltip}
+                  isSelected={bloqueoSeleccionadoId === bloqueo.id}
                 />
               ))}
               {pedidosMostrar}

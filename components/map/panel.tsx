@@ -15,6 +15,7 @@ import {
   Clock,
   Package,
   Search,
+  Shield,
   Siren,
   Truck,
   Warehouse,
@@ -90,13 +91,17 @@ export const MapPanel = () => {
   const {
     camionesRuta,
     pedidosI,
+    bloqueosI,
     almacenSeleccionadoId,
     setAlmacenSeleccionadoId,
+    bloqueoSeleccionadoId,
+    setBloqueoSeleccionadoId,
   } = useMapContext();
 
   const [pedidosPage, setPedidosPage] = useState<number>(0);
   const [camionesPage, setCamionesPage] = useState<number>(0);
   const [almacenesPage, setAlmacenesPage] = useState<number>(0);
+  const [bloqueosPage, setBloqueosPage] = useState<number>(0);
 
   // ✅ Sistema de estado estable para camiones
   const camionStatusRef = useRef<Map<number, CamionStatus>>(new Map());
@@ -207,6 +212,10 @@ export const MapPanel = () => {
   const [searchTermAlmacenes,setSearchTermAlmacenes]= useState("");
   const searchAlmacenesInputRef = useRef<HTMLInputElement>(null);
 
+  const [isSearchingBloqueos, setIsSearchingBloqueos] = useState(false);
+  const [searchTermBloqueos, setSearchTermBloqueos] = useState("");
+  const searchBloqueosInputRef = useRef<HTMLInputElement>(null);
+
   const handleAlmacenesSearch = useCallback((value:string)=>{
     setSearchTermAlmacenes(value);
     setAlmacenesPage(0);
@@ -217,6 +226,17 @@ export const MapPanel = () => {
       searchAlmacenesInputRef.current.focus();
     }
   }, [isSearchingAlmacenes]);
+
+  const handleBloqueosSearch = useCallback((value: string) => {
+    setSearchTermBloqueos(value);
+    setBloqueosPage(0);
+  }, []);
+
+  useEffect(() => {
+    if (isSearchingBloqueos && searchBloqueosInputRef.current) {
+      searchBloqueosInputRef.current.focus();
+    }
+  }, [isSearchingBloqueos]);
 
   const filteredAlmacenes = useMemo(()=>{
     if(!searchTermAlmacenes.trim())return ALMACENES_DATA;
@@ -238,6 +258,29 @@ export const MapPanel = () => {
   const prevAlmacenesPage = useCallback(()=>{
     if(almacenesPage > 0 ) setAlmacenesPage((p)=>p-1);
   }, [almacenesPage]);
+
+  const filteredBloqueos = useMemo(() => {
+    if (!searchTermBloqueos.trim()) return bloqueosI || [];
+    
+    return bloqueosI.filter(bloqueo =>
+      bloqueo.id.toString().includes(searchTermBloqueos.toLowerCase()) ||
+      `bloqueo-${bloqueo.id}`.toLowerCase().includes(searchTermBloqueos.toLowerCase())
+    );
+  }, [bloqueosI, searchTermBloqueos]);
+
+  const visibleBloqueos = useMemo(
+    () => filteredBloqueos.slice(bloqueosPage * PAGE_SIZE, (bloqueosPage + 1) * PAGE_SIZE),
+    [filteredBloqueos, bloqueosPage]
+  );
+
+  const nextBloqueosPage = useCallback(() => {
+    if ((bloqueosPage + 1) * PAGE_SIZE < filteredBloqueos.length)
+      setBloqueosPage((p) => p + 1);
+  }, [bloqueosPage, filteredBloqueos.length]);
+
+  const prevBloqueosPage = useCallback(() => {
+    if (bloqueosPage > 0) setBloqueosPage((p) => p - 1);
+  }, [bloqueosPage]);
 
   const pedidosWithPriority = useMemo(() => {
     if (!pedidosI?.length) return [];
@@ -292,6 +335,7 @@ export const MapPanel = () => {
               { id: "camiones", label: "Camiones", icon: Truck, count: sortedDataCamiones.length },
               { id: "pedidos", label: "Pedidos", icon: Package, count: pedidosI.length },
               { id: "almacenes", label: "Almacenes", icon: Warehouse, count: ALMACENES_DATA.length },
+              { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = selectedTab === tab.id;
@@ -301,26 +345,32 @@ export const MapPanel = () => {
                   key={tab.id}
                   onClick={() => setSelectedTab(tab.id)}
                   className={`
-                    relative flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium 
-                    transition-all duration-300 group min-w-[120px] justify-center
+                    relative flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium 
+                    transition-all duration-300 group min-w-[90px] justify-center
                     ${
                       isActive
-                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 transform scale-105"
+                        ? tab.id === "camiones"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg"
+                          : tab.id === "pedidos"
+                          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                          : tab.id === "almacenes"
+                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                          : "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 hover:scale-102"
                     }
                   `}
                 >
                   <Icon
-                    size={18}
+                    size={16}
                     className={`transition-transform duration-300 ${
                       isActive ? "scale-110" : "group-hover:scale-105"
                     }`}
                   />
-                  <span className="font-semibold">{tab.label}</span>
+                  <span className="font-semibold text-xs">{tab.label}</span>
                   {tab.count !== undefined && (
                     <span
                       className={`
-                      text-xs px-2 py-1 rounded-full font-bold transition-all duration-300
+                      text-xs px-2 py-0.5 rounded-full font-bold transition-all duration-300
                       ${
                         isActive
                           ? "bg-white/20 text-white"
@@ -678,6 +728,131 @@ export const MapPanel = () => {
             </div>
           </div>
         )}
+
+        {selectedTab === "bloqueos" && (
+          <div className="h-full flex flex-col">
+            {/* Header de bloqueos con gradiente rojo */}
+            <div className="px-6 py-4 bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-red-800 mb-1">Bloqueos Activos</h3>
+                  <p className="text-sm text-red-600">
+                    Mostrando {bloqueosPage * PAGE_SIZE + 1}–
+                    {Math.min((bloqueosPage + 1) * PAGE_SIZE, filteredBloqueos.length)} de{" "}
+                    {filteredBloqueos.length} bloqueos
+                  </p>
+                  {bloqueoSeleccionadoId && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="inline-flex items-center gap-2 bg-red-100 text-red-800 px-3 py-1.5 rounded-full text-sm font-medium border border-red-200">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        Bloqueo seleccionado: Bloqueo-{bloqueoSeleccionadoId}
+                      </div>
+                      <button
+                        onClick={() => setBloqueoSeleccionadoId(null)}
+                        className="text-red-600 hover:text-red-800 hover:bg-red-100 p-1 rounded-md transition-colors duration-200"
+                        title="Deseleccionar bloqueo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Controles de bloqueos */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {isSearchingBloqueos ? (
+                      <div className="relative">
+                        <input
+                          ref={searchBloqueosInputRef}
+                          type="text"
+                          value={searchTermBloqueos}
+                          onChange={(e) => handleBloqueosSearch(e.target.value)}
+                          onBlur={() => !searchTermBloqueos && setIsSearchingBloqueos(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              handleBloqueosSearch("");
+                              setIsSearchingBloqueos(false);
+                            }
+                          }}
+                          className="w-40 text-sm py-2.5 pl-10 pr-4 border-2 border-red-200 rounded-xl focus:outline-none focus:border-red-400 focus:ring-4 focus:ring-red-100 bg-white shadow-sm"
+                          placeholder="Buscar bloqueo..."
+                        />
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-red-400"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsSearchingBloqueos(true)}
+                        className="p-2.5 bg-white border-2 border-red-200 rounded-xl hover:border-red-300 hover:bg-red-50 transition-all duration-200 shadow-sm"
+                        title="Buscar bloqueo"
+                      >
+                        <Search size={16} className="text-red-500" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-red-200">
+                    <button
+                      onClick={prevBloqueosPage}
+                      disabled={bloqueosPage === 0}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-50 transition-colors"
+                    >
+                      <ChevronLeft size={16} className="text-red-600" />
+                    </button>
+                    <div className="px-3 py-1 text-sm font-medium text-red-700 min-w-[60px] text-center">
+                      {bloqueosPage + 1} / {Math.ceil(filteredBloqueos.length / PAGE_SIZE)}
+                    </div>
+                    <button
+                      onClick={nextBloqueosPage}
+                      disabled={(bloqueosPage + 1) * PAGE_SIZE >= filteredBloqueos.length}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-50 transition-colors"
+                    >
+                      <ChevronRight size={16} className="text-red-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla de bloqueos */}
+            <div className="flex-1 overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-gradient-to-r from-red-50 to-white border-b-2 border-red-200">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-sm font-bold text-red-700 py-4 px-6">
+                      Bloqueo
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">
+                      Estado
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">
+                      Duración
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">
+                      Ubicación
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-6">
+                      Distancia
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleBloqueos.map((bloqueo, index) => (
+                    <BloqueoRowImproved 
+                      key={`${bloqueo.id}-${index}`} 
+                      bloqueo={bloqueo}
+                      isSelected={bloqueoSeleccionadoId === bloqueo.id}
+                      onSelect={setBloqueoSeleccionadoId}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -795,6 +970,114 @@ const AlmacenRowImproved = React.memo(({
 });
 
 AlmacenRowImproved.displayName = "AlmacenRowImproved";
+
+// ✅ COMPONENTE DE FILA DE BLOQUEO
+const BloqueoRowImproved = React.memo(({ 
+  bloqueo,
+  isSelected,
+  onSelect
+}: { 
+  bloqueo: any;
+  isSelected: boolean;
+  onSelect: (id: number | null) => void;
+}) => {
+  const { simulationTime } = useMapContext();
+  const { timerSimulacion } = simulationTime;
+
+  // Manejar click para selección
+  const handleClick = useCallback(() => {
+    onSelect(isSelected ? null : bloqueo.id);
+  }, [bloqueo.id, isSelected, onSelect]);
+
+  // Calcular si está activo
+  const tiempoInicio = bloqueo.diaInicio * 24 * 60 + bloqueo.horaInicio * 60 + bloqueo.minutoInicio;
+  const tiempoFin = bloqueo.diaFin * 24 * 60 + bloqueo.horaFin * 60 + bloqueo.minutoFin;
+  const isActive = timerSimulacion >= tiempoInicio && timerSimulacion <= tiempoFin;
+
+  // Calcular distancia total del bloqueo
+  let distance = 0;
+  for (let tramo of bloqueo.tramo) {
+    let { x_fin, x_ini, y_fin, y_ini } = tramo;
+    if (x_fin === x_ini) distance += Math.abs(y_fin - y_ini);
+    if (y_fin === y_ini) distance += Math.abs(x_fin - x_ini);
+  }
+
+  // Calcular duración
+  const duracionMinutos = tiempoFin - tiempoInicio;
+  const duracionHoras = Math.floor(duracionMinutos / 60);
+  const duracionMin = duracionMinutos % 60;
+
+  return (
+    <TableRow 
+      onClick={handleClick}
+      className={`cursor-pointer transition-all duration-200 border-b border-red-100 hover:bg-red-50 ${
+        isSelected ? "bg-red-100 border-l-4 border-red-500 shadow-lg ring-2 ring-red-200" : ""
+      }`}
+    >
+      <TableCell className="py-4 px-6">
+        <div className="flex items-center gap-4">
+          <div
+            className={`w-4 h-4 rounded-full shadow-sm border-2 border-white ${
+              isActive ? "bg-red-500 animate-pulse" : "bg-gray-400"
+            }`}
+          />
+          <div>
+            <div className="font-bold text-base text-slate-800">Bloqueo-{bloqueo.id}</div>
+            <div className="text-sm text-slate-500">
+              {isActive ? "🔴 Activo" : "⭕ Inactivo"}
+            </div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4">
+        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
+          isActive 
+            ? "bg-red-50 text-red-700 border-red-200" 
+            : "bg-gray-50 text-gray-700 border-gray-200"
+        }`}>
+          <span className="text-base">{isActive ? "🚫" : "⏸️"}</span>
+          {isActive ? "Bloqueando" : "Programado"}
+        </span>
+      </TableCell>
+      <TableCell className="text-sm text-slate-700 px-4">
+        <div className="flex items-center gap-2">
+          <div className="text-lg">⏱️</div>
+          <div>
+            <span className="text-sm font-bold text-slate-800">
+              {duracionHoras}h {duracionMin}m
+            </span>
+            <div className="text-xs text-slate-500">duración</div>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="text-sm text-slate-700 px-4">
+        <div className="space-y-1">
+          {bloqueo.tramo.slice(0, 2).map((tramo, index) => (
+            <div key={index} className="font-mono text-xs">
+              ({tramo.x_ini},{tramo.y_ini}) → ({tramo.x_fin},{tramo.y_fin})
+            </div>
+          ))}
+          {bloqueo.tramo.length > 2 && (
+            <div className="text-xs text-slate-500">
+              +{bloqueo.tramo.length - 2} tramos más
+            </div>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="px-6">
+        <div className="flex items-center gap-3">
+          <div className="text-lg">📏</div>
+          <div>
+            <span className="text-sm font-bold text-slate-800">{distance}</span>
+            <div className="text-xs text-slate-500">unidades</div>
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+BloqueoRowImproved.displayName = "BloqueoRowImproved";
 
 // ✅ COMPONENTE DE FILA DE CAMIÓN MEJORADO CON ESTADOS SIMPLIFICADOS
 const CamionRowImproved = React.memo(({ truck }: TruckRow) => {

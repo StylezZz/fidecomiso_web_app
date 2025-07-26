@@ -13,6 +13,7 @@ interface Props {
   setBloqueoSeleccionado: Dispatch<SetStateAction<BloqueoI | null>>;
   setToolTipBlockPos: Dispatch<SetStateAction<{ x: number; y: number }>>;
   onTooltip?: (type: TooltipType, data: BloqueoI, position: { x: number; y: number }) => void;
+  isSelected?: boolean;
 }
 
 export const Bloqueo = ({
@@ -20,8 +21,9 @@ export const Bloqueo = ({
   setBloqueoSeleccionado,
   setToolTipBlockPos,
   onTooltip,
+  isSelected = false,
 }: Props) => {
-  const { mapData } = useMapContext();
+  const { mapData, setBloqueoSeleccionadoId } = useMapContext();
   const { cellSizeXValue, cellSizeYValue, mapHeight } = mapData;
   const { calculatePos } = useCalRoute();
   // Convertir las coordenadas de los tramos a posiciones en el canvas
@@ -41,6 +43,9 @@ export const Bloqueo = ({
 
     console.log("Bloqueo", block);
     e.cancelBubble = true;
+
+    // Actualizar la selección global
+    setBloqueoSeleccionadoId(block.id);
 
     if (onTooltip) {
       onTooltip(TooltipType.BLOQUEO, block, position);
@@ -63,27 +68,27 @@ export const Bloqueo = ({
           <Line
             key={`point${block.id}-segment-${index}`}
             points={[point.startPos.x, point.startPos.y, point.endPos.x, point.endPos.y]}
-            stroke="#dc2626"
-            strokeWidth={8}
+            stroke={isSelected ? "#fbbf24" : "#dc2626"}
+            strokeWidth={isSelected ? 12 : 8}
             listening={true}
             hitStrokeWidth={hitWidth}
             lineCap="round"
-            shadowColor="#000000"
-            shadowBlur={10}
-            shadowOpacity={0.3}
+            shadowColor={isSelected ? "#f59e0b" : "#000000"}
+            shadowBlur={isSelected ? 15 : 10}
+            shadowOpacity={isSelected ? 0.6 : 0.3}
             shadowOffsetX={0}
             shadowOffsetY={2}
-            dash={[10, 5]}
+            dash={isSelected ? [15, 8] : [10, 5]}
             onClick={handleBlockRoute}
             onTap={handleBlockRoute}
             onMouseEnter={(e) => {
-              (e.target as any).stroke("#ef4444");
-              (e.target as any).strokeWidth(10);
+              (e.target as any).stroke(isSelected ? "#f59e0b" : "#ef4444");
+              (e.target as any).strokeWidth(isSelected ? 14 : 10);
               e.target.getLayer()?.batchDraw();
             }}
             onMouseLeave={(e) => {
-              (e.target as any).stroke("#dc2626");
-              (e.target as any).strokeWidth(8);
+              (e.target as any).stroke(isSelected ? "#fbbf24" : "#dc2626");
+              (e.target as any).strokeWidth(isSelected ? 12 : 8);
               e.target.getLayer()?.batchDraw();
             }}
           />
