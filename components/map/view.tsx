@@ -109,7 +109,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                   {
                     mesPedido: punto.mes || mes,
                     horaDeInicio: punto.tiempoInicio,
-                    anio: anio,
+                    anio: punto.anio || anio,
                   } as any,
                   mes, // mes base de simulación
                   dia
@@ -164,7 +164,10 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     }
 
     // Si es el mes siguiente, solo sumar días del mes anterior
-    if (anio === anioBase && mesPedido === mesBase + 1) {
+    if (
+      (anio === anioBase || anio === anioBase + 1) &&
+      (mesPedido === mesBase + 1 || (mesPedido === 1 && mesBase === 12))
+    ) {
       const diasMesAnterior = getDaysInMonth(anioBase, mesBase);
       return horaDeInicio + diasMesAnterior * 1440;
     }

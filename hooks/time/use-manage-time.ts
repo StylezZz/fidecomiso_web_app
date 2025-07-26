@@ -49,13 +49,13 @@ export const useManageTime = ({
   const [errorInit, setErrorInit] = useState<boolean>(false);
   useEffect(() => {
     if (tipo === undefined) return;
-    setIntervalMs(tipo == SimulationType.DIA_DIA ? 10 / speedTime : 10 / speedTime);
-    setMinutosPorIteracion(tipo == SimulationType.DIA_DIA ? 18 : 18);
+    setIntervalMs(tipo == SimulationType.DIA_DIA ? 60000 : 10 / speedTime);
+    setMinutosPorIteracion(tipo == SimulationType.DIA_DIA ? 1 : 18);
   }, [tipo]);
 
   useEffect(() => {
     if (tipo === undefined) return;
-    setIntervalMs(tipo == SimulationType.DIA_DIA ? 10 / speedTime : 10 / speedTime);
+    setIntervalMs(tipo == SimulationType.DIA_DIA ? 60000 : 10 / speedTime);
     console.log("ACTUALIZO LA VELOCIDAD - Speed:", speedTime, "Display:", displaySpeed);
   }, [speedTime]);
 
