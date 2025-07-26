@@ -1,6 +1,5 @@
 import { SimulationType } from "@/interfaces/simulation.interface";
 import SimulationService from "@/services/simulation.service";
-import { set } from "date-fns";
 import React, { SetStateAction, useEffect, useState } from "react";
 
 export interface manageTimeReturn {
@@ -22,12 +21,22 @@ export interface manageTimeProps {
   tipo?: SimulationType;
   simulacionIniciada: boolean;
   setSimulacionIniciada: React.Dispatch<SetStateAction<boolean>>;
+  dia?: number;
+  mes?: number;
+  anio?: number;
+  hora?: number;
+  minuto?: number;
 }
 
 export const useManageTime = ({
   tipo,
   setSimulacionIniciada,
   simulacionIniciada,
+  dia,
+  mes,
+  anio,
+  hora,
+  minuto,
 }: manageTimeProps): manageTimeReturn => {
   const [simulationDate, setSimulationDate] = useState<Date | null>(null);
   const [initTimer, setInitTimer] = useState<boolean>(false); //maneja el inicio de la simlaucion si está en pausa o continua
@@ -64,13 +73,18 @@ export const useManageTime = ({
     try {
       //aqui es dondde inicio el simulacion
       const response = await SimulationService.inicializarTipoSimulacion(
-        tipo == SimulationType.DIA_DIA ? 1 : tipo == SimulationType.SEMANAL ? 2 : 3
+        tipo == SimulationType.DIA_DIA ? 1 : tipo == SimulationType.SEMANAL ? 2 : 3,
+        dia!,
+        mes!,
+        anio!,
+        hora!,
+        minuto!
       );
       setSimulacionIniciada(true);
       setInitTimer(true);
     } catch (error) {
       console.error("error", error);
-      alert("Error al cargar el aalgoritmo");
+      alert("Error al cargar el algoritmo");
       setLoadingInit(false);
       setErrorInit(true);
     } finally {

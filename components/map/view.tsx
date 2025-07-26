@@ -160,14 +160,64 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     return horaDeInicio;
   };
 
+  const ajustarTiempoBloqueo = (
+    diaBloqueo: number,
+    mesBloqueo: number,
+    anioBloqueo: number,
+    hora: number,
+    minuto: number
+  ) => {
+    // Si es el mismo año y mes que la simulación
+    if (anioBloqueo === anio && mesBloqueo === mes) {
+      return diaBloqueo * 24 * 60 + hora * 60 + minuto;
+    }
+
+    // Si es del mismo año pero mes posterior
+    if (anioBloqueo === anio && mesBloqueo > mes) {
+      let diasAcumulados = 0;
+
+      // Sumar días de meses intermedios
+      for (let m = mes; m < mesBloqueo; m++) {
+        diasAcumulados += getDaysInMonth(anio, m);
+      }
+
+      return (diasAcumulados + diaBloqueo) * 24 * 60 + hora * 60 + minuto;
+    }
+
+    // Para otros casos (año diferente, etc.)
+    return diaBloqueo * 24 * 60 + hora * 60 + minuto;
+  };
+
   useEffect(() => {
     const nuevoPedidosMostrar: JSX.Element[] = [];
 
     // Bloqueos (sin cambios)
     const bloqueosActivos = bloqueosI.filter((data) => {
-      const { diaInicio, diaFin, minutoFin, minutoInicio, horaFin, horaInicio } = data;
-      const tiempoInicio = diaInicio * 24 * 60 + horaInicio * 60 + minutoInicio;
-      const tiempoFin = diaFin * 24 * 60 + horaFin * 60 + minutoFin;
+      const {
+        diaInicio,
+        diaFin,
+        minutoFin,
+        minutoInicio,
+        horaFin,
+        horaInicio,
+        mes: mesBloqueo,
+        anio: anioBloqueo,
+      } = data;
+
+      const tiempoInicio = ajustarTiempoBloqueo(
+        diaInicio,
+        mesBloqueo,
+        anioBloqueo,
+        horaInicio,
+        minutoInicio
+      );
+      const tiempoFin = ajustarTiempoBloqueo(diaFin, mesBloqueo, anioBloqueo, horaFin, minutoFin);
+
+      console.log(
+        `Bloqueo ID: ${data.id}, Mes: ${mesBloqueo}, Día: ${diaInicio}-${diaFin},
+       Tiempo: ${tiempoInicio}-${tiempoFin}, Timer: ${timerSimulacion}`
+      );
+
       return timerSimulacion >= tiempoInicio && timerSimulacion <= tiempoFin;
     });
     setBloqueosShow(bloqueosActivos);
@@ -187,10 +237,10 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
         anio // año base de simulación
       );
 
-      console.log(
-        `Pedido ID: ${id}, horaDeInicio: ${pedidosI[i].horaDeInicio}, Fecha: ${pedidosI[i].fechaDeRegistro},
-       tiempo ajustado: ${tiempoMuestraPedido}, Timer: ${timerSimulacion}`
-      );
+      // console.log(
+      //   `Pedido ID: ${id}, horaDeInicio: ${pedidosI[i].horaDeInicio}, Fecha: ${pedidosI[i].fechaDeRegistro},
+      //  tiempo ajustado: ${tiempoMuestraPedido}, Timer: ${timerSimulacion}`
+      // );
 
       if (tiempoMuestraPedido <= timerSimulacion && !pedidosEntregados.includes(id)) {
         nuevoPedidosMostrar.push(

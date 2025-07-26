@@ -1,13 +1,11 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useRef, useEffect } from "react";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   X,
   AlertTriangle,
@@ -16,7 +14,6 @@ import {
   CheckCircle,
   Calendar,
   CalendarDays,
-  Settings,
   Database,
   Zap,
   Clock,
@@ -32,8 +29,6 @@ import {
   obtenerAnioDesdeNombre,
   obtenerMesArchPedido,
   obtenerMesDesdeNombre,
-  readFileBloqueos,
-  readFilePedidos,
 } from "@/utils/readFiles";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -47,22 +42,6 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SimulationInterface, SimulationType } from "@/interfaces/simulation.interface";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-
-const formSchema = z.object({
-  type: z.string(),
-  algorithm: z.string(),
-  maxDays: z.number().min(1).max(30),
-  orderGenerationRate: z.number().min(1).max(50),
-  truckBreakdownProbability: z.number().min(0).max(100),
-  minOrderSize: z.number().min(1).max(25),
-  maxOrderSize: z.number().min(1).max(25),
-  minDeadlineHours: z.number().min(4).max(48),
-  maxDeadlineHours: z.number().min(4).max(48),
-  excludedTrucks: z.array(z.string()).optional(),
-  useDataFile: z.boolean().default(false),
-  showRealTimeMap: z.boolean().default(true),
-  generateDetailedReports: z.boolean().default(true),
-});
 
 type SimulationSetupProps = {
   onClose: () => void;
@@ -79,7 +58,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
   >("idle");
   const [validationProgress, setValidationProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   //useState para el seguimiento de iniciar simulacion
   const { obtenerArchivosBloqueos, obtenerArchivosPedidos, saveSimulacion } =
@@ -108,21 +86,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
   const [creandoSimulacion, setCreandoSimulacion] = useState<boolean>(false);
   const [errorSimulacion, setErrorSimulacion] = useState<boolean>(false);
   const [errorMsg, setErroMsg] = useState<string>("");
-
-  const months = [
-    { value: "01", label: "Enero" },
-    { value: "02", label: "Febrero" },
-    { value: "03", label: "Marzo" },
-    { value: "04", label: "Abril" },
-    { value: "05", label: "Mayo" },
-    { value: "06", label: "Junio" },
-    { value: "07", label: "Julio" },
-    { value: "08", label: "Agosto" },
-    { value: "09", label: "Septiembre" },
-    { value: "10", label: "Octubre" },
-    { value: "11", label: "Noviembre" },
-    { value: "12", label: "Diciembre" },
-  ];
 
   // Efecto para sincronizar la fecha seleccionada con los estados legacy
   useEffect(() => {
@@ -245,14 +208,12 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
         console.log(uploadedFilePedido);
         await PedidosService.postReadOrdersFile(uploadedFilePedido!);
         await BlockService.postReadBlocksFile(uploadedFileBloqueo!);
-        //subimos el contenido
         setLoadingBloqueoPedidos(false);
       }
       setCreandoSimulacion(true);
       let responsePedidos;
       let lengthPedidos = -1;
       const dias: number[] = getDiasSimulacion(simulationType!, Number(fecha.dia));
-      //await new Promise((resolve) => setTimeout(resolve, 3000));
       if (dias.length >= 0) {
         responsePedidos = await PedidosService.getOrders(
           dias,
@@ -262,23 +223,28 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
         lengthPedidos = responsePedidos.data.pedidos.length;
       }
 
-      console.log("se crea simulacion y el pedido", namePedido);
       const newSimulation: SimulationInterface = {
         tipo: simulationType!,
         fechaInicial: fecha.anio + "/" + fecha.mes + "/" + fecha.dia,
         hora: hora.hora + ":" + hora.minuto,
-        mesPedido: obtenerMesArchPedido(namePedido) ?? 0,
-        anioPedido: obtenerAnioArchPedido(namePedido) ?? 0,
-        mesBloqueo: obtenerMesDesdeNombre(nameBloqueo) ?? 0,
-        anioBloqueo: obtenerAnioDesdeNombre(nameBloqueo) ?? 0,
+        // mesPedido: obtenerMesArchPedido(namePedido) ?? 0,
+        // anioPedido: obtenerAnioArchPedido(namePedido) ?? 0,
+        // mesBloqueo: obtenerMesDesdeNombre(nameBloqueo) ?? 0,
+        // anioBloqueo: obtenerAnioDesdeNombre(nameBloqueo) ?? 0,
+        mesPedido: 0,
+        anioPedido: 0,
+        mesBloqueo: 0,
+        anioBloqueo: 0,
         anio: Number(fecha.anio) ?? 0,
         mes: Number(fecha.mes) ?? 0,
         dia: Number(fecha.dia) ?? 0,
         ihora: Number(hora.hora) ?? 0,
         iminuto: Number(hora.minuto) ?? 0,
         active: false,
-        pedidosNum: lengthPedidos, // en caso sea -1,  se coloca No definido
+        pedidosNum: lengthPedidos, // si es -1 se pone No definido
       };
+      console.log(JSON.stringify(newSimulation, null, 2));
+
       saveSimulacion(newSimulation);
       setCreandoSimulacion(false);
     } catch (error) {
@@ -308,10 +274,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
     }
 
     try {
-      const pedidos = readFilePedidos(contentPedido);
-      const bloqueos = readFileBloqueos(contentBloqueo);
-      //await getVehiculesRoutesFlow(pedidos, filePedidos, bloqueos, fileBloqueo);
-
       //Extraer datos desde el nombre del archivo de pedidos
       const nombreArchivoPedido = filePedidos.name;
       const regexFecha = /ventas(\d{4})(\d{2})/;
@@ -321,14 +283,8 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
           "El nombre del archivo de pedidos no contiene una fecha válida en formato ventasYYYYMM.txt"
         );
       }
-
-      const anioPedido = parseInt(match[1]);
-      const mesPedido = parseInt(match[2]);
-
       setNamePedido(filePedidos.name);
       setNameBloqueo(fileBloqueo.name);
-      const anioBloqueo = anioPedido;
-      const mesBloqueo = mesPedido;
 
       console.log("se obtiene", fileBloqueo.name, filePedidos.name);
       setFileValidationStatus("valid");
@@ -347,19 +303,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const getStepIcon = (step: number) => {
-    switch (step) {
-      case 1:
-        return <Target className="h-5 w-5" />;
-      case 2:
-        return <Settings className="h-5 w-5" />;
-      case 3:
-        return <CheckCircle className="h-5 w-5" />;
-      default:
-        return <Calendar className="h-5 w-5" />;
     }
   };
 
@@ -573,8 +516,7 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
               </CardContent>
             </Card>
 
-            {/* Origen de Datos - Mejorado */}
-            <Card className="border-2 border-purple-100">
+            {/* <Card className="border-2 border-purple-100">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-purple-100 rounded-lg">
@@ -589,7 +531,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                {/* Opciones de origen de datos */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <Card
                     className={`cursor-pointer transition-all duration-200 ${
@@ -654,7 +595,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                   </Card>
                 </div>
 
-                {/* Contenido específico según la opción seleccionada */}
                 {hasPreviousData === "hasnt" && (
                   <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
                     <div className="text-center">
@@ -667,7 +607,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Archivo de Pedidos */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <div className="p-2 bg-blue-100 rounded-lg">
@@ -719,7 +658,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                         )}
                       </div>
 
-                      {/* Archivo de Bloqueos */}
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
                           <div className="p-2 bg-orange-100 rounded-lg">
@@ -776,7 +714,6 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                   </div>
                 )}
 
-                {/* Selección de archivos existentes */}
                 {hasPreviousData === "has" && (
                   <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
                     <div className="text-center">
@@ -835,7 +772,7 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         );
 
@@ -870,7 +807,8 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                           <p className="font-semibold text-gray-900">{simulationType}</p>
                         </div>
                       </div>
-
+                    </div>
+                    <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-purple-100 rounded-lg">
                           <Calendar className="h-4 w-4 text-purple-600" />
@@ -887,7 +825,7 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    {/* <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-green-100 rounded-lg">
                           <Database className="h-4 w-4 text-green-600" />
@@ -914,7 +852,7 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                           </div>
                         </div>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>
