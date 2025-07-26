@@ -1,21 +1,11 @@
 import React from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  LogOut,
-  Plus,
-  AlertTriangle,
-  Settings,
-  Clock,
-  Calendar,
-  Play,
-  Pause,
-  RotateCcw,
-  Focus,
-} from "lucide-react";
+import { Plus, AlertTriangle, Settings, Clock, Calendar, Play, Pause, Focus } from "lucide-react";
 
 interface ElegantHeaderProps {
   day: number;
+  month: number;
+  year: number;
   hour: number;
   minute: number;
   realHour: number;
@@ -41,6 +31,8 @@ interface ElegantHeaderProps {
 
 export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
   day,
+  month,
+  year,
   hour,
   minute,
   realHour,
@@ -57,6 +49,25 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
   onSpeedChange,
   onFitToScreen,
 }) => {
+  const formatDisplayDate = (day: number, month: number, year: number) => {
+    const monthNames = [
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre",
+    ];
+
+    return `${day} ${monthNames[month - 1]} ${year}`;
+  };
+
   return (
     <header className="relative h-16 bg-white border-b border-gray-200 shadow-sm">
       {/* Subtle pattern background */}
@@ -135,9 +146,13 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
           </div>
           <div className="hidden lg:flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-1 border border-slate-200">
             <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">Ctrl</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">
+                Ctrl
+              </kbd>
               <span className="text-xs text-gray-400">+</span>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">B</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">
+                B
+              </kbd>
             </div>
           </div>
         </div>
@@ -150,7 +165,10 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
             <div className="text-center">
               <div className="text-xs text-blue-600 font-medium mb-0.5">Simulación</div>
               <div className="text-md font-bold text-gray-900 leading-tight">
-                {day}d {String(hour).padStart(2, "0")}h {String(minute).padStart(2, "0")}m
+                {formatDisplayDate(day, month, year)}
+              </div>
+              <div className="text-sm text-gray-600 leading-tight">
+                {String(hour).padStart(2, "0")}:{String(minute).padStart(2, "0")}
               </div>
             </div>
           </div>

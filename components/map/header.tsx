@@ -8,6 +8,7 @@ import { PedidoFormData } from "@/interfaces/pedido.dto";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import PedidosService from "@/services/orders.service";
 import SimulationService from "@/services/simulation.service";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { mapPedidoFormToDTO } from "@/utils/pedido-mapper";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +20,34 @@ interface MapHeaderProp {
 
 export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
   const { manageTime, realTime, simulationTime, pedidosI, setPedidosI } = useMapContext();
+  const { simulacionSeleccionada } = useSimulationContext();
   const { day, hour, minute } = simulationTime.time;
+  const { anio, mes } = simulacionSeleccionada;
+
+  const adjustDateForDisplay = (day: number, mes: number, anio: number) => {
+    const getDaysInMonth = (year: number, month: number) => {
+      return new Date(year, month, 0).getDate();
+    };
+
+    let adjustedDay = day;
+    let adjustedMonth = mes;
+    let adjustedYear = anio;
+
+    // Mientras el día sea mayor al último día del mes
+    while (adjustedDay > getDaysInMonth(adjustedYear, adjustedMonth)) {
+      adjustedDay -= getDaysInMonth(adjustedYear, adjustedMonth);
+      adjustedMonth++;
+
+      if (adjustedMonth > 12) {
+        adjustedMonth = 1;
+        adjustedYear++;
+      }
+    }
+
+    return { day: adjustedDay, month: adjustedMonth, year: adjustedYear };
+  };
+  const displayDate = adjustDateForDisplay(day, mes, anio);
+
   const { initTimer, displaySpeed, startTimer, doPlusSpeed, restartTimer, stopTimer } = manageTime;
   const { hour: realHour, minute: realMinute, second: realSecond } = realTime.realTime;
   const { toast: toastHook } = useToast();
@@ -122,7 +150,9 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
     <>
       <ElegantHeader
         // Datos reales del contexto (elimina los hardcodeados)
-        day={day}
+        day={displayDate.day}
+        month={displayDate.month}
+        year={displayDate.year}
         hour={hour}
         minute={minute}
         realHour={realHour}
