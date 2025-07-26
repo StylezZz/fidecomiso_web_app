@@ -527,7 +527,7 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
   };
 
   const getDestination = (truck: CamionI) => {
-    if (!truck.route || truck.route.length === 0) return "Sin asignar";
+    if (!truck.route || truck.route.length === 0) return "Averiado";
     const nextOrder = truck.route.find((punto) => punto.esPedido);
     return nextOrder ? `(${nextOrder.x},${nextOrder.y})` : "Base";
   };
