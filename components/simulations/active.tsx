@@ -10,9 +10,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/use-redux";
 import { useToast } from "@/hooks/use-toast";
 import { SimulationInterface } from "@/interfaces/simulation.interface";
 import SimulationService from "@/services/simulation.service";
-import {
-  getSimulationStatus
-} from "@/store/simulation/simulation-slice";
+import { getSimulationStatus } from "@/store/simulation/simulation-slice";
 import { formatearNombreArchivoPedido, formatearNombreBloqueos } from "@/utils/fetchTransform";
 import {
   AlertTriangle,
@@ -27,7 +25,7 @@ import {
   PlayCircle,
   Settings,
   Trash2,
-  Zap
+  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -72,7 +70,9 @@ const EmptySimulationContent = ({ onNewSimulation }: ActiveSimulationsProps) => 
 export function ActiveSimulations({ onNewSimulation }: ActiveSimulationsProps) {
   const dispatch = useAppDispatch();
   const currentSimulation = useAppSelector((state) => state.simulation.currentSimulation);
-  const { simulaciones, getAllSimulacion, loadingSimulaciones } = useSimulationContext();
+  const { simulaciones, getAllSimulacion, loadingSimulaciones, simulacionSeleccionada } =
+    useSimulationContext();
+  const { dia: diaInicial, ihora: horaInicial, iminuto: minutoInicial } = simulacionSeleccionada;
   const [toastSimulacion, setToastSimulacion] = useState<boolean>(false);
 
   useEffect(() => {
@@ -112,6 +112,9 @@ export function ActiveSimulations({ onNewSimulation }: ActiveSimulationsProps) {
 }
 
 const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => {
+  const { simulacionSeleccionada } = useSimulationContext();
+  const { dia: diaInicial, ihora: horaInicial, iminuto: minutoInicial } = simulacionSeleccionada;
+
   const { anio, mes, dia, ihora, iminuto, active } = simulacion;
   const [state, setState] = useState<"nolisto" | "listo" | "cargando">(
     active ? "listo" : "nolisto"
@@ -230,6 +233,9 @@ const SimulationCard = ({ simulacion }: { simulacion: SimulationInterface }) => 
       seleccionarSimulacion(simulacion);
       new Promise((resolve) => setTimeout(resolve, 3000));
       setState("listo");
+      new Promise((resolve) => setTimeout(resolve, 1500));
+      // Redirigir al mapa
+      router.push("/mapa");
     } catch (error) {
       setState("nolisto");
     }

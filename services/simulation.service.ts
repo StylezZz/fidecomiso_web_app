@@ -127,9 +127,22 @@ class SimulationService {
       throw new Error((error as Error).message);
     }
   }
-  public static async inicializarTipoSimulacion(tipoSimulacion: number): Promise<HttpResponse> {
+
+  public static async inicializarTipoSimulacion(
+    tipoSimulacion: number,
+    dia: number,
+    mes: number,
+    anio: number,
+    hora: number,
+    minuto: number
+  ): Promise<HttpResponse> {
     const queryParams = new URLSearchParams();
     queryParams.append("tipoSimulacion", tipoSimulacion.toString());
+    queryParams.append("dia", dia.toString());
+    queryParams.append("mes", mes.toString());
+    queryParams.append("anio", anio.toString());
+    queryParams.append("hora", hora.toString());
+    queryParams.append("minuto", minuto.toString());
     const queryString = queryParams.toString();
     try {
       const res = await http.post(`/genetico/inicializar?${queryString}`, null);

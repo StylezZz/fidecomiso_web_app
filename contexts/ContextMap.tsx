@@ -109,11 +109,22 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { simulacionSeleccionada } = useSimulationContext();
   const { ihora, iminuto, dia, tipo, anio, mes } = simulacionSeleccionada;
+  // Tomamos los valores inciales de la simulación
+  const diaInicial = dia;
+  const mesInicial = mes;
+  const anioInicial = anio;
+  const horaInicial = ihora;
+  const minutoInicial = iminuto;
 
   const manageTime: manageTimeReturn = useManageTime({
     tipo,
     setSimulacionIniciada,
     simulacionIniciada,
+    dia: diaInicial,
+    mes: mesInicial,
+    anio: anioInicial,
+    hora: horaInicial,
+    minuto: minutoInicial,
   }); //establece parametros de speed, intervalms,minutosporiteracion, inicio del simulacion
   const { initTimer, speedTime, intervalMs, minutosPorIteracion, stopTimer } = manageTime;
 
