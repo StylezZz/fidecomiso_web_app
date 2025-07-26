@@ -55,6 +55,7 @@ export const FinishModal = ({ isOpen }: FinishModalProps) => {
   const isLoadingPedidos = false; // Ya no hay loading porque usamos datos del contexto
 
   // 🎯 DETECTAR SI ES COLAPSO
+  // cambios del modal
   const esColapso = tipoFinalizacion === "colapso";
 
   // 🎯 CONTENIDO DINÁMICO SEGÚN TIPO
