@@ -32,6 +32,7 @@ import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
+import { FleetIndicator } from "./fleet-indicator";
 
 interface MapProps {
   open: boolean;
@@ -548,6 +549,14 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
               {getTooltipProps() && <MapTooltip {...getTooltipProps()!} />}
             </Layer>
           </Stage>
+
+          {/* ✅ INDICADOR DE FLOTA - Nivel de llenado/disponibilidad */}
+          <FleetIndicator 
+            position="top-left" 
+            compact={false}
+            showDetails={true}
+            hideable={true}
+          />
 
           {/* Botón de toggle */}
           <button
