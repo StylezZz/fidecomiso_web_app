@@ -159,6 +159,16 @@ class SimulationService {
     }
   }
 
+  public static async obtenerAlmacenes(): Promise<HttpResponse> {
+    try {
+      const res = await http.get(`/genetico/almacen`);
+      if (!res.success) throw new Error("Error al obtener almacenes");
+      return res;
+    } catch (error) {
+      throw new Error((error as Error).message);
+    }
+  }
+
   public static async obtenerAveriasGeneradas(simulacionId: number): Promise<HttpResponse> {
     try {
       const res = await http.get(`/genetico/averias-generadas?simulacionId=${simulacionId}`);

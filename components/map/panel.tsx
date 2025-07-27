@@ -32,6 +32,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -61,34 +62,92 @@ const ALMACENES_DATA: AlmacenInfo[] = [
     posX: 12,
     posY: 8,
     typeHouse: "home",
-    nombre: "Almacen Central",
+    nombre: "Central",
     capacidad: "Ilimitada",
-    descripcion: "Centro de distribución principal",
+    descripcion: "Centro Principal",
     camionesActuales: 0,
   },
   {
     posX: 42,
     posY: 42,
     typeHouse: "warehouse",
-    nombre: "Almacén Norte",
-    capacidad: "50,000 L",
-    descripcion: "Almacén Intermedio Norte",
+    nombre: "Norte",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Norte",
     camionesActuales: 0,
   },
   {
     posX: 63,
     posY: 3,
     typeHouse: "warehouse",
-    nombre: "Almacén Este",
-    capacidad: "50,000 L",
-    descripcion: "Almacén Intermedio Este",
+    nombre: "Este",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Este",
     camionesActuales: 0,
   },
 ];
 
+const formatearCapacidad = (almacen: AlmacenBackend) => {
+  if (almacen.nombre === "Central") {
+    return "Ilimitada";
+  }
+  return `${almacen.capacidadDisponible}/${almacen.capacidad} m³`;
+};
+
+const calcularEstadoCapacidad = (almacen: AlmacenBackend): AlmacenEstado => {
+  if (almacen.nombre === "Central") {
+    return {
+      porcentajeUso: 0,
+      nivelCapacidad: "ilimitado",
+      colorSemaforo: "bg-blue-500 border-blue-600",
+      iconoEstado: "♾️",
+    };
+  }
+
+  const porcentajeUso =
+    ((almacen.capacidad - almacen.capacidadDisponible) / almacen.capacidad) * 100;
+
+  if (porcentajeUso < 30) {
+    return {
+      porcentajeUso,
+      nivelCapacidad: "bajo",
+      colorSemaforo: "bg-green-500 border-green-600",
+      iconoEstado: "🟢",
+    };
+  } else if (porcentajeUso < 70) {
+    return {
+      porcentajeUso,
+      nivelCapacidad: "medio",
+      colorSemaforo: "bg-yellow-500 border-yellow-600",
+      iconoEstado: "🟡",
+    };
+  } else {
+    return {
+      porcentajeUso,
+      nivelCapacidad: "alto",
+      colorSemaforo: "bg-red-500 border-red-600",
+      iconoEstado: "🔴",
+    };
+  }
+};
+
+const getDescripcionAlmacen = (nombre: string) => {
+  switch (nombre) {
+    case "Central":
+      return "Centro Principal";
+    case "Norte":
+      return "Intermedio Norte";
+    case "Este":
+      return "Intermedio Este";
+    default:
+      return "Almacén";
+  }
+};
+
 const PAGE_SIZE = 8;
 
 export const MapPanel = () => {
+  const { simulacionIniciada } = useMapContext();
   const [selectedTab, setSelectedTab] = useState("camiones");
   const {
     camionesRuta,
@@ -101,6 +160,55 @@ export const MapPanel = () => {
     simulacionId,
   } = useMapContext();
 
+  const [almacenesBackend, setAlmacenesBackend] = useState<AlmacenBackend[]>([]);
+  const [loadingAlmacenes, setLoadingAlmacenes] = useState(false);
+
+  const getAlmacenesData = useMemo(() => {
+    return almacenesBackend.map((almacen) => ({
+      posX: almacen.ubicacion.x,
+      posY: almacen.ubicacion.y,
+      typeHouse: almacen.nombre === "Central" ? "home" : "warehouse",
+      nombre: almacen.nombre,
+      capacidad: formatearCapacidad(almacen),
+      descripcion: getDescripcionAlmacen(almacen.nombre),
+      camionesActuales: 0, // Esto se puede calcular si es necesario
+      // ✅ NUEVOS CAMPOS
+      capacidadBackend: almacen,
+      estadoCapacidad: calcularEstadoCapacidad(almacen),
+    }));
+  }, [almacenesBackend]);
+
+  useEffect(() => {
+    const cargarAlmacenes = async () => {
+      if (!simulacionId) {
+        setAlmacenesBackend([]);
+        return;
+      }
+
+      setLoadingAlmacenes(true);
+      try {
+        const response = await SimulationService.obtenerAlmacenes();
+        if (response.success) {
+          setAlmacenesBackend(response.data || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar almacenes:", error);
+        setAlmacenesBackend([]);
+      } finally {
+        setLoadingAlmacenes(false);
+      }
+    };
+
+    // Cargar almacenes cada 15 segundos si la simulación está iniciada
+    if (simulacionId && simulacionIniciada) {
+      cargarAlmacenes();
+      const interval = setInterval(cargarAlmacenes, 15000);
+      return () => clearInterval(interval);
+    } else {
+      setAlmacenesBackend([]);
+    }
+  }, [simulacionId, simulacionIniciada]);
+
   const [pedidosPage, setPedidosPage] = useState<number>(0);
   const [camionesPage, setCamionesPage] = useState<number>(0);
   const [almacenesPage, setAlmacenesPage] = useState<number>(0);
@@ -112,8 +220,6 @@ export const MapPanel = () => {
   const [isSearchingAverias, setIsSearchingAverias] = useState(false);
   const [searchTermAverias, setSearchTermAverias] = useState("");
   const searchAveriasInputRef = useRef<HTMLInputElement>(null);
-
-  const { simulacionIniciada } = useMapContext();
 
   //  useEffect para cargar averías
   useEffect(() => {
@@ -316,14 +422,24 @@ export const MapPanel = () => {
   }, [isSearchingBloqueos]);
 
   const filteredAlmacenes = useMemo(() => {
-    if (!searchTermAlmacenes.trim()) return ALMACENES_DATA;
+    // if (!searchTermAlmacenes.trim()) return ALMACENES_DATA;
 
-    return ALMACENES_DATA.filter(
+    // return ALMACENES_DATA.filter(
+    //   (almacen) =>
+    //     almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
+    //     almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
+    // );
+    const almacenesData = getAlmacenesData;
+
+    if (!searchTermAlmacenes.trim()) return almacenesData;
+
+    return almacenesData.filter(
       (almacen) =>
         almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
         almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
     );
-  }, [searchTermAlmacenes]);
+    // }, [searchTermAlmacenes]);
+  }, [getAlmacenesData, searchTermAlmacenes]);
 
   const visibleAlmacenes = useMemo(
     () => filteredAlmacenes.slice(almacenesPage * PAGE_SIZE, (almacenesPage + 1) * PAGE_SIZE),
@@ -419,7 +535,8 @@ export const MapPanel = () => {
                 id: "almacenes",
                 label: "Almacenes",
                 icon: Warehouse,
-                count: ALMACENES_DATA.length,
+                // count: ALMACENES_DATA.length,
+                count: getAlmacenesData.length,
               },
               { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
               { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length }, // ✅ NUEVA PESTAÑA
@@ -702,6 +819,13 @@ export const MapPanel = () => {
                     Mostrando {almacenesPage * PAGE_SIZE + 1}–
                     {Math.min((almacenesPage + 1) * PAGE_SIZE, filteredAlmacenes.length)} de{" "}
                     {filteredAlmacenes.length} almacenes
+                    {/* AGREGAR estado de carga */}
+                    {loadingAlmacenes && (
+                      <span className="ml-2 inline-flex items-center gap-1">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                        Actualizando...
+                      </span>
+                    )}
                   </p>
                   {almacenSeleccionadoId && (
                     <div className="mt-2 flex items-center gap-2">
@@ -793,10 +917,9 @@ export const MapPanel = () => {
                     <TableHead className="text-sm font-bold text-blue-700 px-4">
                       Ubicación
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-blue-700 px-4">
+                    <TableHead className="text-sm font-bold text-blue-700 px-8">
                       Capacidad
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-blue-700 px-6">Camiones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1038,7 +1161,7 @@ const AlmacenRowImproved = React.memo(
     isSelected,
     onSelect,
   }: {
-    almacen: AlmacenInfo;
+    almacen: any;
     isSelected: boolean;
     onSelect: (id: string | null) => void;
   }) => {
@@ -1058,6 +1181,54 @@ const AlmacenRowImproved = React.memo(
       const almacenId = `${almacen.posX}-${almacen.posY}`;
       onSelect(isSelected ? null : almacenId);
     }, [almacen.posX, almacen.posY, isSelected, onSelect]);
+
+    const BarraCapacidadSemaforo = () => {
+      const { estadoCapacidad, capacidadBackend } = almacen;
+
+      if (estadoCapacidad.nivelCapacidad === "ilimitado") {
+        return (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <span className="text-lg">♾️</span>
+              <span className="text-sm font-semibold text-blue-700">Ilimitada</span>
+            </div>
+          </div>
+        );
+      }
+
+      const capacidadUsada = capacidadBackend.capacidad - capacidadBackend.capacidadDisponible;
+      const barraAncho = Math.max((estadoCapacidad.porcentajeUso / 100) * 100, 5); // Mínimo 5% visible
+
+      return (
+        <div className="flex items-center gap-3 w-full">
+          {/* Barra de progreso */}
+          <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden border border-gray-300">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${estadoCapacidad.colorSemaforo}`}
+              style={{ width: `${barraAncho}%` }}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-xs font-bold text-gray-700">
+                {estadoCapacidad.porcentajeUso.toFixed(0)}%
+              </span>
+            </div>
+          </div>
+
+          {/* Indicador y números */}
+          <div className="flex items-center gap-2 min-w-fit">
+            <span className="text-base">{estadoCapacidad.iconoEstado}</span>
+            <div className="text-right">
+              <div className="text-xs font-bold text-slate-800">
+                {Math.max(capacidadUsada, 160)}/{capacidadBackend.capacidad} m³
+              </div>
+              <div className="text-xs text-slate-500">
+                {capacidadBackend.capacidadDisponible} disponible
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
 
     return (
       <TableRow
@@ -1112,7 +1283,7 @@ const AlmacenRowImproved = React.memo(
         >
           ({almacen.posX}, {almacen.posY})
         </TableCell>
-        <TableCell className="text-sm text-slate-700 px-4">
+        {/* <TableCell className="text-sm text-slate-700 px-4">
           <div className="flex items-center gap-2">
             <div className="text-lg">📦</div>
             <div>
@@ -1132,26 +1303,11 @@ const AlmacenRowImproved = React.memo(
               </div>
             </div>
           </div>
-        </TableCell>
-        <TableCell className="px-6">
-          <div className="flex items-center gap-3">
-            <div className="text-lg">🚛</div>
-            <div>
-              <span
-                className={`text-sm font-bold ${
-                  isSelected ? "text-blue-800" : "text-slate-800"
-                } transition-colors duration-200`}
-              >
-                {almacen.camionesActuales}
-              </span>
-              <div
-                className={`text-xs ${
-                  isSelected ? "text-blue-600" : "text-slate-500"
-                } transition-colors duration-200`}
-              >
-                en almacén
-              </div>
-            </div>
+        </TableCell> */}
+        <TableCell className="text-sm text-slate-700 px-10">
+          {/* ✅ NUEVA COLUMNA: Barra de capacidad con semáforo */}
+          <div className="flex items-center gap-2 w-full">
+            <BarraCapacidadSemaforo />
           </div>
         </TableCell>
       </TableRow>
