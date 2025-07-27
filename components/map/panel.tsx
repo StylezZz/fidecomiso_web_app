@@ -1079,7 +1079,7 @@ const BloqueoRowImproved = React.memo(({
 
 BloqueoRowImproved.displayName = "BloqueoRowImproved";
 
-// ✅ COMPONENTE DE FILA DE CAMIÓN MEJORADO CON ESTADOS SIMPLIFICADOS
+// ✅ COMPONENTE DE FILA DE CAMIÓN MEJORADO CON BARRA DE CARGA TIPO SEMÁFORO
 const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
   const { camionSeleccionadoId, setCamionSeleccionadoId } = useMapContext();
 
@@ -1089,6 +1089,86 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
 
   const estaSeleccionado = camionSeleccionadoId === truck.id;
   const tipo = truck.codigo.substring(0, 2);
+
+  // ✅ Capacidades por tipo de camión
+  const getCapacidadMaxima = (tipo: string) => {
+    switch (tipo) {
+      case "TA": return 25; // Camiones tipo A: 25m³
+      case "TB": return 15; // Camiones tipo B: 15m³
+      case "TC": return 10; // Camiones tipo C: 10m³
+      case "TD": return 5;  // Camiones tipo D: 5m³
+      default: return 10;
+    }
+  };
+
+  const capacidadMaxima = getCapacidadMaxima(tipo);
+  const porcentajeCarga = Math.min((truck.cargaAsignada / capacidadMaxima) * 100, 100);
+
+  // ✅ Componente de barra de carga tipo semáforo
+  const BarraCargaSemaforo = () => {
+    const bloquesCarga = Math.ceil(truck.cargaAsignada);
+    const bloquesTotales = Math.ceil(capacidadMaxima);
+    
+    // Función para obtener color según porcentaje de carga
+    const getColorCarga = (porcentaje: number) => {
+      if (porcentaje >= 80) {
+        return "bg-red-500 border-red-600"; // Rojo: Casi lleno (80-100%)
+      } else if (porcentaje >= 50) {
+        return "bg-yellow-500 border-yellow-600"; // Amarillo: Medio lleno (50-79%)
+      } else if (porcentaje > 0) {
+        return "bg-green-500 border-green-600"; // Verde: Poco cargado (1-49%)
+      } else {
+        return "bg-gray-200 border-gray-300"; // Gris: Vacío (0%)
+      }
+    };
+
+    // Función para obtener color de bloques individuales
+    const getColorBloque = (index: number, bloquesCarga: number, porcentajeCarga: number) => {
+      if (index < bloquesCarga) {
+        // Bloque ocupado - usar colores de semáforo
+        if (porcentajeCarga >= 80) {
+          return "bg-red-400 border-red-500 shadow-red-200";
+        } else if (porcentajeCarga >= 50) {
+          return "bg-yellow-400 border-yellow-500 shadow-yellow-200";
+        } else {
+          return "bg-green-400 border-green-500 shadow-green-200";
+        }
+      } else {
+        // Bloque vacío
+        return "bg-gray-100 border-gray-200";
+      }
+    };
+
+    return (
+      <div className="flex items-center gap-3">
+        {/* Barra de progreso visual */}
+        <div className="flex gap-0.5">
+          {Array.from({ length: bloquesTotales }, (_, index) => (
+            <div
+              key={index}
+              className={`w-2.5 h-5 rounded-sm border transition-all duration-300 hover:scale-110 ${
+                getColorBloque(index, bloquesCarga, porcentajeCarga)
+              }`}
+              title={`Bloque ${index + 1}${index < bloquesCarga ? " - Ocupado" : " - Vacío"} (${porcentajeCarga.toFixed(1)}%)`}
+            />
+          ))}
+        </div>
+        
+        {/* Información numérica con indicador de estado */}
+        <div className="flex items-center gap-2">
+          <div className="text-xs font-mono text-slate-600 min-w-[55px]">
+            {truck.cargaAsignada}/{capacidadMaxima}m³
+          </div>
+          
+          {/* Indicador de estado tipo semáforo */}
+          <div 
+            className={`w-2 h-2 rounded-full ${getColorCarga(porcentajeCarga)} shadow-sm`}
+            title={`Carga: ${porcentajeCarga.toFixed(1)}%`}
+          />
+        </div>
+      </div>
+    );
+  };
 
   const getTruckTypeColor = (tipo: string) => {
     switch (tipo) {
@@ -1114,7 +1194,7 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
     const estaEnPosicionAlmacen = truck.ubicacionActual.x === posicionAlmacenCentral.x && truck.ubicacionActual.y === posicionAlmacenCentral.y ||
       truck.ubicacionActual.x === posicionAlmacenEste.x && truck.ubicacionActual.y === posicionAlmacenEste.y ||
       truck.ubicacionActual.x === posicionAlmacenNorte.x && truck.ubicacionActual.y === posicionAlmacenNorte.y;
-    console.log("Estado del camión:", { tieneRuta, estaEnPosicionAlmacen });
+    
     if (tieneRuta && !estaEnPosicionAlmacen) {
       return {
         label: "En ruta",
@@ -1150,15 +1230,13 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
           <div
             className={`w-4 h-4 rounded-full ${getTruckTypeColor(
               tipo
-            )} shadow-sm border-2 border-white`}
+            )} shadow-sm border-2 border-white ${
+              estaSeleccionado ? "ring-2 ring-blue-400 scale-110" : ""
+            } transition-all duration-200`}
           />
-          <div>
-            <div className="font-bold text-base text-slate-800">{truck.codigo}</div>
-            <div className="text-sm text-slate-500 flex items-center gap-2">
-              <span>{truck.cargaAsignada}m³</span>
-              <span className="text-slate-300">•</span>
-              <span>cargado</span>
-            </div>
+          <div className="flex-1">
+            <div className="font-bold text-base text-slate-800 mb-2">{truck.codigo}</div>
+            <BarraCargaSemaforo />
           </div>
         </div>
       </TableCell>

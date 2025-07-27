@@ -4,6 +4,7 @@ import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { BloqueoI } from "@/interfaces/simulation/bloqueo.interface";
 import { AlmacenInfo } from "@/components/map/warehouse/warehouse-component";
 import { TooltipType } from "@/components/map/tooltip/tooltip-component";
+import { getTruckCapacityByType, getTruckTypeFromCode } from "@/utils/trucksUtils";
 
 type TooltipData = CamionI | PedidoI | BloqueoI | AlmacenInfo | null;
 
@@ -67,17 +68,29 @@ export const useMapTooltip = () => {
       case TooltipType.CAMION:
         const camion = tooltip.data as CamionI;
         const ubicacion = camion.ubicacionActual || { x: 0, y: 0 };
+        
+        // ✨ Extraer el tipo de camión del código y obtener su capacidad
+        const tipoCamion = getTruckTypeFromCode(camion.codigo);
+        const maxCapacity = getTruckCapacityByType(tipoCamion);
+        const currentLoad = camion.carga || 0;
+
         return {
           type: tooltip.type,
           title: `CAMIÓN: ${camion.codigo}`,
           fields: [
-            { label: "Carga", value: `${camion.carga} / ${camion.glpDisponible} L` },
+            { label: "Tipo", value: tipoCamion },
             { label: "Ubicación", value: `${ubicacion.x}, ${ubicacion.y}` },
             { label: "Estado", value: camion.enAveria ? "En Avería" : "Operativo" },
           ],
           posX: tooltip.position.x,
           posY: tooltip.position.y,
           iconColor: "#3b82f6",
+          storageData: {
+            current: currentLoad,
+            total: maxCapacity,
+            unit: "m³",
+            label: "Carga GLP"
+          }
         };
 
       case TooltipType.ALMACEN:
