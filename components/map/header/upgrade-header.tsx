@@ -1,8 +1,15 @@
-import React from "react";
+//import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { differenceInCalendarDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Plus, AlertTriangle, Settings, Clock, Calendar, Play, Pause, Focus } from "lucide-react";
+import { differenceInMinutes } from "date-fns";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
+import { SimulationType } from "@/interfaces/simulation.interface";
+
 
 interface ElegantHeaderProps {
+  
   day: number;
   month: number;
   year: number;
@@ -49,6 +56,38 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
   onSpeedChange,
   onFitToScreen,
 }) => {
+  const { simulacionSeleccionada } = useSimulationContext();
+  const simulationType = simulacionSeleccionada?.tipo;   // "Semanal" | "Dia a Dia" | "Colapso"
+
+  const startDateTimeRef = useRef<Date | null>(null);
+  if (!startDateTimeRef.current) {
+    // capturamos la fecha completa (día + hora + minuto) en el primer render
+    startDateTimeRef.current = new Date(year, month - 1, day, hour, minute);
+  }
+
+
+  useEffect(() => {
+    // Cada vez que pulsas “Reset” tu componente padre suele poner initTimer = false
+    // y vuelve a poner la fecha/hora de inicio. Detectamos eso:
+    if (!initTimer) {
+      startDateTimeRef.current = new Date(year, month - 1, day, hour, minute);
+    }
+  }, [initTimer, day, month, year, hour, minute]);
+
+  const currentDateTime = new Date(year, month - 1, day, hour, minute);
+  const totalMinutes = differenceInMinutes(currentDateTime, startDateTimeRef.current);
+
+  const elapsedDays = Math.floor(totalMinutes / 1440); // 60 * 24
+  const remainAfterDays = totalMinutes % 1440;
+  const elapsedHours = Math.floor(remainAfterDays / 60);
+  const elapsedMinutes = remainAfterDays % 60;
+
+    const [now, setNow] = useState<Date>(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   const formatDisplayDate = (day: number, month: number, year: number) => {
     const monthNames = [
       "Enero",
@@ -144,61 +183,91 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
               )}
             </div>
           </div>
-          <div className="hidden lg:flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-1 border border-slate-200">
-            <div className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">
-                Ctrl
-              </kbd>
-              <span className="text-xs text-gray-400">+</span>
-              <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-200 border border-gray-300 rounded shadow-sm">
-                B
-              </kbd>
-            </div>
-          </div>
         </div>
 
-        {/* CENTER: Primary Information (Most Important) */}
-        <div className="flex items-center gap-6">
-          {/* Simulation Time */}
+        {/* CENTER: Primary Information */}
+        <div className="flex items-center gap-5">
+          {/* Simulación (azul) */}
           <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-4 py-1 border border-blue-200 shadow-sm">
             <Calendar className="h-5 w-5 text-blue-600" />
-            <div className="text-center">
+            <div className="text-center leading-none">
               <div className="text-xs text-blue-600 font-medium mb-0.5">Simulación</div>
-              <div className="text-md font-bold text-gray-900 leading-tight">
+              <div className="text-xs font-bold text-gray-900">
                 {formatDisplayDate(day, month, year)}
               </div>
-              <div className="text-sm text-gray-600 leading-tight">
+              <div className="text-xs text-gray-600">
                 {String(hour).padStart(2, "0")}:{String(minute).padStart(2, "0")}
               </div>
             </div>
           </div>
 
+
           {/* Separator */}
           <div className="h-8 w-px bg-gray-300"></div>
 
-          {/* Real Time */}
-          <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-1 border border-emerald-200 shadow-sm">
-            <Clock className="h-5 w-5 text-emerald-600" />
+          {/* Tiempo Real (verde) */}
+            <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-1 border border-emerald-200 shadow-sm">
+              <Clock className="h-5 w-5 text-emerald-600" />
+              <div className="text-center leading-none">
+                <div className="text-xs text-emerald-600 font-medium mb-0.5">Tiempo Real</div>
+                <div className="text-xs font-bold text-gray-900">
+                  {String(realHour).padStart(2, "0")}:{String(realMinute).padStart(2, "0")}:
+                  {String(realSecond).padStart(2, "0")}
+                </div>
+              </div>
+            </div>
+            
+          {/* Separador */}
+          <div className="h-8 w-px bg-gray-300" />
+        
+        {/* Tiempo Simulación */}
+          <div className="flex items-center gap-3 bg-yellow-50 rounded-xl px-4 py-1 border border-yellow-200 shadow-sm">
+            <Clock className="h-5 w-5 text-yellow-600" />
             <div className="text-center">
-              <div className="text-xs text-emerald-600 font-medium mb-0.5">Tiempo Real</div>
-              <div className="text-md font-bold text-gray-900 leading-tight">
-                {String(realHour).padStart(2, "0")}:{String(realMinute).padStart(2, "0")}:
-                {String(realSecond).padStart(2, "0")}
+              <div className="text-xs text-yellow-600 font-medium mb-0.5">Tiempo Simulación</div>
+              <div className="text-xs font-bold text-gray-900 leading-tight">
+                {elapsedDays}d {elapsedHours}h {elapsedMinutes}m
               </div>
             </div>
           </div>
+        
+        {/* Separador */}
+          <div className="h-8 w-px bg-gray-300" />
+        
+        {/* Fecha Actual */}
+          <div className="flex items-center gap-3 bg-violet-50 rounded-xl px-4 py-1 border border-violet-200 shadow-sm">
+            <Calendar className="h-5 w-5 text-violet-600" />
+            <div className="text-center">
+              <div className="text-[10px] text-violet-600 font-medium mb-0.5">
+                Fecha Actual
+              </div>
+              <div className="text-[10px] font-bold text-gray-900 leading-tight">
+                {formatDisplayDate(
+                  now.getDate(),
+                  now.getMonth() + 1,
+                  now.getFullYear()
+                )}
+              </div>
+              <div className="text-[10px] text-gray-600 leading-tight">
+                {String(now.getHours()).padStart(2, "0")}:
+                {String(now.getMinutes()).padStart(2, "0")}
+              </div>
+            </div>
+          </div>
+          
         </div>
-
         {/* RIGHT: Primary Actions */}
         <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setShowPedidoModal(true)}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white border-0 group transition-all duration-200 px-4"
-          >
-            <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-200" />
-            Nuevo Pedido
-          </Button>
+          {simulationType !== SimulationType.SEMANAL && (
+            <Button
+              onClick={() => setShowPedidoModal(true)}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white border-0 group transition-all duration-200 px-4"
+            >
+              <Plus className="h-4 w-4 mr-2 group-hover:rotate-90 transition-transform duration-200" />
+              Nuevo Pedido
+            </Button>
+          )}
 
           <Button
             onClick={() => setShowMantenimientoModal(true)}

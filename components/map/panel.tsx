@@ -500,6 +500,14 @@ export const MapPanel = () => {
     }));
   }, [pedidosI, searchTermPedidos]);
 
+    // 2.  ⬇︎  AGREGA este bloque inmediatamente después
+    console.log(
+      "DEBUG pedidosWithPriority → length:",
+      pedidosWithPriority.length,
+      " | primer pedido:",
+      pedidosWithPriority[0]
+    );
+
   const visiblePedidos = useMemo(
     () => pedidosWithPriority.slice(pedidosPage * PAGE_SIZE, (pedidosPage + 1) * PAGE_SIZE),
     [pedidosWithPriority, pedidosPage]
@@ -792,6 +800,9 @@ export const MapPanel = () => {
                     <TableHead className="text-sm font-bold text-orange-700 px-4">Fecha</TableHead>
                     <TableHead className="text-sm font-bold text-orange-700 px-4">
                       Ubicación
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-orange-700 px-4">
+                      Camión
                     </TableHead>
                     <TableHead className="text-sm font-bold text-orange-700 px-6">
                       Urgencia
@@ -1661,6 +1672,16 @@ const PedidoRowImproved = React.memo(({ pedido }: { pedido: any }) => {
       </TableCell>
       <TableCell className="text-sm text-slate-700 px-4 font-mono">
         ({pedido.posX}, {pedido.posY})
+      </TableCell>
+      {/* Camión asignado */}
+      <TableCell className="text-sm text-center px-4 whitespace-nowrap">
+        {pedido.idCamion ? (
+          <span className="inline-flex items-center gap-1">
+            {/* Ícono opcional */}
+            {/* <Truck className="h-4 w-4 text-orange-500" /> */}
+            {pedido.idCamion}
+          </span>
+        ) : "—"}
       </TableCell>
       <TableCell className="px-6">
         <div className="flex items-center gap-3">
