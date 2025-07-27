@@ -4,6 +4,8 @@ import BlockService from "@/services/blockages.service";
 import PedidosService from "@/services/orders.service";
 import { createContext, useContext, useEffect, useState } from "react";
 interface SimulationContextType {
+  simulacionId: number | null;
+  setSimulacionId: (id: number | null) => void;
   simulaciones: SimulationInterface[];
   getAllSimulacion: () => void;
   saveSimulacion: (simulacionNueva: SimulationInterface) => void;
@@ -18,6 +20,7 @@ interface SimulationContextType {
 const SimulationContext = createContext<SimulationContextType | null>(null);
 
 export const SimulationProvider = ({ children }: { children: React.ReactNode }) => {
+  const [simulacionId, setSimulacionId] = useState<number | null>(null);
   const [simulaciones, setSimulaciones] = useState<SimulationInterface[]>([]);
   const [loadingSimulaciones, setLoadingSimulaciones] = useState<boolean>(false);
 
@@ -90,6 +93,8 @@ export const SimulationProvider = ({ children }: { children: React.ReactNode }) 
   return (
     <SimulationContext.Provider
       value={{
+        simulacionId,
+        setSimulacionId,
         simulaciones,
         getAllSimulacion,
         saveSimulacion,

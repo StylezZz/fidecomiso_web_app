@@ -84,11 +84,13 @@ interface MapContextType {
   setAlmacenSeleccionadoId: Dispatch<SetStateAction<string | null>>;
   bloqueoSeleccionadoId: number | null;
   setBloqueoSeleccionadoId: Dispatch<SetStateAction<number | null>>;
+  simulacionId: number | null;
 }
 
 const MapContext = createContext<MapContextType | null>(null);
 
 export const MapProvider = ({ children }: { children: React.ReactNode }) => {
+  const { simulacionId, setSimulacionId } = useSimulationContext();
   const [mapHeight, setMapHeight] = useState<number>(0);
   const [mapWidth, setMapWidth] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
@@ -120,6 +122,10 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   const horaInicial = ihora;
   const minutoInicial = iminuto;
 
+  const handleSimulacionInicializada = (nuevoSimulacionId: number) => {
+    setSimulacionId(nuevoSimulacionId);
+  };
+
   const manageTime: manageTimeReturn = useManageTime({
     tipo,
     setSimulacionIniciada,
@@ -129,6 +135,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     anio: anioInicial,
     hora: horaInicial,
     minuto: minutoInicial,
+    onSimulacionInicializada: handleSimulacionInicializada,
   }); //establece parametros de speed, intervalms,minutosporiteracion, inicio del simulacion
   const { initTimer, speedTime, intervalMs, minutosPorIteracion, stopTimer } = manageTime;
 
@@ -289,6 +296,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
     setCamionesRuta([]);
     //simulacion iniciada
     setSimulacionIniciada(false);
+    setSimulacionId(null);
     //timers
     realTime.restartRealTime();
     simulationTime.restartSimulationTime();
@@ -378,6 +386,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
         setAlmacenSeleccionadoId,
         bloqueoSeleccionadoId,
         setBloqueoSeleccionadoId,
+        simulacionId,
       }}
     >
       {children}

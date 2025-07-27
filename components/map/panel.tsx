@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/table";
 import { useMapContext } from "@/contexts/ContextMap";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
+import SimulationService from "@/services/simulation.service";
+import { AveriaRowImproved } from "@/components/map/averias/averia-row";
 import {
   ArrowDown,
   ChevronLeft,
@@ -44,7 +46,7 @@ interface CamionStatus {
   orderIndex: number; // Para mantener orden estable
 }
 
-interface AlmacenInfo{
+interface AlmacenInfo {
   posX: number;
   posY: number;
   typeHouse: string;
@@ -81,8 +83,8 @@ const ALMACENES_DATA: AlmacenInfo[] = [
     capacidad: "50,000 L",
     descripcion: "Almacén Intermedio Este",
     camionesActuales: 0,
-  }
-]
+  },
+];
 
 const PAGE_SIZE = 8;
 
@@ -96,12 +98,87 @@ export const MapPanel = () => {
     setAlmacenSeleccionadoId,
     bloqueoSeleccionadoId,
     setBloqueoSeleccionadoId,
+    simulacionId,
   } = useMapContext();
 
   const [pedidosPage, setPedidosPage] = useState<number>(0);
   const [camionesPage, setCamionesPage] = useState<number>(0);
   const [almacenesPage, setAlmacenesPage] = useState<number>(0);
   const [bloqueosPage, setBloqueosPage] = useState<number>(0);
+
+  // Estados para averías
+  const [averiasGeneradas, setAveriasGeneradas] = useState<any[]>([]);
+  const [averiasPage, setAveriasPage] = useState<number>(0);
+  const [isSearchingAverias, setIsSearchingAverias] = useState(false);
+  const [searchTermAverias, setSearchTermAverias] = useState("");
+  const searchAveriasInputRef = useRef<HTMLInputElement>(null);
+
+  const { simulacionIniciada } = useMapContext();
+
+  //  useEffect para cargar averías
+  useEffect(() => {
+    const cargarAverias = async () => {
+      if (!simulacionId) {
+        setAveriasGeneradas([]);
+        return;
+      }
+
+      try {
+        const response = await SimulationService.obtenerAveriasGeneradas(simulacionId);
+        if (response.success) {
+          setAveriasGeneradas(response.data || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar averías generadas:", error);
+        setAveriasGeneradas([]);
+      }
+    };
+
+    // Cargar averías cada 10 segundos si la simulación está iniciada
+    if (simulacionId && simulacionIniciada) {
+      cargarAverias();
+      const interval = setInterval(cargarAverias, 7000);
+      return () => clearInterval(interval);
+    } else {
+      setAveriasGeneradas([]);
+    }
+  }, [simulacionId, simulacionIniciada]);
+
+  // ✅ AGREGAR funciones de manejo para averías
+  const handleAveriasSearch = useCallback((value: string) => {
+    setSearchTermAverias(value);
+    setAveriasPage(0);
+  }, []);
+
+  const filteredAverias = useMemo(() => {
+    if (!searchTermAverias.trim()) return averiasGeneradas;
+
+    return averiasGeneradas.filter(
+      (averia) =>
+        averia.codigoCamion.toLowerCase().includes(searchTermAverias.toLowerCase()) ||
+        averia.tipoAveria.toLowerCase().includes(searchTermAverias.toLowerCase()) ||
+        averia.descripcion.toLowerCase().includes(searchTermAverias.toLowerCase())
+    );
+  }, [averiasGeneradas, searchTermAverias]);
+
+  const visibleAverias = useMemo(
+    () => filteredAverias.slice(averiasPage * PAGE_SIZE, (averiasPage + 1) * PAGE_SIZE),
+    [filteredAverias, averiasPage]
+  );
+
+  const nextAveriasPage = useCallback(() => {
+    if ((averiasPage + 1) * PAGE_SIZE < filteredAverias.length) setAveriasPage((p) => p + 1);
+  }, [averiasPage, filteredAverias.length]);
+
+  const prevAveriasPage = useCallback(() => {
+    if (averiasPage > 0) setAveriasPage((p) => p - 1);
+  }, [averiasPage]);
+
+  useEffect(() => {
+    if (isSearchingAverias && searchAveriasInputRef.current) {
+      searchAveriasInputRef.current.focus();
+    }
+  }, [isSearchingAverias]);
 
   // ✅ Sistema de estado estable para camiones
   const camionStatusRef = useRef<Map<number, CamionStatus>>(new Map());
@@ -208,18 +285,18 @@ export const MapPanel = () => {
     }
   }, [isSearchingPedidos]);
 
-  const [isSearchingAlmacenes,setIsSearchingAlmacenes]= useState(false);
-  const [searchTermAlmacenes,setSearchTermAlmacenes]= useState("");
+  const [isSearchingAlmacenes, setIsSearchingAlmacenes] = useState(false);
+  const [searchTermAlmacenes, setSearchTermAlmacenes] = useState("");
   const searchAlmacenesInputRef = useRef<HTMLInputElement>(null);
 
   const [isSearchingBloqueos, setIsSearchingBloqueos] = useState(false);
   const [searchTermBloqueos, setSearchTermBloqueos] = useState("");
   const searchBloqueosInputRef = useRef<HTMLInputElement>(null);
 
-  const handleAlmacenesSearch = useCallback((value:string)=>{
+  const handleAlmacenesSearch = useCallback((value: string) => {
     setSearchTermAlmacenes(value);
     setAlmacenesPage(0);
-  },[]);
+  }, []);
 
   useEffect(() => {
     if (isSearchingAlmacenes && searchAlmacenesInputRef.current) {
@@ -238,33 +315,38 @@ export const MapPanel = () => {
     }
   }, [isSearchingBloqueos]);
 
-  const filteredAlmacenes = useMemo(()=>{
-    if(!searchTermAlmacenes.trim())return ALMACENES_DATA;
-    
-    return ALMACENES_DATA.filter((almacen)=>
-      almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) || 
-      almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
+  const filteredAlmacenes = useMemo(() => {
+    if (!searchTermAlmacenes.trim()) return ALMACENES_DATA;
+
+    return ALMACENES_DATA.filter(
+      (almacen) =>
+        almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
+        almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
     );
-  },[searchTermAlmacenes]);
+  }, [searchTermAlmacenes]);
 
-  const visibleAlmacenes = useMemo(()=> filteredAlmacenes.slice(almacenesPage*PAGE_SIZE, (almacenesPage+1)*PAGE_SIZE), [filteredAlmacenes, almacenesPage]);
+  const visibleAlmacenes = useMemo(
+    () => filteredAlmacenes.slice(almacenesPage * PAGE_SIZE, (almacenesPage + 1) * PAGE_SIZE),
+    [filteredAlmacenes, almacenesPage]
+  );
 
-  const nextAlmacenesPage = useCallback(()=>{
-    if((almacenesPage+1)*PAGE_SIZE < filteredAlmacenes.length){
+  const nextAlmacenesPage = useCallback(() => {
+    if ((almacenesPage + 1) * PAGE_SIZE < filteredAlmacenes.length) {
       setAlmacenesPage((p) => p + 1);
     }
   }, [almacenesPage, filteredAlmacenes.length]);
 
-  const prevAlmacenesPage = useCallback(()=>{
-    if(almacenesPage > 0 ) setAlmacenesPage((p)=>p-1);
+  const prevAlmacenesPage = useCallback(() => {
+    if (almacenesPage > 0) setAlmacenesPage((p) => p - 1);
   }, [almacenesPage]);
 
   const filteredBloqueos = useMemo(() => {
     if (!searchTermBloqueos.trim()) return bloqueosI || [];
-    
-    return bloqueosI.filter(bloqueo =>
-      bloqueo.id.toString().includes(searchTermBloqueos.toLowerCase()) ||
-      `bloqueo-${bloqueo.id}`.toLowerCase().includes(searchTermBloqueos.toLowerCase())
+
+    return bloqueosI.filter(
+      (bloqueo) =>
+        bloqueo.id.toString().includes(searchTermBloqueos.toLowerCase()) ||
+        `bloqueo-${bloqueo.id}`.toLowerCase().includes(searchTermBloqueos.toLowerCase())
     );
   }, [bloqueosI, searchTermBloqueos]);
 
@@ -274,8 +356,7 @@ export const MapPanel = () => {
   );
 
   const nextBloqueosPage = useCallback(() => {
-    if ((bloqueosPage + 1) * PAGE_SIZE < filteredBloqueos.length)
-      setBloqueosPage((p) => p + 1);
+    if ((bloqueosPage + 1) * PAGE_SIZE < filteredBloqueos.length) setBloqueosPage((p) => p + 1);
   }, [bloqueosPage, filteredBloqueos.length]);
 
   const prevBloqueosPage = useCallback(() => {
@@ -330,12 +411,18 @@ export const MapPanel = () => {
     <div className="h-full flex flex-col bg-gradient-to-b from-slate-50 to-white">
       <div className="border-b border-slate-200 bg-white shadow-sm">
         <div className="px-6 py-4">
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 overflow-x-auto scrollbar-hide pb-1">
             {[
               { id: "camiones", label: "Camiones", icon: Truck, count: sortedDataCamiones.length },
               { id: "pedidos", label: "Pedidos", icon: Package, count: pedidosI.length },
-              { id: "almacenes", label: "Almacenes", icon: Warehouse, count: ALMACENES_DATA.length },
+              {
+                id: "almacenes",
+                label: "Almacenes",
+                icon: Warehouse,
+                count: ALMACENES_DATA.length,
+              },
               { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
+              { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length }, // ✅ NUEVA PESTAÑA
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = selectedTab === tab.id;
@@ -345,20 +432,22 @@ export const MapPanel = () => {
                   key={tab.id}
                   onClick={() => setSelectedTab(tab.id)}
                   className={`
-                    relative flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium 
-                    transition-all duration-300 group min-w-[90px] justify-center
-                    ${
-                      isActive
-                        ? tab.id === "camiones"
-                          ? "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg"
-                          : tab.id === "pedidos"
-                          ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
-                          : tab.id === "almacenes"
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
-                          : "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 hover:scale-102"
-                    }
-                  `}
+              relative flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium 
+              transition-all duration-300 group min-w-[90px] justify-center flex-shrink-0
+              ${
+                isActive
+                  ? tab.id === "camiones"
+                    ? "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg"
+                    : tab.id === "pedidos"
+                    ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                    : tab.id === "almacenes"
+                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg"
+                    : tab.id === "bloqueos"
+                    ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg"
+                    : "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg" // ✅ Averías
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 hover:scale-102"
+              }
+            `}
                 >
                   <Icon
                     size={16}
@@ -618,9 +707,9 @@ export const MapPanel = () => {
                     <div className="mt-2 flex items-center gap-2">
                       <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-200">
                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        Almacén seleccionado: {
-                          ALMACENES_DATA.find(a => `${a.posX}-${a.posY}` === almacenSeleccionadoId)?.nombre || "Desconocido"
-                        }
+                        Almacén seleccionado:{" "}
+                        {ALMACENES_DATA.find((a) => `${a.posX}-${a.posY}` === almacenSeleccionadoId)
+                          ?.nombre || "Desconocido"}
                       </div>
                       <button
                         onClick={() => setAlmacenSeleccionadoId(null)}
@@ -700,25 +789,21 @@ export const MapPanel = () => {
                     <TableHead className="text-sm font-bold text-blue-700 py-4 px-6">
                       Almacén
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-blue-700 px-4">
-                      Tipo
-                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-4">Tipo</TableHead>
                     <TableHead className="text-sm font-bold text-blue-700 px-4">
                       Ubicación
                     </TableHead>
                     <TableHead className="text-sm font-bold text-blue-700 px-4">
                       Capacidad
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-blue-700 px-6">
-                      Camiones
-                    </TableHead>
+                    <TableHead className="text-sm font-bold text-blue-700 px-6">Camiones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visibleAlmacenes.map((almacen, index) => (
-                    <AlmacenRowImproved 
-                      key={`${almacen.posX}-${almacen.posY}-${index}`} 
-                      almacen={almacen} 
+                    <AlmacenRowImproved
+                      key={`${almacen.posX}-${almacen.posY}-${index}`}
+                      almacen={almacen}
                       isSelected={almacenSeleccionadoId === `${almacen.posX}-${almacen.posY}`}
                       onSelect={setAlmacenSeleccionadoId}
                     />
@@ -825,28 +910,117 @@ export const MapPanel = () => {
                     <TableHead className="text-sm font-bold text-red-700 py-4 px-6">
                       Bloqueo
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-red-700 px-4">
-                      Estado
-                    </TableHead>
-                    <TableHead className="text-sm font-bold text-red-700 px-4">
-                      Duración
-                    </TableHead>
-                    <TableHead className="text-sm font-bold text-red-700 px-4">
-                      Ubicación
-                    </TableHead>
-                    <TableHead className="text-sm font-bold text-red-700 px-6">
-                      Distancia
-                    </TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">Estado</TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">Duración</TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-4">Ubicación</TableHead>
+                    <TableHead className="text-sm font-bold text-red-700 px-6">Distancia</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visibleBloqueos.map((bloqueo, index) => (
-                    <BloqueoRowImproved 
-                      key={`${bloqueo.id}-${index}`} 
+                    <BloqueoRowImproved
+                      key={`${bloqueo.id}-${index}`}
                       bloqueo={bloqueo}
                       isSelected={bloqueoSeleccionadoId === bloqueo.id}
                       onSelect={setBloqueoSeleccionadoId}
                     />
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === "averias" && (
+          <div className="h-full flex flex-col">
+            {/* Header de averías */}
+            <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-violet-50 border-b border-purple-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-purple-800 mb-1">Averías Generadas</h3>
+                  <p className="text-sm text-purple-600">
+                    Mostrando {averiasPage * PAGE_SIZE + 1}–
+                    {Math.min((averiasPage + 1) * PAGE_SIZE, filteredAverias.length)} de{" "}
+                    {filteredAverias.length} averías
+                  </p>
+                </div>
+
+                {/* Controles */}
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {isSearchingAverias ? (
+                      <div className="relative">
+                        <input
+                          ref={searchAveriasInputRef}
+                          type="text"
+                          value={searchTermAverias}
+                          onChange={(e) => handleAveriasSearch(e.target.value)}
+                          onBlur={() => !searchTermAverias && setIsSearchingAverias(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                              handleAveriasSearch("");
+                              setIsSearchingAverias(false);
+                            }
+                          }}
+                          className="w-40 text-sm py-2.5 pl-10 pr-4 border-2 border-purple-200 rounded-xl focus:outline-none focus:border-purple-400 focus:ring-4 focus:ring-purple-100 bg-white shadow-sm"
+                          placeholder="Buscar avería..."
+                        />
+                        <Search
+                          size={16}
+                          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsSearchingAverias(true)}
+                        className="p-2.5 bg-white border-2 border-purple-200 rounded-xl hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 shadow-sm"
+                      >
+                        <Search size={16} className="text-purple-500" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-white rounded-xl p-1 shadow-sm border border-purple-200">
+                    <button
+                      onClick={prevAveriasPage}
+                      disabled={averiasPage === 0}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-50 transition-colors"
+                    >
+                      <ChevronLeft size={16} className="text-purple-600" />
+                    </button>
+                    <div className="px-3 py-1 text-sm font-medium text-purple-700 min-w-[60px] text-center">
+                      {averiasPage + 1} / {Math.ceil(filteredAverias.length / PAGE_SIZE)}
+                    </div>
+                    <button
+                      onClick={nextAveriasPage}
+                      disabled={(averiasPage + 1) * PAGE_SIZE >= filteredAverias.length}
+                      className="p-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-purple-50 transition-colors"
+                    >
+                      <ChevronRight size={16} className="text-purple-600" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla */}
+            <div className="flex-1 overflow-y-auto">
+              <Table>
+                <TableHeader className="sticky top-0 bg-gradient-to-r from-purple-50 to-white border-b-2 border-purple-200">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-sm font-bold text-purple-700 py-4 px-6">
+                      Camión
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-purple-700 px-4">Tipo</TableHead>
+                    <TableHead className="text-sm font-bold text-purple-700 px-4">
+                      Momento
+                    </TableHead>
+                    <TableHead className="text-sm font-bold text-purple-700 px-4">Origen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {visibleAverias.map((averia, index) => (
+                    <AveriaRowImproved key={`${averia.id}-${index}`} averia={averia} />
                   ))}
                 </TableBody>
               </Table>
@@ -858,224 +1032,241 @@ export const MapPanel = () => {
   );
 };
 
-const AlmacenRowImproved = React.memo(({ 
-  almacen, 
-  isSelected, 
-  onSelect 
-}: { 
-  almacen: AlmacenInfo; 
-  isSelected: boolean;
-  onSelect: (id: string | null) => void;
-}) => {
-  const getAlmacenIcon = (typeHouse: string) => {
-    return typeHouse === "home" ? "🏢" : "🏭";
-  };
+const AlmacenRowImproved = React.memo(
+  ({
+    almacen,
+    isSelected,
+    onSelect,
+  }: {
+    almacen: AlmacenInfo;
+    isSelected: boolean;
+    onSelect: (id: string | null) => void;
+  }) => {
+    const getAlmacenIcon = (typeHouse: string) => {
+      return typeHouse === "home" ? "🏢" : "🏭";
+    };
 
-  const getAlmacenColor = (typeHouse: string) => {
-    return typeHouse === "home" 
-      ? "bg-blue-400 shadow-blue-200" 
-      : "bg-cyan-400 shadow-cyan-200";
-  };
+    const getAlmacenColor = (typeHouse: string) => {
+      return typeHouse === "home" ? "bg-blue-400 shadow-blue-200" : "bg-cyan-400 shadow-cyan-200";
+    };
 
-  const getTipoLabel = (typeHouse: string) => {
-    return typeHouse === "home" ? "Central" : "Intermedio";
-  };
+    const getTipoLabel = (typeHouse: string) => {
+      return typeHouse === "home" ? "Central" : "Intermedio";
+    };
 
-  const handleClick = useCallback(() => {
-    const almacenId = `${almacen.posX}-${almacen.posY}`;
-    onSelect(isSelected ? null : almacenId);
-  }, [almacen.posX, almacen.posY, isSelected, onSelect]);
+    const handleClick = useCallback(() => {
+      const almacenId = `${almacen.posX}-${almacen.posY}`;
+      onSelect(isSelected ? null : almacenId);
+    }, [almacen.posX, almacen.posY, isSelected, onSelect]);
 
-  return (
-    <TableRow 
-      onClick={handleClick}
-      className={`cursor-pointer transition-all duration-200 hover:bg-blue-50 border-b border-blue-100 ${
-        isSelected ? "bg-blue-100 border-l-4 border-blue-500 shadow-lg ring-2 ring-blue-200" : ""
-      }`}
-    >
-      <TableCell className="py-4 px-6">
-        <div className="flex items-center gap-4">
-          <div
-            className={`w-4 h-4 rounded-full ${getAlmacenColor(
-              almacen.typeHouse
-            )} shadow-sm border-2 border-white ${
-              isSelected ? "ring-2 ring-blue-400 scale-125" : ""
+    return (
+      <TableRow
+        onClick={handleClick}
+        className={`cursor-pointer transition-all duration-200 hover:bg-blue-50 border-b border-blue-100 ${
+          isSelected ? "bg-blue-100 border-l-4 border-blue-500 shadow-lg ring-2 ring-blue-200" : ""
+        }`}
+      >
+        <TableCell className="py-4 px-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`w-4 h-4 rounded-full ${getAlmacenColor(
+                almacen.typeHouse
+              )} shadow-sm border-2 border-white ${
+                isSelected ? "ring-2 ring-blue-400 scale-125" : ""
+              } transition-all duration-200`}
+            />
+            <div>
+              <div
+                className={`font-bold text-base ${
+                  isSelected ? "text-blue-800" : "text-slate-800"
+                } transition-colors duration-200`}
+              >
+                {almacen.nombre}
+              </div>
+              <div
+                className={`text-sm ${
+                  isSelected ? "text-blue-600" : "text-slate-500"
+                } transition-colors duration-200`}
+              >
+                {almacen.descripcion}
+              </div>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className="px-4">
+          <span
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
+              isSelected
+                ? "bg-blue-200 text-blue-800 border-blue-300 shadow-md"
+                : "bg-blue-50 text-blue-700 border-blue-200"
             } transition-all duration-200`}
-          />
-          <div>
-            <div className={`font-bold text-base ${
-              isSelected ? "text-blue-800" : "text-slate-800"
-            } transition-colors duration-200`}>
-              {almacen.nombre}
-            </div>
-            <div className={`text-sm ${
-              isSelected ? "text-blue-600" : "text-slate-500"
-            } transition-colors duration-200`}>
-              {almacen.descripcion}
-            </div>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell className="px-4">
-        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
-          isSelected 
-            ? "bg-blue-200 text-blue-800 border-blue-300 shadow-md" 
-            : "bg-blue-50 text-blue-700 border-blue-200"
-        } transition-all duration-200`}>
-          <span className="text-base">{getAlmacenIcon(almacen.typeHouse)}</span>
-          {getTipoLabel(almacen.typeHouse)}
-        </span>
-      </TableCell>
-      <TableCell className={`text-sm px-4 font-mono ${
-        isSelected ? "text-blue-700 font-semibold" : "text-slate-700"
-      } transition-colors duration-200`}>
-        ({almacen.posX}, {almacen.posY})
-      </TableCell>
-      <TableCell className="text-sm text-slate-700 px-4">
-        <div className="flex items-center gap-2">
-          <div className="text-lg">📦</div>
-          <div>
-            <span className={`text-sm font-bold ${
-              isSelected ? "text-blue-800" : "text-slate-800"
-            } transition-colors duration-200`}>
-              {almacen.capacidad}
-            </span>
-            <div className={`text-xs ${
-              isSelected ? "text-blue-600" : "text-slate-500"
-            } transition-colors duration-200`}>
-              capacidad
+          >
+            <span className="text-base">{getAlmacenIcon(almacen.typeHouse)}</span>
+            {getTipoLabel(almacen.typeHouse)}
+          </span>
+        </TableCell>
+        <TableCell
+          className={`text-sm px-4 font-mono ${
+            isSelected ? "text-blue-700 font-semibold" : "text-slate-700"
+          } transition-colors duration-200`}
+        >
+          ({almacen.posX}, {almacen.posY})
+        </TableCell>
+        <TableCell className="text-sm text-slate-700 px-4">
+          <div className="flex items-center gap-2">
+            <div className="text-lg">📦</div>
+            <div>
+              <span
+                className={`text-sm font-bold ${
+                  isSelected ? "text-blue-800" : "text-slate-800"
+                } transition-colors duration-200`}
+              >
+                {almacen.capacidad}
+              </span>
+              <div
+                className={`text-xs ${
+                  isSelected ? "text-blue-600" : "text-slate-500"
+                } transition-colors duration-200`}
+              >
+                capacidad
+              </div>
             </div>
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="px-6">
-        <div className="flex items-center gap-3">
-          <div className="text-lg">🚛</div>
-          <div>
-            <span className={`text-sm font-bold ${
-              isSelected ? "text-blue-800" : "text-slate-800"
-            } transition-colors duration-200`}>
-              {almacen.camionesActuales}
-            </span>
-            <div className={`text-xs ${
-              isSelected ? "text-blue-600" : "text-slate-500"
-            } transition-colors duration-200`}>
-              en almacén
+        </TableCell>
+        <TableCell className="px-6">
+          <div className="flex items-center gap-3">
+            <div className="text-lg">🚛</div>
+            <div>
+              <span
+                className={`text-sm font-bold ${
+                  isSelected ? "text-blue-800" : "text-slate-800"
+                } transition-colors duration-200`}
+              >
+                {almacen.camionesActuales}
+              </span>
+              <div
+                className={`text-xs ${
+                  isSelected ? "text-blue-600" : "text-slate-500"
+                } transition-colors duration-200`}
+              >
+                en almacén
+              </div>
             </div>
           </div>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-});
+        </TableCell>
+      </TableRow>
+    );
+  }
+);
 
 AlmacenRowImproved.displayName = "AlmacenRowImproved";
 
 // ✅ COMPONENTE DE FILA DE BLOQUEO
-const BloqueoRowImproved = React.memo(({ 
-  bloqueo,
-  isSelected,
-  onSelect
-}: { 
-  bloqueo: any;
-  isSelected: boolean;
-  onSelect: (id: number | null) => void;
-}) => {
-  const { simulationTime } = useMapContext();
-  const { timerSimulacion } = simulationTime;
+const BloqueoRowImproved = React.memo(
+  ({
+    bloqueo,
+    isSelected,
+    onSelect,
+  }: {
+    bloqueo: any;
+    isSelected: boolean;
+    onSelect: (id: number | null) => void;
+  }) => {
+    const { simulationTime } = useMapContext();
+    const { timerSimulacion } = simulationTime;
 
-  // Manejar click para selección
-  const handleClick = useCallback(() => {
-    onSelect(isSelected ? null : bloqueo.id);
-  }, [bloqueo.id, isSelected, onSelect]);
+    // Manejar click para selección
+    const handleClick = useCallback(() => {
+      onSelect(isSelected ? null : bloqueo.id);
+    }, [bloqueo.id, isSelected, onSelect]);
 
-  // Calcular si está activo
-  const tiempoInicio = bloqueo.diaInicio * 24 * 60 + bloqueo.horaInicio * 60 + bloqueo.minutoInicio;
-  const tiempoFin = bloqueo.diaFin * 24 * 60 + bloqueo.horaFin * 60 + bloqueo.minutoFin;
-  const isActive = timerSimulacion >= tiempoInicio && timerSimulacion <= tiempoFin;
+    // Calcular si está activo
+    const tiempoInicio =
+      bloqueo.diaInicio * 24 * 60 + bloqueo.horaInicio * 60 + bloqueo.minutoInicio;
+    const tiempoFin = bloqueo.diaFin * 24 * 60 + bloqueo.horaFin * 60 + bloqueo.minutoFin;
+    const isActive = timerSimulacion >= tiempoInicio && timerSimulacion <= tiempoFin;
 
-  // Calcular distancia total del bloqueo
-  let distance = 0;
-  for (let tramo of bloqueo.tramo) {
-    let { x_fin, x_ini, y_fin, y_ini } = tramo;
-    if (x_fin === x_ini) distance += Math.abs(y_fin - y_ini);
-    if (y_fin === y_ini) distance += Math.abs(x_fin - x_ini);
-  }
+    // Calcular distancia total del bloqueo
+    let distance = 0;
+    for (let tramo of bloqueo.tramo) {
+      let { x_fin, x_ini, y_fin, y_ini } = tramo;
+      if (x_fin === x_ini) distance += Math.abs(y_fin - y_ini);
+      if (y_fin === y_ini) distance += Math.abs(x_fin - x_ini);
+    }
 
-  // Calcular duración
-  const duracionMinutos = tiempoFin - tiempoInicio;
-  const duracionHoras = Math.floor(duracionMinutos / 60);
-  const duracionMin = duracionMinutos % 60;
+    // Calcular duración
+    const duracionMinutos = tiempoFin - tiempoInicio;
+    const duracionHoras = Math.floor(duracionMinutos / 60);
+    const duracionMin = duracionMinutos % 60;
 
-  return (
-    <TableRow 
-      onClick={handleClick}
-      className={`cursor-pointer transition-all duration-200 border-b border-red-100 hover:bg-red-50 ${
-        isSelected ? "bg-red-100 border-l-4 border-red-500 shadow-lg ring-2 ring-red-200" : ""
-      }`}
-    >
-      <TableCell className="py-4 px-6">
-        <div className="flex items-center gap-4">
-          <div
-            className={`w-4 h-4 rounded-full shadow-sm border-2 border-white ${
-              isActive ? "bg-red-500 animate-pulse" : "bg-gray-400"
+    return (
+      <TableRow
+        onClick={handleClick}
+        className={`cursor-pointer transition-all duration-200 border-b border-red-100 hover:bg-red-50 ${
+          isSelected ? "bg-red-100 border-l-4 border-red-500 shadow-lg ring-2 ring-red-200" : ""
+        }`}
+      >
+        <TableCell className="py-4 px-6">
+          <div className="flex items-center gap-4">
+            <div
+              className={`w-4 h-4 rounded-full shadow-sm border-2 border-white ${
+                isActive ? "bg-red-500 animate-pulse" : "bg-gray-400"
+              }`}
+            />
+            <div>
+              <div className="font-bold text-base text-slate-800">Bloqueo-{bloqueo.id}</div>
+              <div className="text-sm text-slate-500">{isActive ? "🔴 Activo" : "⭕ Inactivo"}</div>
+            </div>
+          </div>
+        </TableCell>
+        <TableCell className="px-4">
+          <span
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
+              isActive
+                ? "bg-red-50 text-red-700 border-red-200"
+                : "bg-gray-50 text-gray-700 border-gray-200"
             }`}
-          />
-          <div>
-            <div className="font-bold text-base text-slate-800">Bloqueo-{bloqueo.id}</div>
-            <div className="text-sm text-slate-500">
-              {isActive ? "🔴 Activo" : "⭕ Inactivo"}
+          >
+            <span className="text-base">{isActive ? "🚫" : "⏸️"}</span>
+            {isActive ? "Bloqueando" : "Programado"}
+          </span>
+        </TableCell>
+        <TableCell className="text-sm text-slate-700 px-4">
+          <div className="flex items-center gap-2">
+            <div className="text-lg">⏱️</div>
+            <div>
+              <span className="text-sm font-bold text-slate-800">
+                {duracionHoras}h {duracionMin}m
+              </span>
+              <div className="text-xs text-slate-500">duración</div>
             </div>
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="px-4">
-        <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border ${
-          isActive 
-            ? "bg-red-50 text-red-700 border-red-200" 
-            : "bg-gray-50 text-gray-700 border-gray-200"
-        }`}>
-          <span className="text-base">{isActive ? "🚫" : "⏸️"}</span>
-          {isActive ? "Bloqueando" : "Programado"}
-        </span>
-      </TableCell>
-      <TableCell className="text-sm text-slate-700 px-4">
-        <div className="flex items-center gap-2">
-          <div className="text-lg">⏱️</div>
-          <div>
-            <span className="text-sm font-bold text-slate-800">
-              {duracionHoras}h {duracionMin}m
-            </span>
-            <div className="text-xs text-slate-500">duración</div>
+        </TableCell>
+        <TableCell className="text-sm text-slate-700 px-4">
+          <div className="space-y-1">
+            {bloqueo.tramo.slice(0, 2).map((tramo, index) => (
+              <div key={index} className="font-mono text-xs">
+                ({tramo.x_ini},{tramo.y_ini}) → ({tramo.x_fin},{tramo.y_fin})
+              </div>
+            ))}
+            {bloqueo.tramo.length > 2 && (
+              <div className="text-xs text-slate-500">+{bloqueo.tramo.length - 2} tramos más</div>
+            )}
           </div>
-        </div>
-      </TableCell>
-      <TableCell className="text-sm text-slate-700 px-4">
-        <div className="space-y-1">
-          {bloqueo.tramo.slice(0, 2).map((tramo, index) => (
-            <div key={index} className="font-mono text-xs">
-              ({tramo.x_ini},{tramo.y_ini}) → ({tramo.x_fin},{tramo.y_fin})
+        </TableCell>
+        <TableCell className="px-6">
+          <div className="flex items-center gap-3">
+            <div className="text-lg">📏</div>
+            <div>
+              <span className="text-sm font-bold text-slate-800">{distance}</span>
+              <div className="text-xs text-slate-500">unidades</div>
             </div>
-          ))}
-          {bloqueo.tramo.length > 2 && (
-            <div className="text-xs text-slate-500">
-              +{bloqueo.tramo.length - 2} tramos más
-            </div>
-          )}
-        </div>
-      </TableCell>
-      <TableCell className="px-6">
-        <div className="flex items-center gap-3">
-          <div className="text-lg">📏</div>
-          <div>
-            <span className="text-sm font-bold text-slate-800">{distance}</span>
-            <div className="text-xs text-slate-500">unidades</div>
           </div>
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-});
+        </TableCell>
+      </TableRow>
+    );
+  }
+);
 
 BloqueoRowImproved.displayName = "BloqueoRowImproved";
 
@@ -1093,11 +1284,16 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
   // ✅ Capacidades por tipo de camión
   const getCapacidadMaxima = (tipo: string) => {
     switch (tipo) {
-      case "TA": return 25; // Camiones tipo A: 25m³
-      case "TB": return 15; // Camiones tipo B: 15m³
-      case "TC": return 10; // Camiones tipo C: 10m³
-      case "TD": return 5;  // Camiones tipo D: 5m³
-      default: return 10;
+      case "TA":
+        return 25; // Camiones tipo A: 25m³
+      case "TB":
+        return 15; // Camiones tipo B: 15m³
+      case "TC":
+        return 10; // Camiones tipo C: 10m³
+      case "TD":
+        return 5; // Camiones tipo D: 5m³
+      default:
+        return 10;
     }
   };
 
@@ -1108,7 +1304,7 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
   const BarraCargaSemaforo = () => {
     const bloquesCarga = Math.ceil(truck.cargaAsignada);
     const bloquesTotales = Math.ceil(capacidadMaxima);
-    
+
     // Función para obtener color según porcentaje de carga
     const getColorCarga = (porcentaje: number) => {
       if (porcentaje >= 80) {
@@ -1146,22 +1342,26 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
           {Array.from({ length: bloquesTotales }, (_, index) => (
             <div
               key={index}
-              className={`w-2.5 h-5 rounded-sm border transition-all duration-300 hover:scale-110 ${
-                getColorBloque(index, bloquesCarga, porcentajeCarga)
-              }`}
-              title={`Bloque ${index + 1}${index < bloquesCarga ? " - Ocupado" : " - Vacío"} (${porcentajeCarga.toFixed(1)}%)`}
+              className={`w-2.5 h-5 rounded-sm border transition-all duration-300 hover:scale-110 ${getColorBloque(
+                index,
+                bloquesCarga,
+                porcentajeCarga
+              )}`}
+              title={`Bloque ${index + 1}${
+                index < bloquesCarga ? " - Ocupado" : " - Vacío"
+              } (${porcentajeCarga.toFixed(1)}%)`}
             />
           ))}
         </div>
-        
+
         {/* Información numérica con indicador de estado */}
         <div className="flex items-center gap-2">
           <div className="text-xs font-mono text-slate-600 min-w-[55px]">
             {truck.cargaAsignada}/{capacidadMaxima}m³
           </div>
-          
+
           {/* Indicador de estado tipo semáforo */}
-          <div 
+          <div
             className={`w-2 h-2 rounded-full ${getColorCarga(porcentajeCarga)} shadow-sm`}
             title={`Carga: ${porcentajeCarga.toFixed(1)}%`}
           />
@@ -1187,14 +1387,18 @@ const CamionRowImproved = React.memo(({ truck }: TruckRow) => {
 
   const getEstadoCamion = (truck: CamionI) => {
     const tieneRuta = truck.route && truck.route.length > 0;
-    const posicionAlmacenCentral = {x: 12, y: 8};
-    const posicionAlmacenEste = {x:63, y: 3};
-    const posicionAlmacenNorte = {x:42,y:42};
+    const posicionAlmacenCentral = { x: 12, y: 8 };
+    const posicionAlmacenEste = { x: 63, y: 3 };
+    const posicionAlmacenNorte = { x: 42, y: 42 };
 
-    const estaEnPosicionAlmacen = truck.ubicacionActual.x === posicionAlmacenCentral.x && truck.ubicacionActual.y === posicionAlmacenCentral.y ||
-      truck.ubicacionActual.x === posicionAlmacenEste.x && truck.ubicacionActual.y === posicionAlmacenEste.y ||
-      truck.ubicacionActual.x === posicionAlmacenNorte.x && truck.ubicacionActual.y === posicionAlmacenNorte.y;
-    
+    const estaEnPosicionAlmacen =
+      (truck.ubicacionActual.x === posicionAlmacenCentral.x &&
+        truck.ubicacionActual.y === posicionAlmacenCentral.y) ||
+      (truck.ubicacionActual.x === posicionAlmacenEste.x &&
+        truck.ubicacionActual.y === posicionAlmacenEste.y) ||
+      (truck.ubicacionActual.x === posicionAlmacenNorte.x &&
+        truck.ubicacionActual.y === posicionAlmacenNorte.y);
+
     if (tieneRuta && !estaEnPosicionAlmacen) {
       return {
         label: "En ruta",

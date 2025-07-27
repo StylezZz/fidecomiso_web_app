@@ -26,6 +26,7 @@ export interface manageTimeProps {
   anio?: number;
   hora?: number;
   minuto?: number;
+  onSimulacionInicializada?: (simulacionId: number) => void;
 }
 
 export const useManageTime = ({
@@ -37,6 +38,7 @@ export const useManageTime = ({
   anio,
   hora,
   minuto,
+  onSimulacionInicializada,
 }: manageTimeProps): manageTimeReturn => {
   const [simulationDate, setSimulationDate] = useState<Date | null>(null);
   const [initTimer, setInitTimer] = useState<boolean>(false); //maneja el inicio de la simlaucion si está en pausa o continua
@@ -80,6 +82,10 @@ export const useManageTime = ({
         hora!,
         minuto!
       );
+      if (response.success && response.data.simulacionId) {
+        console.log("Simulación inicializada con ID:", response.data.simulacionId);
+        onSimulacionInicializada?.(response.data.simulacionId);
+      }
       setSimulacionIniciada(true);
       setInitTimer(true);
     } catch (error) {
