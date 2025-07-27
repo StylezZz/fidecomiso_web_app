@@ -40,7 +40,7 @@ export interface PedidoFormData {
   posicionX: number;
   posicionY: number;
   tiempoEspera: number;
-  usarHoraActual: boolean;
+  usarHoraActual?: boolean;
   año: number;
   mes: number;
   dia: number;

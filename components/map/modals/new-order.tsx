@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,28 +16,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { posix } from "path";
+import { useMapContext } from "@/contexts/ContextMap";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
 
 interface PedidoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (pedidoData: PedidoFormData) => Promise<void>;
+  fechaSimulacion?: Date; // Nueva propiedad opcional para la fecha de simulación
 }
 
-export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
+export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: PedidoModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const {manageTime, realTime, simulationTime, pedidosI, setPedidosI} = useMapContext();
+  const {simulacionSeleccionada} = useSimulationContext();
+  const {anio, mes} = simulacionSeleccionada;
+  const { day, hour, minute } = simulationTime.time;
+  
+  // Usar la fecha de simulación del contexto
+  const fechaSimulacionFromContext = new Date(anio, mes - 1, day, hour, minute);
+  const [selectedDate, setSelectedDate] = useState<Date>(fechaSimulacionFromContext);
+  
   const [formData, setFormData] = useState<PedidoFormData>({
     codigo: "",
     volumen: 0,
     posicionX: 0,
     posicionY: 0,
     tiempoEspera: 4,
-    usarHoraActual: true,
-    año: new Date().getFullYear(),
-    mes: new Date().getMonth() + 1,
-    dia: new Date().getDate(),
-    hora: new Date().getHours(),
-    minuto: new Date().getMinutes(),
+    año: anio,
+    mes: mes,
+    dia: day,
+    hora: hour,
+    minuto: minute,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,26 +58,35 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
     try {
       await onSubmit(formData);
       onClose();
-      setFormData({
-        codigo: "",
-        volumen: 0,
-        posicionX: 0,
-        posicionY: 0,
-        tiempoEspera: 4,
-        usarHoraActual: true,
-        año: new Date().getFullYear(),
-        mes: new Date().getMonth() + 1,
-        dia: new Date().getDate(),
-        hora: new Date().getHours(),
-        minuto: new Date().getMinutes(),
-      });
-      setSelectedDate(new Date());
+      resetForm();
     } catch (error) {
       console.error("Reigstro de pedido fallido:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const resetForm = () => {
+    setFormData({
+      codigo: "",
+      volumen: 0,
+      posicionX: 0,
+      posicionY: 0,
+      tiempoEspera: 4,
+      año: anio,
+      mes: mes,
+      dia: day,
+      hora: hour,
+      minuto: minute,
+    });
+    setSelectedDate(new Date(anio, mes - 1, day, hour, minute));
+  }
+
+  React.useEffect(()=>{
+    if(isOpen){
+      resetForm();
+    }
+  },[fechaSimulacion, isOpen, anio, mes, day, hour, minute]);
 
   const handleInputChange = (field: keyof PedidoFormData, value: string | number | boolean) => {
     // Validar límites del mapa para posiciones
@@ -253,7 +273,6 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {!formData.usarHoraActual && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Selector de Fecha */}
                   <div className="space-y-2">
@@ -320,7 +339,7 @@ export function PedidoModal({ isOpen, onClose, onSubmit }: PedidoModalProps) {
                     </div>
                   </div>
                 </div>
-              )}
+            
             </CardContent>
           </Card>
 
