@@ -118,7 +118,7 @@ const Almacen = ({
     <Group
       x={x}
       y={y}
-      scale={{ x: 0.7 * scale, y: 0.7 * scale }}
+      scale={{ x: 1.4 * scale, y: 1.4 * scale }}
       onClick={handleAlmacenClick}
       onTap={handleAlmacenClick}
       onMouseEnter={(e) => {
@@ -140,24 +140,17 @@ const Almacen = ({
           opacity={0.8}
         />
       )}
-      
+
       {/* Componente del almacén */}
       {typeHouse === "home" ? (
         <CentralWarehouseIcon isSelected={isSelected} />
       ) : (
         <IntermediateWarehouseIcon isSelected={isSelected} />
       )}
-      
+
       {/* Indicador de selección adicional */}
       {isSelected && (
-        <Circle
-          x={15}
-          y={-5}
-          radius={4}
-          fill="#3b82f6"
-          stroke="#ffffff"
-          strokeWidth={1}
-        />
+        <Circle x={15} y={-5} radius={4} fill="#3b82f6" stroke="#ffffff" strokeWidth={1} />
       )}
     </Group>
   );
@@ -232,52 +225,52 @@ const IntermediateWarehouseIcon = ({ isSelected = false }: { isSelected?: boolea
       />
 
       {/* Techo triangular */}
-      <Path 
-        data="M4 8 L12 2 L20 8 Z" 
-        fill={isSelected ? "#1d4ed8" : "#1e40af"} 
-        stroke={isSelected ? "#60a5fa" : "#ffffff"} 
-        strokeWidth={1.5} 
+      <Path
+        data="M4 8 L12 2 L20 8 Z"
+        fill={isSelected ? "#1d4ed8" : "#1e40af"}
+        stroke={isSelected ? "#60a5fa" : "#ffffff"}
+        strokeWidth={1.5}
       />
 
       {/* Puerta */}
-      <Rect 
-        x={9} 
-        y={16} 
-        width={6} 
-        height={8} 
-        fill={isSelected ? "#fbbf24" : "#ffffff"} 
-        stroke="#3b82f6" 
-        strokeWidth={0.5} 
+      <Rect
+        x={9}
+        y={16}
+        width={6}
+        height={8}
+        fill={isSelected ? "#fbbf24" : "#ffffff"}
+        stroke="#3b82f6"
+        strokeWidth={0.5}
       />
 
       {/* Ventanas laterales */}
-      <Rect 
-        x={6} 
-        y={10} 
-        width={2} 
-        height={2} 
-        fill={isSelected ? "#fbbf24" : "#ffffff"} 
-        stroke="#3b82f6" 
-        strokeWidth={0.5} 
+      <Rect
+        x={6}
+        y={10}
+        width={2}
+        height={2}
+        fill={isSelected ? "#fbbf24" : "#ffffff"}
+        stroke="#3b82f6"
+        strokeWidth={0.5}
       />
-      <Rect 
-        x={16} 
-        y={10} 
-        width={2} 
-        height={2} 
-        fill={isSelected ? "#fbbf24" : "#ffffff"} 
-        stroke="#3b82f6" 
-        strokeWidth={0.5} 
+      <Rect
+        x={16}
+        y={10}
+        width={2}
+        height={2}
+        fill={isSelected ? "#fbbf24" : "#ffffff"}
+        stroke="#3b82f6"
+        strokeWidth={0.5}
       />
 
       {/* Indicador de almacén intermedio (punto pequeño) */}
-      <Circle 
-        x={12} 
-        y={6} 
-        radius={isSelected ? 2 : 1.5} 
-        fill={isSelected ? "#fbbf24" : "#ffffff"} 
-        stroke="#1e40af" 
-        strokeWidth={0.5} 
+      <Circle
+        x={12}
+        y={6}
+        radius={isSelected ? 2 : 1.5}
+        fill={isSelected ? "#fbbf24" : "#ffffff"}
+        stroke="#1e40af"
+        strokeWidth={0.5}
       />
     </Group>
   );

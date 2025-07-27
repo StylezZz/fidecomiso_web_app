@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  devIndicators: {
+    buildActivity: false,
+  },
   webpack: (config) => {
     config.externals = [...config.externals, { canvas: "canvas" }]; 
     return config;

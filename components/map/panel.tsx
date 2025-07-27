@@ -178,37 +178,6 @@ export const MapPanel = () => {
     }));
   }, [almacenesBackend]);
 
-  useEffect(() => {
-    const cargarAlmacenes = async () => {
-      if (!simulacionId) {
-        setAlmacenesBackend([]);
-        return;
-      }
-
-      setLoadingAlmacenes(true);
-      try {
-        const response = await SimulationService.obtenerAlmacenes();
-        if (response.success) {
-          setAlmacenesBackend(response.data || []);
-        }
-      } catch (error) {
-        console.error("Error al cargar almacenes:", error);
-        setAlmacenesBackend([]);
-      } finally {
-        setLoadingAlmacenes(false);
-      }
-    };
-
-    // Cargar almacenes cada 15 segundos si la simulación está iniciada
-    if (simulacionId && simulacionIniciada) {
-      cargarAlmacenes();
-      const interval = setInterval(cargarAlmacenes, 15000);
-      return () => clearInterval(interval);
-    } else {
-      setAlmacenesBackend([]);
-    }
-  }, [simulacionId, simulacionIniciada]);
-
   const [pedidosPage, setPedidosPage] = useState<number>(0);
   const [camionesPage, setCamionesPage] = useState<number>(0);
   const [almacenesPage, setAlmacenesPage] = useState<number>(0);
@@ -221,36 +190,7 @@ export const MapPanel = () => {
   const [searchTermAverias, setSearchTermAverias] = useState("");
   const searchAveriasInputRef = useRef<HTMLInputElement>(null);
 
-  //  useEffect para cargar averías
-  useEffect(() => {
-    const cargarAverias = async () => {
-      if (!simulacionId) {
-        setAveriasGeneradas([]);
-        return;
-      }
-
-      try {
-        const response = await SimulationService.obtenerAveriasGeneradas(simulacionId);
-        if (response.success) {
-          setAveriasGeneradas(response.data || []);
-        }
-      } catch (error) {
-        console.error("Error al cargar averías generadas:", error);
-        setAveriasGeneradas([]);
-      }
-    };
-
-    // Cargar averías cada 10 segundos si la simulación está iniciada
-    if (simulacionId && simulacionIniciada) {
-      cargarAverias();
-      const interval = setInterval(cargarAverias, 7000);
-      return () => clearInterval(interval);
-    } else {
-      setAveriasGeneradas([]);
-    }
-  }, [simulacionId, simulacionIniciada]);
-
-  // ✅ AGREGAR funciones de manejo para averías
+  // AGREGAR funciones de manejo para averías
   const handleAveriasSearch = useCallback((value: string) => {
     setSearchTermAverias(value);
     setAveriasPage(0);
@@ -422,13 +362,6 @@ export const MapPanel = () => {
   }, [isSearchingBloqueos]);
 
   const filteredAlmacenes = useMemo(() => {
-    // if (!searchTermAlmacenes.trim()) return ALMACENES_DATA;
-
-    // return ALMACENES_DATA.filter(
-    //   (almacen) =>
-    //     almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
-    //     almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
-    // );
     const almacenesData = getAlmacenesData;
 
     if (!searchTermAlmacenes.trim()) return almacenesData;
@@ -445,6 +378,44 @@ export const MapPanel = () => {
     () => filteredAlmacenes.slice(almacenesPage * PAGE_SIZE, (almacenesPage + 1) * PAGE_SIZE),
     [filteredAlmacenes, almacenesPage]
   );
+
+  useEffect(() => {
+    const cargarDatosCompletos = async () => {
+      if (!simulacionId || !simulacionIniciada) {
+        setAlmacenesBackend([]);
+        setAveriasGeneradas([]);
+        return;
+      }
+
+      setLoadingAlmacenes(true);
+
+      try {
+        // ✅ LLAMADAS EN PARALELO
+        const [almacenesResponse, averiasResponse] = await Promise.all([
+          SimulationService.obtenerAlmacenes(),
+          SimulationService.obtenerAveriasGeneradas(simulacionId),
+        ]);
+
+        if (almacenesResponse.success) {
+          setAlmacenesBackend(almacenesResponse.data || []);
+        }
+
+        if (averiasResponse.success) {
+          setAveriasGeneradas(averiasResponse.data || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+      } finally {
+        setLoadingAlmacenes(false);
+      }
+    };
+
+    if (simulacionId && simulacionIniciada) {
+      cargarDatosCompletos();
+      const interval = setInterval(cargarDatosCompletos, 7000);
+      return () => clearInterval(interval);
+    }
+  }, [simulacionId, simulacionIniciada]);
 
   const nextAlmacenesPage = useCallback(() => {
     if ((almacenesPage + 1) * PAGE_SIZE < filteredAlmacenes.length) {
