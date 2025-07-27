@@ -500,13 +500,13 @@ export const MapPanel = () => {
     }));
   }, [pedidosI, searchTermPedidos]);
 
-    // 2.  ⬇︎  AGREGA este bloque inmediatamente después
-    console.log(
-      "DEBUG pedidosWithPriority → length:",
-      pedidosWithPriority.length,
-      " | primer pedido:",
-      pedidosWithPriority[0]
-    );
+  // 2.  ⬇︎  AGREGA este bloque inmediatamente después
+  console.log(
+    "DEBUG pedidosWithPriority → length:",
+    pedidosWithPriority.length,
+    " | primer pedido:",
+    pedidosWithPriority[0]
+  );
 
   const visiblePedidos = useMemo(
     () => pedidosWithPriority.slice(pedidosPage * PAGE_SIZE, (pedidosPage + 1) * PAGE_SIZE),
@@ -801,9 +801,9 @@ export const MapPanel = () => {
                     <TableHead className="text-sm font-bold text-orange-700 px-4">
                       Ubicación
                     </TableHead>
-                    <TableHead className="text-sm font-bold text-orange-700 px-4">
+                    {/* <TableHead className="text-sm font-bold text-orange-700 px-4">
                       Camión
-                    </TableHead>
+                    </TableHead> */}
                     <TableHead className="text-sm font-bold text-orange-700 px-6">
                       Urgencia
                     </TableHead>
@@ -1226,15 +1226,15 @@ const AlmacenRowImproved = React.memo(
           </div>
 
           {/* Indicador y números */}
-          <div className="flex items-center gap-2 min-w-fit">
+          <div className="flex items-center min-w-fit">
             <span className="text-base">{estadoCapacidad.iconoEstado}</span>
             <div className="text-right">
               <div className="text-xs font-bold text-slate-800">
-                {Math.max(capacidadUsada, 160)}/{capacidadBackend.capacidad} m³
+                {capacidadBackend.capacidadDisponible}/{capacidadBackend.capacidad} m³
               </div>
-              <div className="text-xs text-slate-500">
+              {/* <div className="text-xs text-slate-500">
                 {capacidadBackend.capacidadDisponible} disponible
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -1672,16 +1672,6 @@ const PedidoRowImproved = React.memo(({ pedido }: { pedido: any }) => {
       </TableCell>
       <TableCell className="text-sm text-slate-700 px-4 font-mono">
         ({pedido.posX}, {pedido.posY})
-      </TableCell>
-      {/* Camión asignado */}
-      <TableCell className="text-sm text-center px-4 whitespace-nowrap">
-        {pedido.idCamion ? (
-          <span className="inline-flex items-center gap-1">
-            {/* Ícono opcional */}
-            {/* <Truck className="h-4 w-4 text-orange-500" /> */}
-            {pedido.idCamion}
-          </span>
-        ) : "—"}
       </TableCell>
       <TableCell className="px-6">
         <div className="flex items-center gap-3">

@@ -7,9 +7,7 @@ import { differenceInMinutes } from "date-fns";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { SimulationType } from "@/interfaces/simulation.interface";
 
-
 interface ElegantHeaderProps {
-  
   day: number;
   month: number;
   year: number;
@@ -57,22 +55,13 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
   onFitToScreen,
 }) => {
   const { simulacionSeleccionada } = useSimulationContext();
-  const simulationType = simulacionSeleccionada?.tipo;   // "Semanal" | "Dia a Dia" | "Colapso"
+  const simulationType = simulacionSeleccionada?.tipo; // "Semanal" | "Dia a Dia" | "Colapso"
 
   const startDateTimeRef = useRef<Date | null>(null);
   if (!startDateTimeRef.current) {
     // capturamos la fecha completa (día + hora + minuto) en el primer render
     startDateTimeRef.current = new Date(year, month - 1, day, hour, minute);
   }
-
-
-  useEffect(() => {
-    // Cada vez que pulsas “Reset” tu componente padre suele poner initTimer = false
-    // y vuelve a poner la fecha/hora de inicio. Detectamos eso:
-    if (!initTimer) {
-      startDateTimeRef.current = new Date(year, month - 1, day, hour, minute);
-    }
-  }, [initTimer, day, month, year, hour, minute]);
 
   const currentDateTime = new Date(year, month - 1, day, hour, minute);
   const totalMinutes = differenceInMinutes(currentDateTime, startDateTimeRef.current);
@@ -82,7 +71,7 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
   const elapsedHours = Math.floor(remainAfterDays / 60);
   const elapsedMinutes = remainAfterDays % 60;
 
-    const [now, setNow] = useState<Date>(new Date());
+  const [now, setNow] = useState<Date>(new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
@@ -201,26 +190,25 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
             </div>
           </div>
 
-
           {/* Separator */}
           <div className="h-8 w-px bg-gray-300"></div>
 
           {/* Tiempo Real (verde) */}
-            <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-1 border border-emerald-200 shadow-sm">
-              <Clock className="h-5 w-5 text-emerald-600" />
-              <div className="text-center leading-none">
-                <div className="text-xs text-emerald-600 font-medium mb-0.5">Tiempo Real</div>
-                <div className="text-xs font-bold text-gray-900">
-                  {String(realHour).padStart(2, "0")}:{String(realMinute).padStart(2, "0")}:
-                  {String(realSecond).padStart(2, "0")}
-                </div>
+          <div className="flex items-center gap-3 bg-emerald-50 rounded-xl px-4 py-1 border border-emerald-200 shadow-sm">
+            <Clock className="h-5 w-5 text-emerald-600" />
+            <div className="text-center leading-none">
+              <div className="text-xs text-emerald-600 font-medium mb-0.5">Tiempo Real</div>
+              <div className="text-xs font-bold text-gray-900">
+                {String(realHour).padStart(2, "0")}:{String(realMinute).padStart(2, "0")}:
+                {String(realSecond).padStart(2, "0")}
               </div>
             </div>
-            
+          </div>
+
           {/* Separador */}
           <div className="h-8 w-px bg-gray-300" />
-        
-        {/* Tiempo Simulación */}
+
+          {/* Tiempo Simulación */}
           <div className="flex items-center gap-3 bg-yellow-50 rounded-xl px-4 py-1 border border-yellow-200 shadow-sm">
             <Clock className="h-5 w-5 text-yellow-600" />
             <div className="text-center">
@@ -230,23 +218,17 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
               </div>
             </div>
           </div>
-        
-        {/* Separador */}
+
+          {/* Separador */}
           <div className="h-8 w-px bg-gray-300" />
-        
-        {/* Fecha Actual */}
+
+          {/* Fecha Actual */}
           <div className="flex items-center gap-3 bg-violet-50 rounded-xl px-4 py-1 border border-violet-200 shadow-sm">
             <Calendar className="h-5 w-5 text-violet-600" />
             <div className="text-center">
-              <div className="text-[10px] text-violet-600 font-medium mb-0.5">
-                Fecha Actual
-              </div>
+              <div className="text-[10px] text-violet-600 font-medium mb-0.5">Fecha Actual</div>
               <div className="text-[10px] font-bold text-gray-900 leading-tight">
-                {formatDisplayDate(
-                  now.getDate(),
-                  now.getMonth() + 1,
-                  now.getFullYear()
-                )}
+                {formatDisplayDate(now.getDate(), now.getMonth() + 1, now.getFullYear())}
               </div>
               <div className="text-[10px] text-gray-600 leading-tight">
                 {String(now.getHours()).padStart(2, "0")}:
@@ -254,7 +236,6 @@ export const ElegantHeader: React.FC<ElegantHeaderProps> = ({
               </div>
             </div>
           </div>
-          
         </div>
         {/* RIGHT: Primary Actions */}
         <div className="flex items-center gap-2">
