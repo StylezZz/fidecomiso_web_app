@@ -29,15 +29,15 @@ interface PedidoModalProps {
 
 export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: PedidoModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {manageTime, realTime, simulationTime, pedidosI, setPedidosI} = useMapContext();
-  const {simulacionSeleccionada} = useSimulationContext();
-  const {anio, mes} = simulacionSeleccionada;
+  const { manageTime, realTime, simulationTime, pedidosI, setPedidosI } = useMapContext();
+  const { simulacionSeleccionada } = useSimulationContext();
+  const { anio, mes } = simulacionSeleccionada;
   const { day, hour, minute } = simulationTime.time;
-  
+
   // Usar la fecha de simulación del contexto
   const fechaSimulacionFromContext = new Date(anio, mes - 1, day, hour, minute);
   const [selectedDate, setSelectedDate] = useState<Date>(fechaSimulacionFromContext);
-  
+
   const [formData, setFormData] = useState<PedidoFormData>({
     codigo: "",
     volumen: 0,
@@ -80,13 +80,13 @@ export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: Pedi
       minuto: minute,
     });
     setSelectedDate(new Date(anio, mes - 1, day, hour, minute));
-  }
+  };
 
-  React.useEffect(()=>{
-    if(isOpen){
+  React.useEffect(() => {
+    if (isOpen) {
       resetForm();
     }
-  },[fechaSimulacion, isOpen, anio, mes, day, hour, minute]);
+  }, [fechaSimulacion, isOpen, anio, mes, day, hour, minute]);
 
   const handleInputChange = (field: keyof PedidoFormData, value: string | number | boolean) => {
     // Validar límites del mapa para posiciones
@@ -250,10 +250,10 @@ export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: Pedi
                     id="tiempoEspera"
                     value={formData.tiempoEspera}
                     onChange={(e) => handleInputChange("tiempoEspera", Number(e.target.value))}
-                    placeholder="4"
+                    placeholder="6"
                     type="number"
-                    step="0.5"
-                    min="4"
+                    step="1"
+                    min="1"
                     className="text-sm"
                     required
                   />
@@ -273,73 +273,72 @@ export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: Pedi
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Selector de Fecha */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Fecha de Registro</Label>
-                    <Input
-                      type="date"
-                      value={`${formData.año}-${formData.mes
-                        .toString()
-                        .padStart(2, "0")}-${formData.dia.toString().padStart(2, "0")}`}
-                      onChange={(e) => {
-                        const date = new Date(e.target.value);
-                        if (!isNaN(date.getTime())) {
-                          setSelectedDate(date);
-                          setFormData((prev) => ({
-                            ...prev,
-                            año: date.getFullYear(),
-                            mes: date.getMonth() + 1,
-                            dia: date.getDate(),
-                          }));
-                        }
-                      }}
-                      className="text-sm"
-                    />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Selector de Fecha */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Fecha de Registro</Label>
+                  <Input
+                    type="date"
+                    value={`${formData.año}-${formData.mes
+                      .toString()
+                      .padStart(2, "0")}-${formData.dia.toString().padStart(2, "0")}`}
+                    onChange={(e) => {
+                      const date = new Date(e.target.value);
+                      if (!isNaN(date.getTime())) {
+                        setSelectedDate(date);
+                        setFormData((prev) => ({
+                          ...prev,
+                          año: date.getFullYear(),
+                          mes: date.getMonth() + 1,
+                          dia: date.getDate(),
+                        }));
+                      }
+                    }}
+                    className="text-sm"
+                  />
+                </div>
 
-                  {/* Selector de Hora */}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Hora de Registro</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Select
-                          value={formData.hora.toString()}
-                          onValueChange={(value) => handleTimeChange("hora", value)}
-                        >
-                          <SelectTrigger className="text-sm">
-                            <SelectValue placeholder="Hora" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 24 }, (_, i) => (
-                              <SelectItem key={i} value={i.toString()}>
-                                {i.toString().padStart(2, "0")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Select
-                          value={formData.minuto.toString()}
-                          onValueChange={(value) => handleTimeChange("minuto", value)}
-                        >
-                          <SelectTrigger className="text-sm">
-                            <SelectValue placeholder="Min" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 60 }, (_, i) => (
-                              <SelectItem key={i} value={i.toString()}>
-                                {i.toString().padStart(2, "0")}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                {/* Selector de Hora */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Hora de Registro</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Select
+                        value={formData.hora.toString()}
+                        onValueChange={(value) => handleTimeChange("hora", value)}
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="Hora" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 24 }, (_, i) => (
+                            <SelectItem key={i} value={i.toString()}>
+                              {i.toString().padStart(2, "0")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Select
+                        value={formData.minuto.toString()}
+                        onValueChange={(value) => handleTimeChange("minuto", value)}
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="Min" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: 60 }, (_, i) => (
+                            <SelectItem key={i} value={i.toString()}>
+                              {i.toString().padStart(2, "0")}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
-            
+              </div>
             </CardContent>
           </Card>
 
