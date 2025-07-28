@@ -33,6 +33,7 @@ import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 import { CamionI } from "@/interfaces/simulation/camion.interface";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { FleetIndicator } from "./fleet-indicator";
+import { SimulationType } from "@/interfaces/simulation.interface";
 
 interface MapProps {
   open: boolean;
@@ -70,6 +71,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
   } = useMapContext();
   const { timerSimulacion } = simulationTime;
   const { simulacionSeleccionada } = useSimulationContext();
+  const tipoSimulacion = simulacionSeleccionada.tipo;
   const { ihora, iminuto, dia, tipo, anio, mes } = simulacionSeleccionada;
 
   const { cellSizeXValue, cellSizeYValue, mapHeight, mapWidth, loading } = mapData;
@@ -500,22 +502,26 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                 setToolTipAlmacenPos={setToolTipAlmacenPos}
                 onTooltip={showTooltip}
               />
-              <Almacen
-                posX={42}
-                posY={42}
-                typeHouse="warehouse"
-                setAlmacenSeleccionado={setAlmacenSeleccionado}
-                setToolTipAlmacenPos={setToolTipAlmacenPos}
-                onTooltip={showTooltip}
-              />
-              <Almacen
-                posX={63}
-                posY={3}
-                typeHouse="warehouse"
-                setAlmacenSeleccionado={setAlmacenSeleccionado}
-                setToolTipAlmacenPos={setToolTipAlmacenPos}
-                onTooltip={showTooltip}
-              />
+              {tipoSimulacion !== SimulationType.DIA_DIA && (
+                <> 
+                  <Almacen
+                    posX={42}
+                    posY={42}
+                    typeHouse="warehouse"
+                    setAlmacenSeleccionado={setAlmacenSeleccionado}
+                    setToolTipAlmacenPos={setToolTipAlmacenPos}
+                    onTooltip={showTooltip}
+                  />
+                  <Almacen
+                    posX={63}
+                    posY={3}
+                    typeHouse="warehouse"
+                    setAlmacenSeleccionado={setAlmacenSeleccionado}
+                    setToolTipAlmacenPos={setToolTipAlmacenPos}
+                    onTooltip={showTooltip}
+                  />
+                </>
+              )}
               {bloqueoSeleccionado != null &&
                 bloqueosShow.some((b) => b.id === bloqueoSeleccionado.id) && (
                   <ToolTipBlockRoute

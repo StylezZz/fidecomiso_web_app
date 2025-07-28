@@ -33,6 +33,8 @@ import React, {
   useState,
 } from "react";
 import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
+import { SimulationType } from "@/interfaces/simulation.interface";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -67,24 +69,24 @@ const ALMACENES_DATA: AlmacenInfo[] = [
     descripcion: "Centro Principal",
     camionesActuales: 0,
   },
-  {
-    posX: 42,
-    posY: 42,
-    typeHouse: "warehouse",
-    nombre: "Norte",
-    capacidad: "160 m3",
-    descripcion: "Intermedio Norte",
-    camionesActuales: 0,
-  },
-  {
-    posX: 63,
-    posY: 3,
-    typeHouse: "warehouse",
-    nombre: "Este",
-    capacidad: "160 m3",
-    descripcion: "Intermedio Este",
-    camionesActuales: 0,
-  },
+  // {
+  //   posX: 42,
+  //   posY: 42,
+  //   typeHouse: "warehouse",
+  //   nombre: "Norte",
+  //   capacidad: "160 m3",
+  //   descripcion: "Intermedio Norte",
+  //   camionesActuales: 0,
+  // },
+  // {
+  //   posX: 63,
+  //   posY: 3,
+  //   typeHouse: "warehouse",
+  //   nombre: "Este",
+  //   capacidad: "160 m3",
+  //   descripcion: "Intermedio Este",
+  //   camionesActuales: 0,
+  // },
 ];
 
 const formatearCapacidad = (almacen: AlmacenBackend) => {
@@ -334,6 +336,8 @@ export const MapPanel = () => {
   const [isSearchingAlmacenes, setIsSearchingAlmacenes] = useState(false);
   const [searchTermAlmacenes, setSearchTermAlmacenes] = useState("");
   const searchAlmacenesInputRef = useRef<HTMLInputElement>(null);
+  const { simulacionSeleccionada } = useSimulationContext();
+  const tipoSimulacion = simulacionSeleccionada?.tipo;
 
   const [isSearchingBloqueos, setIsSearchingBloqueos] = useState(false);
   const [searchTermBloqueos, setSearchTermBloqueos] = useState("");
@@ -362,8 +366,22 @@ export const MapPanel = () => {
   }, [isSearchingBloqueos]);
 
   const filteredAlmacenes = useMemo(() => {
-    const almacenesData = getAlmacenesData;
+    let almacenesData = getAlmacenesData;
 
+    // Si es DIA_DIA, solo mostrar Central, y permitir búsqueda sobre ese único almacén
+    if (tipoSimulacion === SimulationType.DIA_DIA) {
+      almacenesData = almacenesData.filter(
+        (almacen) => almacen.nombre.toLowerCase() === "central"
+      );
+      if (!searchTermAlmacenes.trim()) return almacenesData;
+      return almacenesData.filter(
+        (almacen) =>
+          almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
+          almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
+      );
+    }
+
+    // Si no es DIA_DIA, filtrar normalmente
     if (!searchTermAlmacenes.trim()) return almacenesData;
 
     return almacenesData.filter(
@@ -371,8 +389,7 @@ export const MapPanel = () => {
         almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
         almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
     );
-    // }, [searchTermAlmacenes]);
-  }, [getAlmacenesData, searchTermAlmacenes]);
+  }, [getAlmacenesData, searchTermAlmacenes, tipoSimulacion]);
 
   const visibleAlmacenes = useMemo(
     () => filteredAlmacenes.slice(almacenesPage * PAGE_SIZE, (almacenesPage + 1) * PAGE_SIZE),
@@ -510,15 +527,9 @@ export const MapPanel = () => {
             {[
               { id: "camiones", label: "Camiones", icon: Truck, count: sortedDataCamiones.length },
               { id: "pedidos", label: "Pedidos", icon: Package, count: pedidosI.length },
-              {
-                id: "almacenes",
-                label: "Almacenes",
-                icon: Warehouse,
-                // count: ALMACENES_DATA.length,
-                count: getAlmacenesData.length,
-              },
+              { id: "almacenes", label: "Almacenes", icon: Warehouse, count: filteredAlmacenes.length },
               { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
-              { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length }, // ✅ NUEVA PESTAÑA
+              { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = selectedTab === tab.id;
