@@ -69,24 +69,24 @@ const ALMACENES_DATA: AlmacenInfo[] = [
     descripcion: "Centro Principal",
     camionesActuales: 0,
   },
-  // {
-  //   posX: 42,
-  //   posY: 42,
-  //   typeHouse: "warehouse",
-  //   nombre: "Norte",
-  //   capacidad: "160 m3",
-  //   descripcion: "Intermedio Norte",
-  //   camionesActuales: 0,
-  // },
-  // {
-  //   posX: 63,
-  //   posY: 3,
-  //   typeHouse: "warehouse",
-  //   nombre: "Este",
-  //   capacidad: "160 m3",
-  //   descripcion: "Intermedio Este",
-  //   camionesActuales: 0,
-  // },
+  {
+    posX: 42,
+    posY: 42,
+    typeHouse: "warehouse",
+    nombre: "Norte",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Norte",
+    camionesActuales: 0,
+  },
+  {
+    posX: 63,
+    posY: 3,
+    typeHouse: "warehouse",
+    nombre: "Este",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Este",
+    camionesActuales: 0,
+  },
 ];
 
 const formatearCapacidad = (almacen: AlmacenBackend) => {
@@ -160,6 +160,7 @@ export const MapPanel = () => {
     bloqueoSeleccionadoId,
     setBloqueoSeleccionadoId,
     simulacionId,
+    setPedidosI,
   } = useMapContext();
 
   const [almacenesBackend, setAlmacenesBackend] = useState<AlmacenBackend[]>([]);
@@ -370,9 +371,7 @@ export const MapPanel = () => {
 
     // Si es DIA_DIA, solo mostrar Central, y permitir búsqueda sobre ese único almacén
     if (tipoSimulacion === SimulationType.DIA_DIA) {
-      almacenesData = almacenesData.filter(
-        (almacen) => almacen.nombre.toLowerCase() === "central"
-      );
+      almacenesData = almacenesData.filter((almacen) => almacen.nombre.toLowerCase() === "central");
       if (!searchTermAlmacenes.trim()) return almacenesData;
       return almacenesData.filter(
         (almacen) =>
@@ -404,21 +403,24 @@ export const MapPanel = () => {
         return;
       }
 
+      const { tipo } = simulacionSeleccionada;
+
       setLoadingAlmacenes(true);
 
       try {
-        // ✅ LLAMADAS EN PARALELO
-        const [almacenesResponse, averiasResponse] = await Promise.all([
+        let almacenesResponse, averiasResponse;
+        [almacenesResponse, averiasResponse] = await Promise.all([
           SimulationService.obtenerAlmacenes(),
           SimulationService.obtenerAveriasGeneradas(simulacionId),
         ]);
 
-        if (almacenesResponse.success) {
+        if (almacenesResponse && almacenesResponse.success) {
           setAlmacenesBackend(almacenesResponse.data || []);
         }
-
-        if (averiasResponse.success) {
-          setAveriasGeneradas(averiasResponse.data || []);
+        if (tipo !== "Dia a Dia" && averiasResponse) {
+          if (averiasResponse.success) {
+            setAveriasGeneradas(averiasResponse.data || []);
+          }
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -427,9 +429,11 @@ export const MapPanel = () => {
       }
     };
 
+    const tipo = simulacionSeleccionada?.tipo;
+    const time = tipo === "Dia a Dia" ? 8000 : 7000;
     if (simulacionId && simulacionIniciada) {
       cargarDatosCompletos();
-      const interval = setInterval(cargarDatosCompletos, 7000);
+      const interval = setInterval(cargarDatosCompletos, time);
       return () => clearInterval(interval);
     }
   }, [simulacionId, simulacionIniciada]);
@@ -527,7 +531,12 @@ export const MapPanel = () => {
             {[
               { id: "camiones", label: "Camiones", icon: Truck, count: sortedDataCamiones.length },
               { id: "pedidos", label: "Pedidos", icon: Package, count: pedidosI.length },
-              { id: "almacenes", label: "Almacenes", icon: Warehouse, count: filteredAlmacenes.length },
+              {
+                id: "almacenes",
+                label: "Almacenes",
+                icon: Warehouse,
+                count: filteredAlmacenes.length,
+              },
               { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
               { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length },
             ].map((tab) => {
