@@ -14,9 +14,8 @@ import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import PedidosService from "@/services/pedidos.service"
+import PedidosService from "@/services/orders.service"
 
-// Interfaz para los pedidos de la API
 interface ApiPedido {
   pedidoId: number
   clienteId: number
@@ -38,10 +37,8 @@ interface ApiResponse {
   pedidos: ApiPedido[]
 }
 
-// Cantidad de pedidos por página
 const ITEMS_PER_PAGE = 5;
 
-// Meses disponibles para selección
 const AVAILABLE_MONTHS = [
   { value: "01", label: "Enero" },
   { value: "02", label: "Febrero" },
@@ -57,42 +54,31 @@ const AVAILABLE_MONTHS = [
   { value: "12", label: "Diciembre" },
 ];
 
-// Años disponibles para selección
 const AVAILABLE_YEARS = ["2024", "2025", "2026"];
 
 export function DashboardOrders() {
-  // Estado para los pedidos adaptados
   const [allOrders, setAllOrders] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
-  // Estado para mes y año seleccionados
-  // Iniciara en enero
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState("01");
   const [selectedYear, setSelectedYear] = useState(format(currentDate, 'yyyy'));
-  
-  // Usar los pedidos pendientes del Redux store como fallback
   const pendingOrdersFromStore = useAppSelector(selectPendingOrders)
   
-  // Calcular pedidos de la página actual
   const paginatedOrders = allOrders.slice(
     (currentPage - 1) * ITEMS_PER_PAGE, 
     currentPage * ITEMS_PER_PAGE
   );
   
-  // Calcular el número total de páginas
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   
-  // Función para cargar los pedidos directamente desde el objeto de respuesta
   const loadPedidosDirectly = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // Convertir a números para la API
       const year = parseInt(selectedYear);
       const month = parseInt(selectedMonth);
       
@@ -102,41 +88,33 @@ export function DashboardOrders() {
       
       console.log('Respuesta completa:', response);
       
-      // Verificar la estructura de la respuesta según el controlador backend
       if (response && response.success && response.data) {
-        // El controlador devuelve { mensaje: string, pedidos: array }
         const responseData = response.data;
-        // Verificar si la respuesta tiene la estructura esperada
         const pedidos = responseData.pedidos || (Array.isArray(responseData) ? responseData : []);
         console.log(`API devolvió ${pedidos.length} pedidos en total`);
         
         if (Array.isArray(pedidos) && pedidos.length > 0) {
-          // Filtrar pedidos por mes y año usando fechaDeRegistro si es necesario
           const filteredPedidos = pedidos.filter(pedido => {
-            if (!pedido.fechaDeRegistro) return true; // Si no hay fecha, lo incluimos
+            if (!pedido.fechaDeRegistro) return true;
             
             try {
               const fechaRegistro = new Date(pedido.fechaDeRegistro);
-              const pedidoMes = fechaRegistro.getMonth() + 1; // getMonth() devuelve 0-11
+              const pedidoMes = fechaRegistro.getMonth() + 1; 
               const pedidoAnio = fechaRegistro.getFullYear();
               
-              // Convertir selectedMonth y selectedYear a números para comparar
               const selectedMonthNum = parseInt(selectedMonth);
               const selectedYearNum = parseInt(selectedYear);
               
               console.log(`Comparando fecha: ${pedidoMes}/${pedidoAnio} con selección: ${selectedMonthNum}/${selectedYearNum}`);
               
-              // Filtrar por mes y año
               return pedidoMes === selectedMonthNum && pedidoAnio === selectedYearNum;
             } catch (err) {
               console.error('Error al parsear fecha:', pedido.fechaDeRegistro, err);
-              return true; // En caso de error, incluimos el pedido
+              return true; 
             }
           });
           
           console.log(`Después de filtrar por fecha: ${filteredPedidos.length} de ${pedidos.length} pedidos`);
-          
-          // Actualizar el total de items para la paginación
           setTotalItems(filteredPedidos.length);
           
           const mappedOrders = filteredPedidos.map(pedido => ({
@@ -148,17 +126,13 @@ export function DashboardOrders() {
               lng: pedido.posX,
               lat: pedido.posY
             },
-            // Usar fechaEntrega como deadline
             deadline: pedido.fechaEntrega,
-            // Añadir fechaDeRegistro para referencia
             fechaRegistro: pedido.fechaDeRegistro
           }));
           
           console.log('Pedidos mapeados:', mappedOrders);
           
-          // Guardar todos los pedidos
           setAllOrders(mappedOrders);
-          // Resetear a la primera página cuando cambiamos los datos
           setCurrentPage(1);
         } else {
           setAllOrders([]);
@@ -170,7 +144,6 @@ export function DashboardOrders() {
     } catch (err) {
       console.error('Error cargando pedidos directamente:', err);
       setError('Error al cargar los pedidos. Por favor, intente nuevamente.');
-      // Usar los pedidos del store como fallback
       setAllOrders(pendingOrdersFromStore);
       setTotalItems(pendingOrdersFromStore.length);
     } finally {
@@ -178,14 +151,12 @@ export function DashboardOrders() {
     }
   };
   
-  // Función para ir a la página siguiente
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(prev => prev + 1);
     }
   };
   
-  // Función para ir a la página anterior
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prev => prev - 1);
@@ -196,12 +167,10 @@ export function DashboardOrders() {
     loadPedidosDirectly();
   }, [selectedYear, selectedMonth]);
   
-  // Función para refrescar los datos
   const handleRefresh = () => {
     loadPedidosDirectly();
   };
   
-  // Obtener el nombre del mes seleccionado
   const getSelectedMonthName = () => {
     const month = AVAILABLE_MONTHS.find(m => m.value === selectedMonth);
     return month ? month.label : '';
@@ -287,7 +256,6 @@ export function DashboardOrders() {
         </div>
       )}
       
-      {/* Información de carga */}
       {loading && (
         <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-md mb-4">
           Cargando pedidos...
@@ -336,7 +304,6 @@ export function DashboardOrders() {
         </Table>
       </div>
       
-      {/* Controles de paginación */}
       {totalItems > 0 && (
         <div className="flex items-center justify-between pt-4">
           <div className="text-sm text-gray-500">

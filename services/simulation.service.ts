@@ -127,13 +127,52 @@ class SimulationService {
       throw new Error((error as Error).message);
     }
   }
-  public static async inicializarTipoSimulacion(tipoSimulacion: number): Promise<HttpResponse> {
+
+  public static async inicializarTipoSimulacion(
+    tipoSimulacion: number,
+    dia: number,
+    mes: number,
+    anio: number,
+    hora: number,
+    minuto: number
+  ): Promise<HttpResponse> {
     const queryParams = new URLSearchParams();
     queryParams.append("tipoSimulacion", tipoSimulacion.toString());
+    queryParams.append("dia", dia.toString());
+    queryParams.append("mes", mes.toString());
+    queryParams.append("anio", anio.toString());
+    queryParams.append("hora", hora.toString());
+    queryParams.append("minuto", minuto.toString());
     const queryString = queryParams.toString();
     try {
       const res = await http.post(`/genetico/inicializar?${queryString}`, null);
       if (!res.success) throw new Error("Error al iniciar el tipo de simulacion");
+
+      // EXTRAER simulacionId del response
+      if (res.data && res.data.simulacionId) {
+        console.log("Simulación inicializada con ID:", res.data.simulacionId);
+      }
+
+      return res;
+    } catch (error) {
+      throw new Error((error as Error).message);
+    }
+  }
+
+  public static async obtenerAlmacenes(): Promise<HttpResponse> {
+    try {
+      const res = await http.get(`/genetico/almacen`);
+      if (!res.success) throw new Error("Error al obtener almacenes");
+      return res;
+    } catch (error) {
+      throw new Error((error as Error).message);
+    }
+  }
+
+  public static async obtenerAveriasGeneradas(simulacionId: number): Promise<HttpResponse> {
+    try {
+      const res = await http.get(`/genetico/averias-generadas?simulacionId=${simulacionId}`);
+      if (!res.success) throw new Error("Error al obtener averías generadas");
       return res;
     } catch (error) {
       throw new Error((error as Error).message);

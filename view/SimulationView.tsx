@@ -5,10 +5,10 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/hooks/use-redux";
 import { Card, CardContent } from "@/components/ui/card";
-import { MainLayout } from "@/components/layout/MainLayout";
+import { MainLayout } from "@/components/layout/main";
 import { resetSimulationState } from "@/store/simulation/simulation-slice";
-import { SimulationSetup } from "@/components/simulations/simulation-setup";
-import { ActiveSimulations } from "@/components/simulations/active-simulations";
+import { SimulationSetup } from "@/components/simulations/setup";
+import { ActiveSimulations } from "@/components/simulations/active";
 
 export function SimulationsView() {
   const dispatch = useAppDispatch();

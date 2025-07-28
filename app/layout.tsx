@@ -1,10 +1,10 @@
 import "@/app/globals.css";
 import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { MapProvider } from "@/contexts/MapContext";
+import { MapProvider } from "@/contexts/ContextMap";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AlmacenProvider } from "@/contexts/AlmacenProvider";
-import { SimulationProvider } from "@/contexts/SimulationContext";
+import { AlmacenProvider } from "@/contexts/WarehouseProvider";
+import { SimulationProvider } from "@/contexts/ContextSimulation";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
