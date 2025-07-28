@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ReactNode } from "react";
-import { Fuel, LayoutDashboard, Map, PlayCircle } from "lucide-react";
+import { Fuel, LayoutDashboard, Map, Package, PlayCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +25,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     { name: "Simulaciones", href: "/simulaciones", icon: PlayCircle },
     { name: "Mapa", href: "/mapa", icon: Map },
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Pedidos", href: "/pedidos", icon: Package },
   ];
 
   return (
