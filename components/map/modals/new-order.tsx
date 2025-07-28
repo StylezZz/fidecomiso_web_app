@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { posix } from "path";
 import { useMapContext } from "@/contexts/ContextMap";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
 

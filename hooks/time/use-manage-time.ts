@@ -55,11 +55,11 @@ export const useManageTime = ({
     setMinutosPorIteracion(tipo == SimulationType.DIA_DIA ? 1 : 18);
   }, [tipo]);
 
-  useEffect(() => {
-    if (tipo === undefined) return;
-    setIntervalMs(tipo == SimulationType.DIA_DIA ? 60000 : 10 / speedTime);
-    console.log("ACTUALIZO LA VELOCIDAD - Speed:", speedTime, "Display:", displaySpeed);
-  }, [speedTime]);
+  // useEffect(() => {
+  //   if (tipo === undefined) return;
+  //   setIntervalMs(tipo == SimulationType.DIA_DIA ? 60000 : 10 / speedTime);
+  //   console.log("ACTUALIZO LA VELOCIDAD - Speed:", speedTime, "Display:", displaySpeed);
+  // }, [speedTime]);
 
   const startTimer = async () => {
     if (initTimer) return; // si está corriendo no deberia hacer nada

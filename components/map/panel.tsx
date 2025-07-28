@@ -33,6 +33,9 @@ import React, {
   useState,
 } from "react";
 import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
+import { PedidoI } from "@/interfaces/simulation/pedido.interface";
+import PedidosService from "@/services/orders.service";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -158,6 +161,7 @@ export const MapPanel = () => {
     bloqueoSeleccionadoId,
     setBloqueoSeleccionadoId,
     simulacionId,
+    setPedidosI,
   } = useMapContext();
 
   const [almacenesBackend, setAlmacenesBackend] = useState<AlmacenBackend[]>([]);
@@ -379,6 +383,8 @@ export const MapPanel = () => {
     [filteredAlmacenes, almacenesPage]
   );
 
+  const { simulacionSeleccionada } = useSimulationContext();
+
   useEffect(() => {
     const cargarDatosCompletos = async () => {
       if (!simulacionId || !simulacionIniciada) {
@@ -387,21 +393,24 @@ export const MapPanel = () => {
         return;
       }
 
+      const { tipo } = simulacionSeleccionada;
+
       setLoadingAlmacenes(true);
 
       try {
-        // ✅ LLAMADAS EN PARALELO
-        const [almacenesResponse, averiasResponse] = await Promise.all([
+        let almacenesResponse, averiasResponse;
+        [almacenesResponse, averiasResponse] = await Promise.all([
           SimulationService.obtenerAlmacenes(),
           SimulationService.obtenerAveriasGeneradas(simulacionId),
         ]);
 
-        if (almacenesResponse.success) {
+        if (almacenesResponse && almacenesResponse.success) {
           setAlmacenesBackend(almacenesResponse.data || []);
         }
-
-        if (averiasResponse.success) {
-          setAveriasGeneradas(averiasResponse.data || []);
+        if (tipo !== "Dia a Dia" && averiasResponse) {
+          if (averiasResponse.success) {
+            setAveriasGeneradas(averiasResponse.data || []);
+          }
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -410,9 +419,11 @@ export const MapPanel = () => {
       }
     };
 
+    const tipo = simulacionSeleccionada?.tipo;
+    const time = tipo === "Dia a Dia" ? 8000 : 7000;
     if (simulacionId && simulacionIniciada) {
       cargarDatosCompletos();
-      const interval = setInterval(cargarDatosCompletos, 7000);
+      const interval = setInterval(cargarDatosCompletos, time);
       return () => clearInterval(interval);
     }
   }, [simulacionId, simulacionIniciada]);
@@ -696,6 +707,12 @@ export const MapPanel = () => {
                     Listando {pedidosPage * PAGE_SIZE + 1}–
                     {Math.min((pedidosPage + 1) * PAGE_SIZE, pedidosWithPriority.length)} de{" "}
                     {pedidosWithPriority.length} órdenes
+                    {loadingAlmacenes && (
+                      <span className="ml-2 inline-flex items-center gap-1">
+                        <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
+                        Actualizando...
+                      </span>
+                    )}
                   </p>
                 </div>
 
