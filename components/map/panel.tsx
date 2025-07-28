@@ -397,8 +397,6 @@ export const MapPanel = () => {
     [filteredAlmacenes, almacenesPage]
   );
 
-  const { simulacionSeleccionada } = useSimulationContext();
-
   useEffect(() => {
     const cargarDatosCompletos = async () => {
       if (!simulacionId || !simulacionIniciada) {
