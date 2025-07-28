@@ -33,6 +33,8 @@ import React, {
   useState,
 } from "react";
 import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
+import { useSimulationContext } from "@/contexts/ContextSimulation";
+import { SimulationType } from "@/interfaces/simulation.interface";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -158,6 +160,7 @@ export const MapPanel = () => {
     bloqueoSeleccionadoId,
     setBloqueoSeleccionadoId,
     simulacionId,
+    setPedidosI,
   } = useMapContext();
 
   const [almacenesBackend, setAlmacenesBackend] = useState<AlmacenBackend[]>([]);
@@ -334,6 +337,8 @@ export const MapPanel = () => {
   const [isSearchingAlmacenes, setIsSearchingAlmacenes] = useState(false);
   const [searchTermAlmacenes, setSearchTermAlmacenes] = useState("");
   const searchAlmacenesInputRef = useRef<HTMLInputElement>(null);
+  const { simulacionSeleccionada } = useSimulationContext();
+  const tipoSimulacion = simulacionSeleccionada?.tipo;
 
   const [isSearchingBloqueos, setIsSearchingBloqueos] = useState(false);
   const [searchTermBloqueos, setSearchTermBloqueos] = useState("");
@@ -362,8 +367,20 @@ export const MapPanel = () => {
   }, [isSearchingBloqueos]);
 
   const filteredAlmacenes = useMemo(() => {
-    const almacenesData = getAlmacenesData;
+    let almacenesData = getAlmacenesData;
 
+    // Si es DIA_DIA, solo mostrar Central, y permitir búsqueda sobre ese único almacén
+    if (tipoSimulacion === SimulationType.DIA_DIA) {
+      almacenesData = almacenesData.filter((almacen) => almacen.nombre.toLowerCase() === "central");
+      if (!searchTermAlmacenes.trim()) return almacenesData;
+      return almacenesData.filter(
+        (almacen) =>
+          almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
+          almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
+      );
+    }
+
+    // Si no es DIA_DIA, filtrar normalmente
     if (!searchTermAlmacenes.trim()) return almacenesData;
 
     return almacenesData.filter(
@@ -371,8 +388,7 @@ export const MapPanel = () => {
         almacen.nombre.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim()) ||
         almacen.descripcion.toLowerCase().includes(searchTermAlmacenes.toLowerCase().trim())
     );
-    // }, [searchTermAlmacenes]);
-  }, [getAlmacenesData, searchTermAlmacenes]);
+  }, [getAlmacenesData, searchTermAlmacenes, tipoSimulacion]);
 
   const visibleAlmacenes = useMemo(
     () => filteredAlmacenes.slice(almacenesPage * PAGE_SIZE, (almacenesPage + 1) * PAGE_SIZE),
@@ -387,21 +403,24 @@ export const MapPanel = () => {
         return;
       }
 
+      const { tipo } = simulacionSeleccionada;
+
       setLoadingAlmacenes(true);
 
       try {
-        // ✅ LLAMADAS EN PARALELO
-        const [almacenesResponse, averiasResponse] = await Promise.all([
+        let almacenesResponse, averiasResponse;
+        [almacenesResponse, averiasResponse] = await Promise.all([
           SimulationService.obtenerAlmacenes(),
           SimulationService.obtenerAveriasGeneradas(simulacionId),
         ]);
 
-        if (almacenesResponse.success) {
+        if (almacenesResponse && almacenesResponse.success) {
           setAlmacenesBackend(almacenesResponse.data || []);
         }
-
-        if (averiasResponse.success) {
-          setAveriasGeneradas(averiasResponse.data || []);
+        if (tipo !== "Dia a Dia" && averiasResponse) {
+          if (averiasResponse.success) {
+            setAveriasGeneradas(averiasResponse.data || []);
+          }
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -410,9 +429,11 @@ export const MapPanel = () => {
       }
     };
 
+    const tipo = simulacionSeleccionada?.tipo;
+    const time = tipo === "Dia a Dia" ? 8000 : 7000;
     if (simulacionId && simulacionIniciada) {
       cargarDatosCompletos();
-      const interval = setInterval(cargarDatosCompletos, 7000);
+      const interval = setInterval(cargarDatosCompletos, time);
       return () => clearInterval(interval);
     }
   }, [simulacionId, simulacionIniciada]);
@@ -514,11 +535,10 @@ export const MapPanel = () => {
                 id: "almacenes",
                 label: "Almacenes",
                 icon: Warehouse,
-                // count: ALMACENES_DATA.length,
-                count: getAlmacenesData.length,
+                count: filteredAlmacenes.length,
               },
               { id: "bloqueos", label: "Bloqueos", icon: Shield, count: bloqueosI?.length || 0 },
-              { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length }, // ✅ NUEVA PESTAÑA
+              { id: "averias", label: "Averías", icon: Siren, count: averiasGeneradas.length },
             ].map((tab) => {
               const Icon = tab.icon;
               const isActive = selectedTab === tab.id;
