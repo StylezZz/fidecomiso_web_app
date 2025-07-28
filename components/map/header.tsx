@@ -83,7 +83,64 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
     });
   };
 
-  // ✅ HANDLER PARA REGISTRAR PEDIDO (en memoria y en base de datos)
+  // ✅ FUNCIÓN PARA REFRESCAR PEDIDOS DESDE EL BACKEND
+  const refreshPedidosFromBackend = async () => {
+    try {
+      // Obtener días según el tipo de simulación
+      const getDiasSimulacion = (day: number): number[] => {
+        // Esta lógica puede variar según el tipo de simulación
+        return [day]; // Por ahora solo el día actual, puedes expandir según necesites
+      };
+
+      const dias = getDiasSimulacion(day);
+      const response = await PedidosService.getOrders(dias, anio, mes);
+
+      if (response.success && response.data?.pedidos) {
+        // Convertir los pedidos del backend al formato del contexto
+        const pedidosActualizados: PedidoI[] = response.data.pedidos.map((pedido: any) => ({
+          id: pedido.id || 0,
+          dia: pedido.dia,
+          hora: pedido.hora,
+          minuto: pedido.minuto,
+          posX: pedido.posX,
+          posY: pedido.posY,
+          idCliente: pedido.idCliente,
+          cantidadGLP: pedido.cantidadGLP,
+          horasLimite: pedido.horasLimite,
+          entregado: pedido.entregado || false,
+          cantidadGLPAsignada: pedido.cantidadGLP,
+          asignado: pedido.asignado || false,
+          horaDeInicio: pedido.horaDeInicio || 0,
+          anio: pedido.anio,
+          mesPedido: pedido.mesPedido,
+          tiempoLlegada: pedido.tiempoLlegada || 0,
+          idCamion: pedido.idCamion || "",
+          entregadoCompleto: pedido.entregadoCompleto || false,
+          fechaDeRegistro: pedido.fechaDeRegistro || new Date().toISOString(),
+          fechaEntrega: pedido.fechaEntrega || "",
+          isbloqueo: pedido.isbloqueo || false,
+          priodidad: pedido.priodidad || 0,
+          fecDia: pedido.fecDia || "",
+          tiempoRegistroStr: `${pedido.dia}d${pedido.hora}h${pedido.minuto}m`,
+          cliente: {
+            id: pedido.idCliente,
+            nombre: "",
+            correo: "",
+            telefono: 0,
+            tipo: "",
+          },
+          horaInicio: pedido.horaInicio || 0,
+        }));
+
+        setPedidosI(pedidosActualizados);
+      }
+    } catch (error) {
+      console.error("Error al refrescar pedidos:", error);
+      toast.error("Error al actualizar la lista de pedidos");
+    }
+  };
+
+  // ✅ HANDLER PARA REGISTRAR PEDIDO MANUAL (en memoria y en base de datos)
   const handleRegistrarPedido = async (pedidoData: PedidoFormData) => {
     try {
       // Convertir los datos del formulario al formato esperado por el backend
@@ -111,23 +168,23 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
           cantidadGLP: nuevoPedido.cantidadGLP,
           horasLimite: nuevoPedido.horasLimite,
           entregado: false,
-          cantidadGLPAsignada: nuevoPedido.cantidadGLP, // Inicialmente asignamos toda la cantidad
+          cantidadGLPAsignada: nuevoPedido.cantidadGLP,
           asignado: false,
           horaDeInicio: nuevoPedido.horaDeInicio || 0,
           anio: nuevoPedido.anio,
           mesPedido: nuevoPedido.mesPedido,
-          tiempoLlegada: 0, // Valor por defecto
-          idCamion: "", // Sin camión asignado inicialmente
+          tiempoLlegada: 0,
+          idCamion: "",
           entregadoCompleto: false,
           fechaDeRegistro: nuevoPedido.fechaDeRegistro || new Date().toISOString(),
-          fechaEntrega: "", // Sin fecha de entrega inicialmente
+          fechaEntrega: "",
           isbloqueo: false,
-          priodidad: 0, // Prioridad estándar
+          priodidad: 0,
           fecDia: nuevoPedido.fecDia || "",
           tiempoRegistroStr: `${nuevoPedido.dia}d${nuevoPedido.hora}h${nuevoPedido.minuto}m`,
           cliente: {
             id: nuevoPedido.idCliente,
-            nombre: "", // Datos del cliente no disponibles en este punto
+            nombre: "",
             correo: "",
             telefono: 0,
             tipo: "",
@@ -146,10 +203,17 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
     }
   };
 
+  // ✅ HANDLER PARA CUANDO SE CIERRE EL MODAL
+  const handleCloseModal = () => {
+    setShowPedidoModal(false);
+    // Refrescar pedidos cuando se cierre el modal por si se procesó un archivo
+    refreshPedidosFromBackend();
+  };
+
   return (
     <>
       <ElegantHeader
-        // Datos reales del contexto (elimina los hardcodeados)
+        // Datos reales del contexto
         day={displayDate.day}
         month={displayDate.month}
         year={displayDate.year}
@@ -174,12 +238,12 @@ export const MapHeader = ({ setOpenSide, onFitToScreen }: MapHeaderProp) => {
         onFitToScreen={onFitToScreen}
       />
 
-      {/* Solo mantén los modales - elimina toda la sección flotante del bottom */}
+      {/* Modal de Pedidos con funcionalidad expandida */}
       {showPedidoModal && (
         <PedidoModal
           isOpen={showPedidoModal}
-          onClose={() => setShowPedidoModal(false)}
-          onSubmit={handleRegistrarPedido}
+          onClose={handleCloseModal} // Usa el nuevo handler que refresca los datos
+          onSubmit={handleRegistrarPedido} // Para pedidos manuales
         />
       )}
 

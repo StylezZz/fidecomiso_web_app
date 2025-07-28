@@ -34,8 +34,6 @@ import React, {
 } from "react";
 import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
-import { PedidoI } from "@/interfaces/simulation/pedido.interface";
-import PedidosService from "@/services/orders.service";
 import { SimulationType } from "@/interfaces/simulation.interface";
 
 interface Props {
@@ -71,24 +69,24 @@ const ALMACENES_DATA: AlmacenInfo[] = [
     descripcion: "Centro Principal",
     camionesActuales: 0,
   },
-  // {
-  //   posX: 42,
-  //   posY: 42,
-  //   typeHouse: "warehouse",
-  //   nombre: "Norte",
-  //   capacidad: "160 m3",
-  //   descripcion: "Intermedio Norte",
-  //   camionesActuales: 0,
-  // },
-  // {
-  //   posX: 63,
-  //   posY: 3,
-  //   typeHouse: "warehouse",
-  //   nombre: "Este",
-  //   capacidad: "160 m3",
-  //   descripcion: "Intermedio Este",
-  //   camionesActuales: 0,
-  // },
+  {
+    posX: 42,
+    posY: 42,
+    typeHouse: "warehouse",
+    nombre: "Norte",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Norte",
+    camionesActuales: 0,
+  },
+  {
+    posX: 63,
+    posY: 3,
+    typeHouse: "warehouse",
+    nombre: "Este",
+    capacidad: "160 m3",
+    descripcion: "Intermedio Este",
+    camionesActuales: 0,
+  },
 ];
 
 const formatearCapacidad = (almacen: AlmacenBackend) => {
@@ -718,12 +716,6 @@ export const MapPanel = () => {
                     Listando {pedidosPage * PAGE_SIZE + 1}–
                     {Math.min((pedidosPage + 1) * PAGE_SIZE, pedidosWithPriority.length)} de{" "}
                     {pedidosWithPriority.length} órdenes
-                    {loadingAlmacenes && (
-                      <span className="ml-2 inline-flex items-center gap-1">
-                        <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-                        Actualizando...
-                      </span>
-                    )}
                   </p>
                 </div>
 
