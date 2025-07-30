@@ -183,24 +183,37 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       let resRutas;
+      const DESFASE_MINUTOS = Math.floor(minutosPorIteracion*2);
+      const timerPlanificacion = timerSimulacion + DESFASE_MINUTOS;
+      console.log("PLANIFICANDO ADELANTADO:", {
+        timerActual: timerSimulacion,
+        timerPlanificacion: timerPlanificacion,
+        desfase: DESFASE_MINUTOS,
+      });
       if (tipo == SimulationType.SEMANAL || tipo == SimulationType.COLAPSO) {
         resRutas = await SimulationService.obtenerRutasVehiculosSemanal(
           anio,
           mes,
-          timerSimulacion,
+          timerPlanificacion,
           minutosPorIteracion
         );
       } else if (tipo == SimulationType.DIA_DIA) {
         resRutas = await SimulationService.obtenerRutasVehiculosDiario(
           anio,
           mes,
-          timerSimulacion,
+          timerPlanificacion,
           minutosPorIteracion
         );
       }
 
       if (resRutas) {
-        setCamionesRuta(resRutas.data);
+        const rutasConTimestamp = resRutas.data.map(camion => ({
+          ...camion,
+          _timestampPlanificado: timerPlanificacion // Metadata interna
+        }));
+
+
+        setCamionesRuta(rutasConTimestamp);
 
         // 🎯 NUEVA LÓGICA: Solo para COLAPSO
         if (tipo == SimulationType.COLAPSO) {
@@ -226,6 +239,11 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
       timerSimulacion % minutosPorIteracion === 0 &&
       !loadingRutas.current
     ) {
+      const ADELANTO_LLAMADAS = Math.floor(minutosPorIteracion /2);
+      if((timerSimulacion+ADELANTO_LLAMADAS)%minutosPorIteracion === 0){
+        console.log("Llamada adelantada en timer: ", timerSimulacion);
+        llamarRutas();
+      }
       llamarRutas();
     }
   }, [simulacionIniciada, timerSimulacion]);
