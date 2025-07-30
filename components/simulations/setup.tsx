@@ -87,6 +87,24 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
   const [errorSimulacion, setErrorSimulacion] = useState<boolean>(false);
   const [errorMsg, setErroMsg] = useState<string>("");
 
+  // Función para establecer fecha y hora actual
+  const setCurrentDateTime = () => {
+    const now = new Date();
+    setSelectedDate(now);
+
+    // Formatear hora actual a HH:MM
+    const currentHours = now.getHours().toString().padStart(2, "0");
+    const currentMinutes = now.getMinutes().toString().padStart(2, "0");
+    setSelectedTime(`${currentHours}:${currentMinutes}`);
+  };
+
+  // Efecto para establecer fecha y hora automáticamente cuando se selecciona DIA_DIA
+  useEffect(() => {
+    if (simulationType === SimulationType.DIA_DIA) {
+      setCurrentDateTime();
+    }
+  }, [simulationType]);
+
   // Efecto para sincronizar la fecha seleccionada con los estados legacy
   useEffect(() => {
     if (selectedDate) {
@@ -449,7 +467,9 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                   <div>
                     <CardTitle className="text-lg text-blue-900">Fecha y Hora de Inicio</CardTitle>
                     <CardDescription className="text-blue-700">
-                      Establece cuándo se ejecutará la simulación
+                      {simulationType === SimulationType.DIA_DIA
+                        ? "Fecha y hora establecidas automáticamente para tiempo real"
+                        : "Establece cuándo se ejecutará la simulación"}
                     </CardDescription>
                   </div>
                 </div>
@@ -463,9 +483,12 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
+                          disabled={simulationType === SimulationType.DIA_DIA}
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !selectedDate && "text-muted-foreground"
+                            !selectedDate && "text-muted-foreground",
+                            simulationType === SimulationType.DIA_DIA &&
+                              "bg-blue-50 border-blue-200"
                           )}
                         >
                           <Calendar className="mr-2 h-4 w-4" />
@@ -486,6 +509,11 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                         />
                       </PopoverContent>
                     </Popover>
+                    {simulationType === SimulationType.DIA_DIA && (
+                      <p className="text-xs text-blue-600">
+                        ⚡ Fecha actual establecida automáticamente
+                      </p>
+                    )}
                   </div>
 
                   {/* Selector de Hora */}
@@ -495,8 +523,27 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                       type="time"
                       value={selectedTime}
                       onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full"
+                      disabled={simulationType === SimulationType.DIA_DIA}
+                      className={cn(
+                        "w-full",
+                        simulationType === SimulationType.DIA_DIA && "bg-blue-50 border-blue-200"
+                      )}
                     />
+                    {simulationType === SimulationType.DIA_DIA && (
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-blue-600">
+                          ⚡ Hora actual establecida automáticamente
+                        </p>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={setCurrentDateTime}
+                          className="text-xs text-blue-600 hover:text-blue-800 p-1 h-auto"
+                        >
+                          Actualizar
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -509,270 +556,13 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                         La simulación comenzará el{" "}
                         {format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })} a las{" "}
                         {selectedTime}
+                        {simulationType === SimulationType.DIA_DIA && " (tiempo real)"}
                       </span>
                     </div>
                   </div>
                 )}
               </CardContent>
             </Card>
-
-            {/* <Card className="border-2 border-purple-100">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-violet-50">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Database className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg text-purple-900">Datos de Simulación</CardTitle>
-                    <CardDescription className="text-purple-700">
-                      Selecciona cómo proporcionar los datos para la simulación
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card
-                    className={`cursor-pointer transition-all duration-200 ${
-                      hasPreviousData === "hasnt"
-                        ? "ring-2 ring-purple-500 bg-purple-50/50"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => setHasPreviousData("hasnt")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            hasPreviousData === "hasnt" ? "bg-purple-500" : "bg-purple-100"
-                          }`}
-                        >
-                          <Upload
-                            className={`h-5 w-5 ${
-                              hasPreviousData === "hasnt" ? "text-white" : "text-purple-600"
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">Subir archivos nuevos</h4>
-                          <p className="text-sm text-gray-600">
-                            Cargar archivos TXT con datos de pedidos y bloqueos
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card
-                    className={`cursor-pointer transition-all duration-200 ${
-                      hasPreviousData === "has"
-                        ? "ring-2 ring-purple-500 bg-purple-50/50"
-                        : "hover:bg-gray-50"
-                    }`}
-                    onClick={() => setHasPreviousData("has")}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-2 rounded-lg ${
-                            hasPreviousData === "has" ? "bg-purple-500" : "bg-purple-100"
-                          }`}
-                        >
-                          <FileText
-                            className={`h-5 w-5 ${
-                              hasPreviousData === "has" ? "text-white" : "text-purple-600"
-                            }`}
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">Usar archivos existentes</h4>
-                          <p className="text-sm text-gray-600">
-                            Seleccionar archivos previamente cargados
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {hasPreviousData === "hasnt" && (
-                  <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
-                    <div className="text-center">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Archivos Requeridos
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Sube los archivos necesarios para la simulación
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <FileText className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Archivo de Pedidos</h4>
-                            <p className="text-xs text-gray-600">Formato: ventasYYYYMM.txt</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Input
-                            id="file-pedidos"
-                            type="file"
-                            accept=".txt"
-                            className="hidden"
-                            onChange={handleFileUploadPedidos}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById("file-pedidos")?.click()}
-                            className="w-full bg-white hover:bg-gray-50"
-                          >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Seleccionar archivo
-                          </Button>
-                        </div>
-
-                        {uploadedFilePedido && (
-                          <div className="flex items-center justify-between rounded-lg border bg-white p-3">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium">{uploadedFilePedido.name}</span>
-                              <span className="text-xs text-gray-500">
-                                ({Math.round(uploadedFilePedido.size / 1024)} KB)
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setUploadedFilePedido(null)}
-                              className="h-8 w-8"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <MapPin className="h-4 w-4 text-orange-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-900">Archivo de Bloqueos</h4>
-                            <p className="text-xs text-gray-600">Formato: bloqueosYYYYMM.txt</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Input
-                            id="file-bloqueos"
-                            type="file"
-                            accept=".txt"
-                            className="hidden"
-                            onChange={handleFileUploadBloqueos}
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById("file-bloqueos")?.click()}
-                            className="w-full bg-white hover:bg-gray-50"
-                          >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Seleccionar archivo
-                          </Button>
-                        </div>
-
-                        {uploadedFileBloqueo && (
-                          <div className="flex items-center justify-between rounded-lg border bg-white p-3">
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium">
-                                {uploadedFileBloqueo.name}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                ({Math.round(uploadedFileBloqueo.size / 1024)} KB)
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setUploadedFileBloqueo(null)}
-                              className="h-8 w-8"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {hasPreviousData === "has" && (
-                  <div className="space-y-6 p-6 bg-gray-50 rounded-lg">
-                    <div className="text-center">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        Archivos Disponibles
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Selecciona los archivos que deseas usar
-                      </p>
-                    </div>
-
-                    {loadingArch ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-                        <span className="ml-2 text-gray-600">Cargando archivos...</span>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <Label className="font-semibold text-sm text-gray-700">
-                            Archivo de Pedidos
-                          </Label>
-                          <Select value={namePedido} onValueChange={setNamePedido}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar archivo de pedidos" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {pedidosArch.map((archivo) => (
-                                <SelectItem key={archivo} value={archivo}>
-                                  {archivo}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="space-y-3">
-                          <Label className="font-semibold text-sm text-gray-700">
-                            Archivo de Bloqueos
-                          </Label>
-                          <Select value={nameBloqueo} onValueChange={setNameBloqueo}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar archivo de bloqueos" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {bloqueosArch.map((archivo) => (
-                                <SelectItem key={archivo} value={archivo}>
-                                  {archivo}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card> */}
           </div>
         );
 
@@ -820,39 +610,13 @@ export function SimulationSetup({ onClose }: SimulationSetupProps) {
                               ? format(selectedDate, "dd/MM/yyyy", { locale: es })
                               : "No seleccionada"}{" "}
                             {selectedTime}
+                            {simulationType === SimulationType.DIA_DIA && (
+                              <span className="text-blue-600 text-sm ml-1">(tiempo real)</span>
+                            )}
                           </p>
                         </div>
                       </div>
                     </div>
-
-                    {/* <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-green-100 rounded-lg">
-                          <Database className="h-4 w-4 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Origen de Datos</p>
-                          <p className="font-semibold text-gray-900">
-                            {hasPreviousData === "has" ? "Archivos existentes" : "Nuevos archivos"}
-                          </p>
-                        </div>
-                      </div>
-
-                      {hasPreviousData === "hasnt" && (
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-orange-100 rounded-lg">
-                            <FileText className="h-4 w-4 text-orange-600" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-600">Archivos Cargados</p>
-                            <p className="font-semibold text-gray-900">
-                              {uploadedFilePedido ? "✓ Pedidos" : "✗ Pedidos"},{" "}
-                              {uploadedFileBloqueo ? "✓ Bloqueos" : "✗ Bloqueos"}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div> */}
                   </div>
                 </CardContent>
               </Card>
