@@ -35,6 +35,8 @@ import React, {
 import { AlmacenBackend, AlmacenEstado } from "@/interfaces/almacen.interface";
 import { useSimulationContext } from "@/contexts/ContextSimulation";
 import { SimulationType } from "@/interfaces/simulation.interface";
+import PedidosService from "@/services/orders.service";
+import { PedidoI } from "@/interfaces/simulation/pedido.interface";
 
 interface Props {
   setShowLegend: Dispatch<SetStateAction<boolean>>;
@@ -395,6 +397,102 @@ export const MapPanel = () => {
     [filteredAlmacenes, almacenesPage]
   );
 
+  const cargarPedidosActualizados = useCallback(async () => {
+    try {
+      const { dia, mes, anio } = simulacionSeleccionada; // ✅ Ya no usar hook aquí
+
+      // Cargar pedidos para el día actual y siguiente (por si cruza días)
+      const diasParaCargar = [dia, dia + 1];
+
+      const response = await PedidosService.getOrders(diasParaCargar, anio, mes);
+      return response;
+    } catch (error) {
+      console.error("Error al cargar pedidos actualizados:", error);
+      return { success: false, data: [] };
+    }
+  }, [simulacionSeleccionada]); // ✅ Dependencia correcta
+
+  // ✅ NUEVA función para convertir pedidos
+  const convertirPedidoBackendAContexto = useCallback((pedidoBackend: any): PedidoI => {
+    return {
+      id: pedidoBackend.id || 0,
+      dia: pedidoBackend.dia,
+      hora: pedidoBackend.hora,
+      minuto: pedidoBackend.minuto,
+      posX: pedidoBackend.posX,
+      posY: pedidoBackend.posY,
+      idCliente: pedidoBackend.idCliente,
+      cantidadGLP: pedidoBackend.cantidadGLP,
+      horasLimite: pedidoBackend.horasLimite,
+      entregado: pedidoBackend.entregado || false,
+      cantidadGLPAsignada: pedidoBackend.cantidadGLPAsignada || pedidoBackend.cantidadGLP,
+      asignado: pedidoBackend.asignado || false,
+      horaDeInicio: pedidoBackend.horaDeInicio || 0,
+      anio: pedidoBackend.anio,
+      mesPedido: pedidoBackend.mesPedido,
+      tiempoLlegada: pedidoBackend.tiempoLlegada || 0,
+      idCamion: pedidoBackend.idCamion || "",
+      entregadoCompleto: pedidoBackend.entregadoCompleto || false,
+      fechaDeRegistro: pedidoBackend.fechaDeRegistro || new Date().toISOString(),
+      fechaEntrega: pedidoBackend.fechaEntrega || "",
+      isbloqueo: pedidoBackend.isbloqueo || false,
+      priodidad: pedidoBackend.priodidad || 0,
+      fecDia: pedidoBackend.fecDia || "",
+      tiempoRegistroStr: `${pedidoBackend.dia}d${pedidoBackend.hora}h${pedidoBackend.minuto}m`,
+      cliente: {
+        id: pedidoBackend.idCliente,
+        nombre: pedidoBackend.cliente?.nombre || "",
+        correo: pedidoBackend.cliente?.correo || "",
+        telefono: pedidoBackend.cliente?.telefono || 0,
+        tipo: pedidoBackend.cliente?.tipo || "",
+      },
+      horaInicio: pedidoBackend.horaInicio || 0,
+    };
+  }, []);
+
+  // ✅ NUEVA función para actualizar pedidos
+  const actualizarPedidosEnContexto = useCallback(
+    (pedidosBackend: any) => {
+      const pedidosFormateados = pedidosBackend.pedidos.map(convertirPedidoBackendAContexto);
+
+      setPedidosI((pedidosActuales) => {
+        // Crear mapa de pedidos actuales por ID para comparación rápida
+        const pedidosActualesMap = new Map(pedidosActuales.map((p) => [p.id, p]));
+
+        // Filtrar solo pedidos nuevos o actualizados
+        const pedidosNuevos = pedidosFormateados.filter((pedidoNuevo) => {
+          const pedidoExistente = pedidosActualesMap.get(pedidoNuevo.id);
+
+          // Si no existe, es nuevo
+          if (!pedidoExistente) return true;
+
+          // Si existe pero cambió el estado de entrega, actualizarlo
+          if (
+            pedidoExistente.entregado !== pedidoNuevo.entregado ||
+            pedidoExistente.entregadoCompleto !== pedidoNuevo.entregadoCompleto
+          ) {
+            return true;
+          }
+
+          return false;
+        });
+
+        if (pedidosNuevos.length > 0) {
+          console.log(`🔄 Actualizando ${pedidosNuevos.length} pedidos nuevos/modificados`);
+
+          // Combinar pedidos: mantener existentes + agregar nuevos + actualizar modificados
+          const pedidosIds = new Set(pedidosFormateados.map((p) => p.id));
+          const pedidosMantenidos = pedidosActuales.filter((p) => !pedidosIds.has(p.id));
+
+          return [...pedidosMantenidos, ...pedidosFormateados];
+        }
+
+        return pedidosActuales;
+      });
+    },
+    [setPedidosI, convertirPedidoBackendAContexto]
+  );
+
   useEffect(() => {
     const cargarDatosCompletos = async () => {
       if (!simulacionId || !simulacionIniciada) {
@@ -408,10 +506,11 @@ export const MapPanel = () => {
       setLoadingAlmacenes(true);
 
       try {
-        let almacenesResponse, averiasResponse;
-        [almacenesResponse, averiasResponse] = await Promise.all([
+        let almacenesResponse, averiasResponse, pedidosResponse;
+        [almacenesResponse, averiasResponse, pedidosResponse] = await Promise.all([
           SimulationService.obtenerAlmacenes(),
           SimulationService.obtenerAveriasGeneradas(simulacionId),
+          cargarPedidosActualizados(),
         ]);
 
         if (almacenesResponse && almacenesResponse.success) {
@@ -421,6 +520,10 @@ export const MapPanel = () => {
           if (averiasResponse.success) {
             setAveriasGeneradas(averiasResponse.data || []);
           }
+        }
+
+        if (pedidosResponse.success && pedidosResponse.data) {
+          actualizarPedidosEnContexto(pedidosResponse.data);
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
