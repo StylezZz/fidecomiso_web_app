@@ -191,7 +191,13 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
           minutosPorIteracion
         );
       } else if (tipo == SimulationType.DIA_DIA) {
-        resRutas = await SimulationService.obtenerRutasVehiculosDiario(
+        // resRutas = await SimulationService.obtenerRutasVehiculosDiario(
+        //   anio,
+        //   mes,
+        //   timerSimulacion,
+        //   minutosPorIteracion
+        // );
+        resRutas = await SimulationService.obtenerRutasVehiculosSemanal(
           anio,
           mes,
           timerSimulacion,
