@@ -230,7 +230,7 @@ export function PedidoModal({ isOpen, onClose, onSubmit, fechaSimulacion }: Pedi
     setFileValidationStatus("idle");
     setValidationProgress(0);
     setValidationErrors([]);
-    setActiveTab("manual");
+    //setActiveTab("manual");
   };
 
   React.useEffect(() => {

@@ -483,7 +483,9 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                 />
               ))}
               {pedidosMostrar}
-              {dataVehiculos.map((datavehiculo) => (
+              {dataVehiculos.map((datavehiculo) =>{
+                const tiempoTolerancia = datavehiculo._timestampPlanificado || timerSimulacion;
+                return(
                 <Camion
                   dataVehiculo={datavehiculo}
                   scale={scale}
@@ -492,13 +494,15 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                   setToolTipCamionPos={setToolTipCamionPos}
                   onTooltip={showTooltip}
                   isSelected={camionSeleccionadoId === datavehiculo.id}
+                  tiempoTolerancia={tiempoTolerancia} // Pasar el tiempo de tolerancia
                 />
-              ))}
-              <Almacen
-                posX={12}
-                posY={8}
-                typeHouse="home"
-                setAlmacenSeleccionado={setAlmacenSeleccionado}
+              );
+            })}
+            <Almacen
+              posX={12}
+              posY={8}
+              typeHouse="home"
+              setAlmacenSeleccionado={setAlmacenSeleccionado}
                 setToolTipAlmacenPos={setToolTipAlmacenPos}
                 onTooltip={showTooltip}
               />

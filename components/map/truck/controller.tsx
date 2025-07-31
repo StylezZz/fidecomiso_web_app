@@ -103,6 +103,8 @@ export const Camion = React.memo<TruckProps>(
         for (let j = 0; j < route.length; j++) {
           const currentPoint = route[j];
           // Verificamos si el camión está en este punto de la ruta en este momento
+          const tiempoInicioRedondeado =  Math.floor(currentPoint.tiempoInicio);
+          const tiempoFinRedondeado = Math.floor(currentPoint.tiempoFin);
           const currentTimeRange =
             timerSimulacion >= currentPoint.tiempoInicio &&
             timerSimulacion <= currentPoint.tiempoFin;
@@ -139,7 +141,7 @@ export const Camion = React.memo<TruckProps>(
         if (!camionEnRuta) {
           // Verificamos si ha completado su ruta
           const ultimoPunto = route[route.length - 1];
-          if (timerSimulacion > ultimoPunto.tiempoFin) {
+          if (timerSimulacion > Math.floor(ultimoPunto.tiempoFin)) {
             setVisible(false); // Ocultamos el camión si ha completado su ruta
             console.log("Camión ", codigo, "ha completado su ruta, ocultando");
           }
