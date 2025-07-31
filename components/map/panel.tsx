@@ -595,14 +595,6 @@ export const MapPanel = () => {
     }));
   }, [pedidosI, searchTermPedidos]);
 
-  // 2.  ⬇︎  AGREGA este bloque inmediatamente después
-  console.log(
-    "DEBUG pedidosWithPriority → length:",
-    pedidosWithPriority.length,
-    " | primer pedido:",
-    pedidosWithPriority[0]
-  );
-
   const visiblePedidos = useMemo(
     () => pedidosWithPriority.slice(pedidosPage * PAGE_SIZE, (pedidosPage + 1) * PAGE_SIZE),
     [pedidosWithPriority, pedidosPage]

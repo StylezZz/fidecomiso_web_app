@@ -55,7 +55,7 @@ const useSimulationTime = ({
       if (timerId.current) clearInterval(timerId.current);
       return;
     }
-    const intervaloLlamadas = Math.min(intervalMs,5000);
+    const intervaloLlamadas = Math.min(intervalMs, 5000);
     timerId.current = setInterval(() => {
       if (limitTime.current <= refTimerSimulacion.current) {
         if (timerId.current) clearInterval(timerId.current);
@@ -77,21 +77,22 @@ const useSimulationTime = ({
         }
         return { hour, minute, day };
       });
-      setTimerSimulacion((prev) => {
-        const minutosRealesTranscurridos =  intervalMs / 1000 / 60; // Convertir de ms a minutos
-        console.log("Timer update: ", {
-          timerSimulacion: prev,
-          intervalMs: intervalMs,
-          minutosRealesTranscurridos,
-          minutosPorIteracion,
-        });
-        return prev + minutosRealesTranscurridos;
-      });
-    }, intervaloLlamadas);
+      // setTimerSimulacion((prev) => {
+      //   const minutosRealesTranscurridos =  intervalMs / 1000 / 60; // Convertir de ms a minutos
+      //   console.log("Timer update: ", {
+      //     timerSimulacion: prev,
+      //     intervalMs: intervalMs,
+      //     minutosRealesTranscurridos,
+      //     minutosPorIteracion,
+      //   });
+      //   return prev + minutosRealesTranscurridos;
+      // });
+      setTimerSimulacion((prev) => prev + 1);
+    }, intervalMs);
     return () => {
       if (timerId.current) clearInterval(timerId.current);
     };
-  }, [initTimer, intervalMs,minutosPorIteracion]);
+  }, [initTimer, intervalMs, minutosPorIteracion]);
 
   useEffect(() => {
     console.log("datos de la simulacion", dia, ihora, iminuto);

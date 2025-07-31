@@ -183,7 +183,7 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       let resRutas;
-      const DESFASE_MINUTOS = Math.floor(minutosPorIteracion*2);
+      const DESFASE_MINUTOS = Math.floor(minutosPorIteracion * 2);
       const timerPlanificacion = timerSimulacion + DESFASE_MINUTOS;
       console.log("PLANIFICANDO ADELANTADO:", {
         timerActual: timerSimulacion,
@@ -207,17 +207,16 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
         resRutas = await SimulationService.obtenerRutasVehiculosSemanal(
           anio,
           mes,
-          timerPlanificacion,
+          Math.floor(timerSimulacion),
           minutosPorIteracion
         );
       }
 
       if (resRutas) {
-        const rutasConTimestamp = resRutas.data.map(camion => ({
+        const rutasConTimestamp = resRutas.data.map((camion) => ({
           ...camion,
-          _timestampPlanificado: timerPlanificacion // Metadata interna
+          _timestampPlanificado: timerPlanificacion, // Metadata interna
         }));
-
 
         setCamionesRuta(rutasConTimestamp);
 
@@ -242,14 +241,14 @@ export const MapProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (
       simulacionIniciada &&
-      timerSimulacion % minutosPorIteracion === 0 &&
+      // timerSimulacion % minutosPorIteracion === 0 &&
       !loadingRutas.current
     ) {
-      const ADELANTO_LLAMADAS = Math.floor(minutosPorIteracion /2);
-      if((timerSimulacion+ADELANTO_LLAMADAS)%minutosPorIteracion === 0){
-        console.log("Llamada adelantada en timer: ", timerSimulacion);
-        llamarRutas();
-      }
+      // const ADELANTO_LLAMADAS = Math.floor(minutosPorIteracion /2);
+      // if((timerSimulacion+ADELANTO_LLAMADAS)%minutosPorIteracion === 0){
+      //   console.log("Llamada adelantada en timer: ", timerSimulacion);
+      //   llamarRutas();
+      // }
       llamarRutas();
     }
   }, [simulacionIniciada, timerSimulacion]);

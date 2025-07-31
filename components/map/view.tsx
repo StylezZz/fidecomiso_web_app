@@ -135,6 +135,21 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
     [dataVehiculos, obtenerPedidosEntregados, timerSimulacion]
   );
 
+  const [forceRender, setForceRender] = useState(0);
+  // Forzar re-render cuando dataVehiculos cambie
+
+  useEffect(() => {
+    const INTERVAL_MS = 5000; // 2 segundos
+
+    const intervalId = setInterval(() => {
+      console.log("🔄 Force render triggered");
+      setForceRender((prev) => prev + 1);
+    }, INTERVAL_MS);
+
+    // Cleanup
+    return () => clearInterval(intervalId);
+  }, []); // Solo se ejecuta al montar
+
   const resizeDimensions = () => {
     if (containerCanvas.current === null) return;
     let rect: DOMRect = containerCanvas.current.getBoundingClientRect();
@@ -232,12 +247,6 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
         minutoInicio
       );
       const tiempoFin = ajustarTiempoBloqueo(diaFin, mesBloqueo, anioBloqueo, horaFin, minutoFin);
-
-      console.log(
-        `Bloqueo ID: ${data.id}, Mes: ${mesBloqueo}, Día: ${diaInicio}-${diaFin},
-       Tiempo: ${tiempoInicio}-${tiempoFin}, Timer: ${timerSimulacion}`
-      );
-
       return timerSimulacion >= tiempoInicio && timerSimulacion <= tiempoFin;
     });
     setBloqueosShow(bloqueosActivos);
@@ -483,31 +492,31 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
                 />
               ))}
               {pedidosMostrar}
-              {dataVehiculos.map((datavehiculo) =>{
-                const tiempoTolerancia = datavehiculo._timestampPlanificado || timerSimulacion;
-                return(
-                <Camion
-                  dataVehiculo={datavehiculo}
-                  scale={scale}
-                  key={datavehiculo.id}
-                  setCamionSeleccionado={setCamionSeleccionado}
-                  setToolTipCamionPos={setToolTipCamionPos}
-                  onTooltip={showTooltip}
-                  isSelected={camionSeleccionadoId === datavehiculo.id}
-                  tiempoTolerancia={tiempoTolerancia} // Pasar el tiempo de tolerancia
-                />
-              );
-            })}
-            <Almacen
-              posX={12}
-              posY={8}
-              typeHouse="home"
-              setAlmacenSeleccionado={setAlmacenSeleccionado}
+              {dataVehiculos.map((datavehiculo) => {
+                // const tiempoTolerancia = datavehiculo._timestampPlanificado || timerSimulacion;
+                return (
+                  <Camion
+                    dataVehiculo={datavehiculo}
+                    scale={scale}
+                    key={datavehiculo.id}
+                    setCamionSeleccionado={setCamionSeleccionado}
+                    setToolTipCamionPos={setToolTipCamionPos}
+                    onTooltip={showTooltip}
+                    isSelected={camionSeleccionadoId === datavehiculo.id}
+                    // tiempoTolerancia={tiempoTolerancia} // Pasar el tiempo de tolerancia
+                  />
+                );
+              })}
+              <Almacen
+                posX={12}
+                posY={8}
+                typeHouse="home"
+                setAlmacenSeleccionado={setAlmacenSeleccionado}
                 setToolTipAlmacenPos={setToolTipAlmacenPos}
                 onTooltip={showTooltip}
               />
               {tipoSimulacion !== SimulationType.DIA_DIA && (
-                <> 
+                <>
                   <Almacen
                     posX={42}
                     posY={42}
@@ -561,12 +570,7 @@ const MapCanvas = forwardRef<MapCanvasRef, MapProps>(({ open }, ref) => {
           </Stage>
 
           {/* ✅ INDICADOR DE FLOTA - Nivel de llenado/disponibilidad */}
-          <FleetIndicator 
-            position="top-left" 
-            compact={false}
-            showDetails={true}
-            hideable={true}
-          />
+          <FleetIndicator position="top-left" compact={false} showDetails={true} hideable={true} />
 
           {/* Botón de toggle */}
           <button
