@@ -1497,7 +1497,7 @@ const BloqueoRowImproved = React.memo(
         </TableCell>
         <TableCell className="text-sm text-slate-700 px-4">
           <div className="space-y-1">
-            {bloqueo.tramo.slice(0, 2).map((tramo, index) => (
+            {bloqueo.tramo.slice(0, 2).map((tramo: any, index: number) => (
               <div key={index} className="font-mono text-xs">
                 ({tramo.x_ini},{tramo.y_ini}) → ({tramo.x_fin},{tramo.y_fin})
               </div>
